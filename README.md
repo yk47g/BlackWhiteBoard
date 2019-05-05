@@ -1,2 +1,0 @@
-# BlackWhiteBoard
-WeChat app
