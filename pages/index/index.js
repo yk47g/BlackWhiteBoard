@@ -45,15 +45,24 @@ Page({
     ctx.setStrokeStyle('blue')
     ctx.setLineJoin("round")
     ctx.setLineCap("round")
-    ctx.setLineWidth(5)
+    ctx.setLineWidth(2)
     ctx.moveTo(this.data.nowXY.x, this.data.nowXY.y)
+    var tempXy = this.data.nowXY
     this.setData({
       nowXY: e.touches[0]
     })
-    ctx.lineTo(this.data.nowXY.x, this.data.nowXY.y)
-    
+    // ctx.lineTo(this.data.nowXY.x, this.data.nowXY.y)
+    ctx.quadraticCurveTo(tempXy.x, tempXy.y,(tempXy.x + this.data.nowXY.x) / 2, (tempXy.y + this.data.nowXY.y) / 2)
     ctx.stroke()
     ctx.draw(true)
+
+    this.setData({
+      nowXY:{
+        x: (tempXy.x + this.data.nowXY.x) / 2,
+        y: (tempXy.y + this.data.nowXY.y) / 2
+      }
+    })
+
   },
   canvas_touchend(e){
    //触摸完毕
