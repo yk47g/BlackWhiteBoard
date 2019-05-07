@@ -1,6 +1,6 @@
 {
   "pages": [
-    
+    "pages/drawBoard/drawBoard",
     "pages/index/index"
     
   ],

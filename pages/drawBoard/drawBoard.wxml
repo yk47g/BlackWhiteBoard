@@ -1,0 +1,15 @@
+
+<view>
+<canvas canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'>
+</canvas>
+
+<view class='toolsBar'>
+
+<button bindtap='changeStatus' id='tools_pen'>笔</button>
+<button bindtap='changeStatus' id='tools_eraser'>橡皮</button>
+<button bindtap='changeStatus' id='tools_select'>选区</button>
+<button bindtap='changeStatus' id='tools_pigment'>颜料</button>
+</view>
+
+</view>
+

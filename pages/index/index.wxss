@@ -1,8 +1,0 @@
-canvas{
-  width: 100vw;
-  height: 90vh;
-  /* background-color: red; */
-/* 1rpx = 0.5px */
-
-
-}
