@@ -1,7 +1,8 @@
 {
   "pages": [
-    "pages/drawBoard/drawBoard",
-    "pages/index/index"
+    "pages/index/index",
+    "pages/drawBoard/drawBoard"
+   
     
   ],
   "window": {

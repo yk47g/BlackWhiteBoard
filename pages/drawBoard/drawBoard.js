@@ -1,12 +1,44 @@
 
-Array.prototype.last = function () {
-  return this[this.length - 1];
+Array.prototype.limited = function (index) {//防止越界，返回正确范围内的索引
+  if(index>this.length-1){
+    return this.length - 1
+  }
+  if(index<0){
+    return 0 
+  }
+  return index;
 }
+class Dom{//模拟dom操作取元素属性类
+  constructor(){
+  
+  }
+  getElementByString (str,callback){//可以通过该属性获取元素当前的宽高等信息。str 值为css选择器名 ,注意为回调函数！
+    const query = wx.createSelectorQuery()
+    var temp 
+    query.select(".drawCanvas").boundingClientRect();
+    query.exec(function (res) {
+      
+      callback(res);
+
+    })
+  
+    return temp
+  }
+  getElementContext(str, callback) {
+    wx.createSelectorQuery().select('.drawCanvas').context(function (res) {
+      callback(res);
+      
+    }).exec()
+
+  }
+}
+
 class DrawBoard{
   constructor() {
     this.actions = [];//画布的所有绘制路径事件  
     this.backgroundColor = "white";//默认背景颜色
-
+    this.width = 0 ;
+    this.height = 0;
   }
   addAction(){
     this.actions.push(new Action());//添加一次绘制事件
@@ -15,11 +47,36 @@ class DrawBoard{
   getLastAction(index = 0 ) {//支持返回倒数前几个点
     let length = this.actions.length
     var index = length - 1 - index
-    if (index < 0) {//当越界时返回第一个点
-      index = 0
-    }
+
+    index = this.actions.limited(index)
+   
+
     return this.actions[index];
 
+  }
+  getActionByindex(index = 0){
+   
+    index =  this.actions.limited(index)//防止索引越界。
+ 
+    return this.actions[index]
+  }
+  reload(){//重新载入画布使用
+    let ctx = wx.createCanvasContext("testCanvas");
+    
+    
+    var une = {//模拟e传入直接绘画出点
+      reload:true,
+      index:0
+    }
+    for (let i = 0; i < this.actions.length; i++) {//遍历每一条路径
+      const iAction = this.actions[i];
+      iAction.every(function(point){ //调用函数遍历该路径下的所有点
+        // canvas_touchmove(une)
+       
+      })
+    }
+
+  
   }
 }
 class Action{//绘制事件类
@@ -41,6 +98,7 @@ class Action{//绘制事件类
     }
     return this.points[index]
   }
+
   every(compute){//一个遍历函数，遍历当前绘制事件下所有的点，参数为一个处理函数 
     for (let i = 0; i < this.points.length; i++) {
       const ipoint = this.points[i];
@@ -76,14 +134,23 @@ Page({
 
   }, 
 
-  
+  loadDrawBoard(){
+    this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
+    (new Dom()).getElementByString(".drawCanvas", (res) => {
+      this.data.drawBoard.width = res[0].width
+      this.data.drawBoard.height = res[0].height
+    })
+
+  },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
-  
+
+    this.loadDrawBoard();
+    
+    
   },
   /**
  * 生命周期函数--监听页面初次渲染完成
@@ -93,38 +160,44 @@ Page({
   },
 
   canvas_touchstart(e) {
-    
+   
     this.data.drawBoard.addAction();//开始添加一次绘制事件
     let lsAction = this.data.drawBoard.getLastAction();//并且开始记录
     lsAction.addPoint(e.touches[0].x, e.touches[0].y);
-    console.log(this.data.drawBoard)
- 
+
+
+    
 
   },
 
   canvas_touchmove(e) {
-    
+   
     let ctx = wx.createCanvasContext("testCanvas");
     let datas = this.data
-    let lsAction = datas.drawBoard.getLastAction()
-    let lsPoint = lsAction.getLastPoint();//上一次最后一个点
+    var lsAction = {}
+    
+  
+    if (e.reload == true) {//判断是否是程序重新载入而调用的
+      lsAction = datas.drawBoard.getActionByindex(e.index)
+      console.log(e.index)
+      return
+    } else {
+      lsAction = datas.drawBoard.getLastAction()
+    }
+
     let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
-    let [style_lineWidth, style_Color] = [2, 'rgb(255.255.255)']
-    console.log(thisPoint);
-    ctx.strokeStyle = style_Color
-    ctx.setLineJoin("round")
-    ctx.setLineCap("round")
-    ctx.setShadow(0, 0, 4,"rgba(0,0,0,0.2)")
-    ctx.lineWidthstyle_lineWidth
-
-   
-    ctx.moveTo(...lsPoint.getJsonArr())
-
-    // ctx.lineTo(...thisPoint.getJsonArr())
-
+    let lsPoint = lsAction.getLastPoint();//上一次最后一个点
     let lsPoint_1 = lsAction.getLastPoint(1)//倒数第二个点
-    let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint, ...thisPoint, ...lsPoint_1]
+    let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lsPoint_1.getJsonArr()]
+    let [style_lineWidth, style_Color] = [3, 'rgb(0,0,0)']
 
+
+    ctx.strokeStyle = style_Color
+    // ctx.setStrokeStyle(style_Color)
+    ctx.lineJoin = "round"
+    ctx.lineCap = "round"
+    // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
+    ctx.lineWidth=style_lineWidth
     //曲线优化
    
     ctx.moveTo((lssX+lsX)/2,(lsY+lssY)/2)
@@ -134,19 +207,18 @@ Page({
 
     lsAction.lineWidth = style_lineWidth
     lsAction.color = style_Color 
-    // lsAction.addPoint(...thisPoint.getJsonArr())
     lsAction.addPoint(...thisPoint.getJsonArr())
  
   },
   canvas_touchend(e) {
     //触摸完毕，进行曲线调整。
     let datas = this.data
-    let lsAction = datas.drawBoard.getLastAction()
-    lsAction.every(function(point){
+    // let lsAction = datas.drawBoard.getLastAction()
+    // lsAction.every(function(point){
       
      
-      // console.log(this)
-    })
+    //   // console.log(this)
+    // })
 
 
   },
@@ -206,26 +278,28 @@ Page({
       break;
       case "tools_eraser":
         console.log("橡皮开启");
-        let action_index = 0
-        
-
-        let delAction = datas.drawBoard.actions[action_index]
-        let linewidth = delAction.lineWidth + 2
-        // datas.drawBoard.actions.splice(action_index,1);//删除第二次绘制事件
-
-        ctx.setFillStyle('red');
-          
-        delAction.every(function(point){
-          console.log(point)
-         
-           ctx.fillRect(point.x-linewidth/2,point.y-linewidth/2,linewidth,linewidth)
-       
-        })
+    
+        ctx.clearRect(0,0,datas.drawBoard.width,datas.drawBoard.height)
         ctx.draw(true)
+        this.loadDrawBoard();
       
         break;
       case "tools_select":
         console.log("选区开启");
+        let action_index = 0
+
+
+        let delAction = datas.drawBoard.actions[action_index]
+        let linewidth = delAction.lineWidth + 3
+        // datas.drawBoard.actions.splice(action_index,1);//删除第二次绘制事件
+
+        ctx.fillStyle = 'red';
+
+        delAction.every(function (point) {
+          ctx.fillRect(point.x - linewidth / 2, point.y - linewidth / 2, linewidth, linewidth)
+        })
+        ctx.draw(true)
+        datas.drawBoard.reload()
         break;
       case "tools_pigment":
         console.log("颜料点击");

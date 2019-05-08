@@ -1,6 +1,6 @@
 
 <view>
-<canvas canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'>
+<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'>
 </canvas>
 
 <view class='toolsBar'>

@@ -1,1 +1,13 @@
-<view>首页</view>
+<view class="container">
+
+<!-- <view class="logo">
+    <image  src="../../icons/logo.png" mode="widthFix"  /> 
+</view> -->
+  
+  <view class='main'>
+  <image class='userImage' src='../../icons/user1.png' mode='aspectFit'></image>
+  </view>
+  <view class='tabbar'>
+  <image  src='../../icons/tab1.png' mode='aspectFill'></image>
+  </view>
+</view>

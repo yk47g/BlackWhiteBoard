@@ -1,5 +1,5 @@
 /* pages/drawBoard/drawBoard.wxss */
-canvas{
+.drawCanvas{
   width: 100vw;
   height: 90vh;
   /* background-color: red; */
@@ -14,7 +14,7 @@ canvas{
   justify-content: center;
   align-items: center;
   
-  box-shadow: 0 -15px 30px rgb(0, 0, 0,0.4);
+  box-shadow: 0 -10px 15px rgb(0, 0, 0,0.3);
 }
 .toolsBar button{
   width: 20vw;
