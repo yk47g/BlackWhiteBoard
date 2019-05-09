@@ -1,49 +1,26 @@
+let  app = getApp()
+
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
-    
+    usericonUrl:"../../icons/user.png"
   },
+  
+
 
   //页面加载事件----------------
-
+  
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
     // 查看是否授权
-    wx.getSetting({
-      success(res) {
-        if (res.authSetting['scope.userInfo']) {
-          console.log("用户已授权基本信息。")
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-          wx.getUserInfo({
-            success(res) {
-              console.log(res.userInfo)
-     
-            }
-          })
-        }else{
-         console.log("用户未授权user信息")  
-         
-        }
-
-        if (res.authSetting['scope.writePhotosAlbum'] != true) {
-          console.log("用户未授权相册功能。")
-          wx.authorize({
-            scope: 'scope.writePhotosAlbum',
-            success() {
-              console.log("用户点击同意授权。")
-            }
-          })
-        }else{
-          console.log("用户已授权相册功能。")
-        }
-        
-      }
-    })
+    let that = this ;
+  
+    this.applyPermission()
   },
 
   /**
@@ -96,11 +73,47 @@ Page({
   },
   //单击事件----------------
   onGetUserInfo(e){
-      console.log(e);
+    this.applyPermission()
 
-  }
+  },
   //----------------
+  applyPermission() {
+    let that = this;
+    wx.getSetting({
+      success(res) {
+        if (res.authSetting['scope.userInfo']) {
+          console.log("用户已授权基本信息。")
+          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+          wx.getUserInfo({
+            success(res) {
+              console.log(res.userInfo)
+              app.globalData.userInfo = res.userInfo;
 
+              that.setData({
+                usericonUrl: app.globalData.userInfo.avatarUrl
+              })
+            }
+          })
+        } else {
+          console.log("用户未授权user信息")
+
+        }
+
+        if (res.authSetting['scope.writePhotosAlbum'] != true) {
+          console.log("用户未授权相册功能。")
+          wx.authorize({
+            scope: 'scope.writePhotosAlbum',
+            success() {
+              console.log("用户点击同意授权。")
+            }
+          })
+        } else {
+          console.log("用户已授权相册功能。")
+        }
+
+      }
+    })
+  }
 
   
 

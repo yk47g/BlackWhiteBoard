@@ -156,7 +156,7 @@ Page({
   data: {
     drawBoard:{},
     toolsStatus:{}//工具选择状态
-
+    
   }, 
 
   loadDrawBoard(){

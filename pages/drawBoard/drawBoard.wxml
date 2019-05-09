@@ -3,7 +3,7 @@
 <view class='main'>
 <canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' >
 </canvas>
-<input type='text' value='键盘' focus="{{true}}"></input>
+<input type='text' value='键盘' focus="{{tollstas.dsff}}"></input>
 </view>
 
 
