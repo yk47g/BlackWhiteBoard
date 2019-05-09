@@ -100,24 +100,7 @@ class DrawBoard {
 
     return this.actions[index]
   }
-  reload() {//重新载入画布使用
-    let ctx = wx.createCanvasContext("testCanvas");
-
-
-    var une = {//模拟e传入直接绘画出点
-      reload: true,
-      index: 0
-    }
-    for (let i = 0; i < this.actions.length; i++) {//遍历每一个绘制事件
-      const iAction = this.actions[i];
-      iAction.every(function (point) { //调用函数遍历该绘制事件下的所有点
-        // canvas_touchmove(une)
-
-      })
-    }
-
-
-  }
+  
 }
 class Action {//绘制事件类
 
@@ -196,7 +179,7 @@ class CGLine {
     return this.points[index]
   }
 
-  every(compute) {//一个遍历函数，遍历当前绘制事件下所有的点，参数为一个处理函数 
+  every(compute) {//一个遍历函数，遍历当前路径下所有的点，参数为一个处理函数 
     for (let i = 0; i < this.points.length; i++) {
       const ipoint = this.points[i];
       compute(ipoint);//函数格式。参数为各个point点。
@@ -236,44 +219,32 @@ Page({
 
   },
 
-  loadDrawBoard() {
-    this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
-    this.data.toolsStatus = new ToolsStatus();
-
-
-
-    (new Dom()).getElementByString(".drawCanvas", (res) => {
-      this.data.drawBoard.width = res[0].width
-      this.data.drawBoard.height = res[0].height
-    })
-    this.setData({
-
-      'toolsStatus.keyBord.display': 0
-    })
-    console.log(this.data.toolsStatus)
-  },
   compute_textInput(thisPoint, disFocus = false) {//切换到文字工具-处理函数
     let datas = this.data
     let toolsStatus = datas.toolsStatus
 
     if (disFocus == true || toolsStatus.nowStatus != 0) {
       console.log('结束输入文字')
-      toolsStatus.nowStatus = 0
+      
       let text = toolsStatus.keyBord.value
-      if (text != "") {
+      
+      if (text != "" && disFocus != true) {
         let size = 16
         let lsAction = (datas.drawBoard.addAction(Action_type.text)).mode//为CGText
         lsAction.text = text
         lsAction.size = size
-        
+        console.log(datas.drawBoard.getLastAction())
         let ctx = wx.createCanvasContext("testCanvas");
         ctx.setFontSize(size);
         ctx.fillText(text, toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9);
         ctx.draw(true);
       }
+
+      toolsStatus.nowStatus = 0//清空等待输入状态
       this.setData({
         "toolsStatus.keyBord.display": 0,
-        "toolsStatus.keyBord.focus": false
+        "toolsStatus.keyBord.focus": false,
+        "toolsStatus.keyBord.value":""
       })
 
     } else {
@@ -289,17 +260,16 @@ Page({
       })
     }
   },
-  compute_line(thisPoint){
+  compute_line(thisPoint,cgline = {}){
 
-    // if (e.reload == true) {//判断是否是程序重新载入而调用的
-    //   lsAction = datas.drawBoard.getActionByindex(e.index)
-    //   console.log(e.index)
-    //   return
-    // } else {
-    //   lsAction = datas.drawBoard.getLastAction()
-    // }
     let datas = this.data
-    let  lsAction = datas.drawBoard.getLastAction().mode//此处lsAction 类型为CGLine
+    var  lsAction = datas.drawBoard.getLastAction().mode//此处lsAction 类型为CGLine
+    var isreload = false
+    if (typeof(cgline.points) != 'undefined' ) {//判断是否是程序重新载入而调用的
+      lsAction = cgline
+      isreload = true
+    } 
+    
     let lsPoint = lsAction.getLastPoint();//上一次最后一个点
     let lsPoint_1 = lsAction.getLastPoint(1)//倒数第二个点
     let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lsPoint_1.getJsonArr()]
@@ -318,13 +288,74 @@ Page({
     ctx.quadraticCurveTo(...lsPoint.getJsonArr(), (lsX + tX) / 2, (lsY + tY) / 2)
     ctx.stroke()
     ctx.draw(true)
-
-    lsAction.lineWidth = style_lineWidth
-    lsAction.color = style_Color
-    lsAction.addPoint(...thisPoint.getJsonArr())
+    if(isreload == false){
+      lsAction.lineWidth = style_lineWidth
+      lsAction.color = style_Color
+      lsAction.addPoint(...thisPoint.getJsonArr())
+    }
+   
 
   }
   ,
+  loadDrawBoard() {
+    this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
+    this.data.toolsStatus = new ToolsStatus();
+
+    (new Dom()).getElementByString(".drawCanvas", (res) => {
+      this.data.drawBoard.width = res[0].width
+      this.data.drawBoard.height = res[0].height
+    })
+    this.setData({
+      'toolsStatus.keyBord.display': 0
+    })
+    console.log(this.data.toolsStatus)
+  },
+ 
+  reloadDrawBoard(){
+    let that = this
+    let ctx = wx.createCanvasContext("testCanvas");
+    let datas = this.data
+    let actions = datas.drawBoard.actions
+    // var une = {//模拟e传入直接绘画出点
+    //   reload: true,
+    //   index: 0
+    // }
+
+
+
+    for (let i = 0; i < actions.length; i++) {//遍历每一个绘制事件
+      const iAction = actions[i];
+      
+
+      switch(iAction.type){
+        case Action_type.line :
+        const cgline = iAction.mode
+        cgline.every(function(point){
+         
+          that.compute_line(point,cgline)
+        })
+        break
+        case Action_type.shape:
+     
+        break
+        case Action_type.image:
+       
+        break 
+        case Action_type.text:
+      
+        break
+      }
+
+
+      // iAction.every(function (point) { //调用函数遍历该绘制事件下的所有点
+      //   // canvas_touchmove(une)
+
+      // })
+    }
+  },
+  
+
+  //--------页面加载事件------
   /**
    * 生命周期函数--监听页面加载
    */
@@ -342,8 +373,6 @@ Page({
   onReady: function () {
 
   },
-
-
 
   /**
    * 生命周期函数--监听页面显示
@@ -395,6 +424,8 @@ Page({
     //让画布失去焦点。
     // this.compute_textInput({},true)
 
+
+
     switch (buttonId) {
       case "tools_pen":
         console.log("画笔开启");
@@ -406,7 +437,8 @@ Page({
 
         ctx.clearRect(0, 0, datas.drawBoard.width, datas.drawBoard.height)
         ctx.draw(true)
-        this.loadDrawBoard();
+        // this.loadDrawBoard();
+        this.reloadDrawBoard()
         datas.toolsStatus.toolType = ToolsStatus_type.eraser;
         datas.toolsStatus.nowStatus = 0;
         break;
