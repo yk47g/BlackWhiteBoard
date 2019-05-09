@@ -32,7 +32,9 @@ class ToolsStatus{
     this.keyBord = {
       display:0,//0不显示，1为显示
       x:-100,
-      y:-100
+      y:-100,
+      value:"",
+      focus:true
     };
 
   }
@@ -185,7 +187,37 @@ Page({
     })
     console.log(this.data.toolsStatus)
   },
-
+  compute_textInput(datas,toolsStatus,thisPoint){//切换到文字工具-处理函数
+    
+    if(toolsStatus.nowStatus == 0){
+      toolsStatus.nowStatus = 1
+      console.log('开始输入文字')
+      this.setData({
+        "toolsStatus.keyBord.display":1,
+        "toolsStatus.keyBord.value":"",
+        "toolsStatus.keyBord.x":thisPoint.x,
+        "toolsStatus.keyBord.y":thisPoint.y,
+        "toolsStatus.keyBord.focus":true
+      })
+    }else{
+      console.log('结束输入文字')
+        toolsStatus.nowStatus = 0
+        let text = toolsStatus.keyBord.value
+        if (text!="") {
+        let ctx = wx.createCanvasContext("testCanvas");
+       
+        ctx.setFontSize(16);
+        ctx.fillText(text,toolsStatus.keyBord.x-6,toolsStatus.keyBord.y+9);
+         ctx.draw(true);
+        }
+        this.setData({
+          "toolsStatus.keyBord.display":0,
+          "toolsStatus.keyBord.focus":false
+        })
+     
+        
+       }   
+  },
   /**
    * 生命周期函数--监听页面加载
    */
@@ -248,7 +280,7 @@ Page({
 
   },
 
-  //------单击事件------
+  //------UI事件------
   changeStatus(e){//画布工具栏点击事件
     let buttonId = e.currentTarget.id;
     let datas = this.data
@@ -274,10 +306,7 @@ Page({
         break;
       case "tools_text":
         console.log("文字开启");
-        // ctx.setFontSize(25);
-        // ctx.fillText("abcd输出啊是的 ",20,20);
-        // ctx.draw();
-        //状态切换。
+       
         datas.toolsStatus.toolType = 4;
         datas.toolsStatus.nowStatus = 0;
 
@@ -311,7 +340,7 @@ Page({
     
 
   },
-
+  
   canvas_touchstart(e) {
     let datas = this.data
     let toolsStatus = datas.toolsStatus
@@ -319,23 +348,7 @@ Page({
     console.log("按下",thisPoint)
     switch(toolsStatus.toolType){
       case 4:
-
-       if(toolsStatus.nowStatus == 0){
-        toolsStatus.nowStatus = 1
-        console.log('开始输入文字')
-        this.setData({
-          "toolsStatus.keyBord.display":1,
-          "toolsStatus.keyBord.x":thisPoint.x,
-          "toolsStatus.keyBord.y":thisPoint.y
-        })
-        }else{
-          toolsStatus.nowStatus = 0
-          console.log('结束输入文字')
-          this.setData({
-            "toolsStatus.keyBord.display":0
-          })
-         }   
-         
+          this.compute_textInput(datas,toolsStatus,thisPoint)
          return
       break;
     }
@@ -351,13 +364,24 @@ Page({
 
   },
 
-  canvas_touchmove(e) {
-    console.log(e);
-    let ctx = wx.createCanvasContext("testCanvas");
+  canvas_touchmove(e) { 
     let datas = this.data
+    let toolsStatus = datas.toolsStatus
+    let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
+    switch(toolsStatus.toolType){
+      case 4:
+      this.setData({
+       
+        "toolsStatus.keyBord.x":thisPoint.x,
+        "toolsStatus.keyBord.y":thisPoint.y,
+       
+      })
+         return
+      break;
+    }
+    
     var lsAction = {}
     
-  
     if (e.reload == true) {//判断是否是程序重新载入而调用的
       lsAction = datas.drawBoard.getActionByindex(e.index)
       console.log(e.index)
@@ -366,13 +390,12 @@ Page({
       lsAction = datas.drawBoard.getLastAction()
     }
 
-    let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
     let lsPoint = lsAction.getLastPoint();//上一次最后一个点
     let lsPoint_1 = lsAction.getLastPoint(1)//倒数第二个点
     let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lsPoint_1.getJsonArr()]
     let [style_lineWidth, style_Color] = [3, 'rgb(0,0,0)']
 
-
+    let ctx = wx.createCanvasContext("testCanvas");
     ctx.strokeStyle = style_Color
     // ctx.setStrokeStyle(style_Color)
     ctx.lineJoin = "round"
@@ -403,5 +426,10 @@ Page({
 
 
   },
+  textFieldInput(e){
+    
+    this.data.toolsStatus.keyBord.value  = e.detail.value
+  }
+  //-------
 
 })
