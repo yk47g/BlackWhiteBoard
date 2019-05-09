@@ -1,8 +1,8 @@
 <view class="container">
   <view class='main'>
-  <image class='userImage' src='../../icons/user1.png' mode='aspectFit'></image>
+  <image class='userImage' src='../../icons/user_blue.png'        mode='aspectFit'></image>
 
-  <!-- <button open-type='getUserInfo' bindgetuserinfo="onGetUserInfo" >进行授权</button> -->
+  <button open-type='getUserInfo' bindgetuserinfo="onGetUserInfo" >进行授权</button>
   </view>
 
   <view class='tabbar'>

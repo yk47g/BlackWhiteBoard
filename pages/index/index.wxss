@@ -18,8 +18,10 @@
 }
 .main{
   margin:  0 auto;
+  padding-top: 100rpx;
+
   width: 88vw;
-  height: 80vh;
+  height: 73vh;
   /* background-color: red; */
    box-shadow: 0 3px 10px rgba(0 ,0,0,0.3);
   border-radius:5px;
