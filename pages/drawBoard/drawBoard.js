@@ -8,6 +8,31 @@ Array.prototype.limited = function (index) {//防止越界，返回正确范围�
   }
   return index;
 }
+class ToolsStatus{
+    /**
+   * toolType为选择了什么工具
+   * nowStatus 为当前工具的具体状态
+   * ---------------------
+   * 0.画笔
+   * 1.橡皮
+   * 2.选区
+   *    a.未选择图层
+   *    b.已选中图层
+   * 3.形状
+   *    a.无焦点状态
+   *    b.拖动状态
+   * 4.文字
+   *    a.无焦点状态
+   *    b.等待输入状态，完成  
+   * 6.颜料
+   */
+  constructor(){
+    this.toolType = 0;
+    this.nowStatus = "a";
+    this.keybordDisplay = "none";
+
+  }
+}
 class Dom{//模拟dom操作取元素属性类
   constructor(){
   
@@ -130,12 +155,20 @@ Page({
    */
   data: {
     drawBoard:{},
-    actionStatus:0//工具选择状态
+    toolsStatus:{}//工具选择状态
 
   }, 
 
   loadDrawBoard(){
     this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
+    this.toolsStatus = new ToolsStatus();
+  
+    // this.setData({
+    //   // toolsStatus["keybordDisplay"]:"none",
+
+    // })
+ 
+
     (new Dom()).getElementByString(".drawCanvas", (res) => {
       this.data.drawBoard.width = res[0].width
       this.data.drawBoard.height = res[0].height
@@ -283,6 +316,15 @@ Page({
         ctx.draw(true)
         this.loadDrawBoard();
       
+        break;
+      case "tools_shape":
+        console.log("矩形开启");
+        break;
+      case "tools_text":
+        console.log("文字开启");
+        ctx.setFontSize(25);
+        ctx.fillText("abcd输出啊是的 ",20,20);
+        ctx.draw();
         break;
       case "tools_select":
         console.log("选区开启");

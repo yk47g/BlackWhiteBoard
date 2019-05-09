@@ -1,7 +1,19 @@
 /* pages/drawBoard/drawBoard.wxss */
+.main{
+   position: relative;
+}
+.main input{
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width:200rpx;
+  border-bottom: dashed 1px rgb(179, 179, 179);
+  /* display: none; */
+}
 .drawCanvas{
   width: 100vw;
   height: 90vh;
+
   /* background-color: red; */
 /* 1rpx = 0.5px */
 }
@@ -17,7 +29,7 @@
   box-shadow: 0 -10px 15px rgb(0, 0, 0,0.3);
 }
 .toolsBar button{
-  width: 20vw;
 
+text-align: center;
 
 }

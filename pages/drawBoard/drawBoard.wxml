@@ -1,12 +1,19 @@
 
 <view>
-<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'>
+<view class='main'>
+<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' >
 </canvas>
+<input type='text' value='键盘' focus="{{true}}"></input>
+</view>
+
+
 
 <view class='toolsBar'>
 
 <button bindtap='changeStatus' id='tools_pen'>笔</button>
 <button bindtap='changeStatus' id='tools_eraser'>橡皮</button>
+<button bindtap='changeStatus' id='tools_shape'>矩形</button>
+<button bindtap='changeStatus' id='tools_text'>文字</button>
 <button bindtap='changeStatus' id='tools_select'>选区</button>
 <button bindtap='changeStatus' id='tools_pigment'>颜料</button>
 </view>
