@@ -1,9 +1,10 @@
 
 <view>
 <view class='main'>
-<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' >
+<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'    disable-scroll="true">
 </canvas>
-<input type='text' value='键盘' focus="{{tollstas.dsff}}"></input>
+<!-- 画布不支持单击事件 -->
+<input type='text' value='' focus="{{true}}"  style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x}}px;top: {{toolsStatus.keyBord.y - 10}}px;"></input>
 </view>
 
 

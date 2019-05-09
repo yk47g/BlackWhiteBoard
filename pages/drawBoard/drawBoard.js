@@ -1,13 +1,13 @@
 
-Array.prototype.limited = function (index) {//防止越界，返回正确范围内的索引
-  if(index>this.length-1){
-    return this.length - 1
-  }
-  if(index<0){
-    return 0 
-  }
-  return index;
-}
+// Array.prototype.limiteIndex = function (index) {//防止越界，返回正确范围内的索引
+//   if(index>this.length-1){
+//     return this.length - 1
+//   }
+//   if(index<0){
+//     return 0 
+//   }
+//   return index;
+// }
 class ToolsStatus{
     /**
    * toolType为选择了什么工具
@@ -16,20 +16,24 @@ class ToolsStatus{
    * 0.画笔
    * 1.橡皮
    * 2.选区
-   *    a.未选择图层
-   *    b.已选中图层
+   *    --0.未选择图层
+   *    --1.已选中图层
    * 3.形状
-   *    a.无焦点状态
-   *    b.拖动状态
+   *    --0.无焦点状态
+   *    --1.拖动状态
    * 4.文字
-   *    a.无焦点状态
-   *    b.等待输入状态，完成  
+   *    --0.无焦点状态
+   *    --1.等待输入状态，完成  
    * 6.颜料
    */
   constructor(){
     this.toolType = 0;
-    this.nowStatus = "a";
-    this.keybordDisplay = "none";
+    this.nowStatus = 0;
+    this.keyBord = {
+      display:0,//0不显示，1为显示
+      x:-100,
+      y:-100
+    };
 
   }
 }
@@ -73,7 +77,7 @@ class DrawBoard{
     let length = this.actions.length
     var index = length - 1 - index
 
-    index = this.actions.limited(index)
+    // index = this.actions.limiteIndex(index)
    
 
     return this.actions[index];
@@ -81,7 +85,7 @@ class DrawBoard{
   }
   getActionByindex(index = 0){
    
-    index =  this.actions.limited(index)//防止索引越界。
+    // index =  this.actions.limiteIndex(index)//防止索引越界。
  
     return this.actions[index]
   }
@@ -148,6 +152,11 @@ class CGPoint {//坐标点类
   }
 }
 
+ 
+
+
+
+
 Page({
 
   /**
@@ -155,34 +164,37 @@ Page({
    */
   data: {
     drawBoard:{},
-    toolsStatus:{}//工具选择状态
+    toolsStatus:{},//工具选择状态
+
     
   }, 
 
   loadDrawBoard(){
     this.data.drawBoard = new DrawBoard();//画布对象创建，不能直接在data创建。。
-    this.toolsStatus = new ToolsStatus();
+    this.data.toolsStatus = new ToolsStatus();
+    
   
-    // this.setData({
-    //   // toolsStatus["keybordDisplay"]:"none",
-
-    // })
- 
 
     (new Dom()).getElementByString(".drawCanvas", (res) => {
       this.data.drawBoard.width = res[0].width
       this.data.drawBoard.height = res[0].height
     })
-
+    this.setData({
+     
+       'toolsStatus.keyBord.display': 0
+    })
+    console.log(this.data.toolsStatus)
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-
-    this.loadDrawBoard();
+   
     
+    this.loadDrawBoard();
+
+  
     
   },
   /**
@@ -192,69 +204,6 @@ Page({
    
   },
 
-  canvas_touchstart(e) {
-   
-    this.data.drawBoard.addAction();//开始添加一次绘制事件
-    let lsAction = this.data.drawBoard.getLastAction();//并且开始记录
-    lsAction.addPoint(e.touches[0].x, e.touches[0].y);
-
-
-    
-
-  },
-
-  canvas_touchmove(e) {
-   
-    let ctx = wx.createCanvasContext("testCanvas");
-    let datas = this.data
-    var lsAction = {}
-    
-  
-    if (e.reload == true) {//判断是否是程序重新载入而调用的
-      lsAction = datas.drawBoard.getActionByindex(e.index)
-      console.log(e.index)
-      return
-    } else {
-      lsAction = datas.drawBoard.getLastAction()
-    }
-
-    let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
-    let lsPoint = lsAction.getLastPoint();//上一次最后一个点
-    let lsPoint_1 = lsAction.getLastPoint(1)//倒数第二个点
-    let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lsPoint_1.getJsonArr()]
-    let [style_lineWidth, style_Color] = [3, 'rgb(0,0,0)']
-
-
-    ctx.strokeStyle = style_Color
-    // ctx.setStrokeStyle(style_Color)
-    ctx.lineJoin = "round"
-    ctx.lineCap = "round"
-    // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
-    ctx.lineWidth=style_lineWidth
-    //曲线优化
-   
-    ctx.moveTo((lssX+lsX)/2,(lsY+lssY)/2)
-    ctx.quadraticCurveTo(...lsPoint.getJsonArr(), (lsX+tX)/2,(lsY+tY)/2)
-    ctx.stroke()
-    ctx.draw(true)
-
-    lsAction.lineWidth = style_lineWidth
-    lsAction.color = style_Color 
-    lsAction.addPoint(...thisPoint.getJsonArr())
- 
-  },
-  canvas_touchend(e) {
-    //触摸完毕，进行曲线调整。
-    let datas = this.data
-    // let lsAction = datas.drawBoard.getLastAction()
-    // lsAction.every(function(point){
-      
-     
-    //   // console.log(this)
-    // })
-
-
-  },
 
 
   /**
@@ -308,6 +257,8 @@ Page({
     switch (buttonId){
       case "tools_pen":
       console.log("画笔开启");
+      datas.toolsStatus.toolType = 0;
+      datas.toolsStatus.nowStatus = 0;
       break;
       case "tools_eraser":
         console.log("橡皮开启");
@@ -315,19 +266,29 @@ Page({
         ctx.clearRect(0,0,datas.drawBoard.width,datas.drawBoard.height)
         ctx.draw(true)
         this.loadDrawBoard();
-      
+        datas.toolsStatus.toolType = 1;
+        datas.toolsStatus.nowStatus = 0;
         break;
       case "tools_shape":
         console.log("矩形开启");
         break;
       case "tools_text":
         console.log("文字开启");
-        ctx.setFontSize(25);
-        ctx.fillText("abcd输出啊是的 ",20,20);
-        ctx.draw();
+        // ctx.setFontSize(25);
+        // ctx.fillText("abcd输出啊是的 ",20,20);
+        // ctx.draw();
+        //状态切换。
+        datas.toolsStatus.toolType = 4;
+        datas.toolsStatus.nowStatus = 0;
+
+
+
         break;
       case "tools_select":
         console.log("选区开启");
+        datas.toolsStatus.toolType = 2;
+        datas.toolsStatus.nowStatus = 0;
+
         let action_index = 0
 
 
@@ -349,6 +310,98 @@ Page({
     }
     
 
-  }
+  },
+
+  canvas_touchstart(e) {
+    let datas = this.data
+    let toolsStatus = datas.toolsStatus
+    let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y)
+    console.log("按下",thisPoint)
+    switch(toolsStatus.toolType){
+      case 4:
+
+       if(toolsStatus.nowStatus == 0){
+        toolsStatus.nowStatus = 1
+        console.log('开始输入文字')
+        this.setData({
+          "toolsStatus.keyBord.display":1,
+          "toolsStatus.keyBord.x":thisPoint.x,
+          "toolsStatus.keyBord.y":thisPoint.y
+        })
+        }else{
+          toolsStatus.nowStatus = 0
+          console.log('结束输入文字')
+          this.setData({
+            "toolsStatus.keyBord.display":0
+          })
+         }   
+         
+         return
+      break;
+    }
+    
+    
+
+    this.data.drawBoard.addAction();//开始添加一次绘制事件
+    let lsAction = this.data.drawBoard.getLastAction();//并且开始记录
+    lsAction.addPoint(...thisPoint.getJsonArr());
+
+
+    
+
+  },
+
+  canvas_touchmove(e) {
+    console.log(e);
+    let ctx = wx.createCanvasContext("testCanvas");
+    let datas = this.data
+    var lsAction = {}
+    
+  
+    if (e.reload == true) {//判断是否是程序重新载入而调用的
+      lsAction = datas.drawBoard.getActionByindex(e.index)
+      console.log(e.index)
+      return
+    } else {
+      lsAction = datas.drawBoard.getLastAction()
+    }
+
+    let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
+    let lsPoint = lsAction.getLastPoint();//上一次最后一个点
+    let lsPoint_1 = lsAction.getLastPoint(1)//倒数第二个点
+    let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lsPoint_1.getJsonArr()]
+    let [style_lineWidth, style_Color] = [3, 'rgb(0,0,0)']
+
+
+    ctx.strokeStyle = style_Color
+    // ctx.setStrokeStyle(style_Color)
+    ctx.lineJoin = "round"
+    ctx.lineCap = "round"
+    // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
+    ctx.lineWidth=style_lineWidth
+    //曲线优化
+   
+    ctx.moveTo((lssX+lsX)/2,(lsY+lssY)/2)
+    ctx.quadraticCurveTo(...lsPoint.getJsonArr(), (lsX+tX)/2,(lsY+tY)/2)
+    ctx.stroke()
+    ctx.draw(true)
+
+    lsAction.lineWidth = style_lineWidth
+    lsAction.color = style_Color 
+    lsAction.addPoint(...thisPoint.getJsonArr())
+ 
+  },
+  canvas_touchend(e) {
+    //触摸完毕，进行曲线调整。
+    let datas = this.data
+    // let lsAction = datas.drawBoard.getLastAction()
+    // lsAction.every(function(point){
+      
+     
+    //   // console.log(this)
+    // })
+
+
+  },
 
 })

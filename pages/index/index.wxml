@@ -1,6 +1,6 @@
 <view class="container">
   <view class='main'>
-  <image class='userImage' src="{{usericonUrl}}"       mode='aspectFit'></image>
+  <image class='userImage' src="{{usericonUrl}}" mode='aspectFit'></image>
 
   <button open-type='getUserInfo' bindgetuserinfo="onGetUserInfo" >进行授权</button>
   </view>
