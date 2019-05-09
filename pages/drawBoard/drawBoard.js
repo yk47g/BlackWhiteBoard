@@ -112,6 +112,9 @@ class DrawBoard{
 }
 class Action{//绘制事件类
   constructor() {
+
+    
+
     this.points = [] ;//CGPoint类型
     this.lineWidth =  5;
     this.color = "red";
@@ -187,9 +190,28 @@ Page({
     })
     console.log(this.data.toolsStatus)
   },
-  compute_textInput(datas,toolsStatus,thisPoint){//切换到文字工具-处理函数
-    
-    if(toolsStatus.nowStatus == 0){
+  compute_textInput(thisPoint,disFocus=false){//切换到文字工具-处理函数
+    let datas = this.data
+    let toolsStatus = datas.toolsStatus
+
+    if(disFocus == true || toolsStatus.nowStatus != 0  ){
+      console.log('结束输入文字')
+      toolsStatus.nowStatus = 0
+      let text = toolsStatus.keyBord.value
+      if (text!="") {
+      let ctx = wx.createCanvasContext("testCanvas");
+     
+      ctx.setFontSize(16);
+      ctx.fillText(text,toolsStatus.keyBord.x-6,toolsStatus.keyBord.y+9);
+       ctx.draw(true);
+      }
+      this.setData({
+        "toolsStatus.keyBord.display":0,
+        "toolsStatus.keyBord.focus":false
+      })
+      
+    }else{
+   
       toolsStatus.nowStatus = 1
       console.log('开始输入文字')
       this.setData({
@@ -199,25 +221,10 @@ Page({
         "toolsStatus.keyBord.y":thisPoint.y,
         "toolsStatus.keyBord.focus":true
       })
-    }else{
-      console.log('结束输入文字')
-        toolsStatus.nowStatus = 0
-        let text = toolsStatus.keyBord.value
-        if (text!="") {
-        let ctx = wx.createCanvasContext("testCanvas");
-       
-        ctx.setFontSize(16);
-        ctx.fillText(text,toolsStatus.keyBord.x-6,toolsStatus.keyBord.y+9);
-         ctx.draw(true);
-        }
-        this.setData({
-          "toolsStatus.keyBord.display":0,
-          "toolsStatus.keyBord.focus":false
-        })
-     
-        
        }   
-  },
+  }
+  
+  ,
   /**
    * 生命周期函数--监听页面加载
    */
@@ -280,11 +287,13 @@ Page({
 
   },
 
-  //------UI事件------
+  //------UI响应事件------
   changeStatus(e){//画布工具栏点击事件
     let buttonId = e.currentTarget.id;
     let datas = this.data
     let ctx = wx.createCanvasContext("testCanvas");
+    //让画布失去焦点。
+    // this.compute_textInput({},true)
 
     switch (buttonId){
       case "tools_pen":
@@ -348,7 +357,7 @@ Page({
     console.log("按下",thisPoint)
     switch(toolsStatus.toolType){
       case 4:
-          this.compute_textInput(datas,toolsStatus,thisPoint)
+          this.compute_textInput(thisPoint)
          return
       break;
     }
@@ -429,7 +438,11 @@ Page({
   textFieldInput(e){
     
     this.data.toolsStatus.keyBord.value  = e.detail.value
+  },
+  textFieldInput_lostFocus(e){//文字输入的失去焦点事件
+    this.compute_textInput({},true)
+
   }
-  //-------
+  //-------响应事件写上面------
 
 })

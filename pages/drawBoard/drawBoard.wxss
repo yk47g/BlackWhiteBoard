@@ -18,17 +18,18 @@
 }
 
 .toolsBar{
-  background-color: rgb(223, 223, 223);
+  /* background-color: rgb(223, 223, 223); */
   height: 10vh;
   width: 100vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
   
-  box-shadow: 0 -10px 15px rgb(0, 0, 0,0.3);
+  /* box-shadow: 0 -5px 5px rgba(0, 0, 0,0.3); */
 }
 .toolsBar button{
 flex: 1;
+border-radius: 50%;
 text-align: center;
 padding-left: 0rpx;
 padding-right: 0rpx
