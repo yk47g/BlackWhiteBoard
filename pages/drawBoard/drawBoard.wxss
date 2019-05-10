@@ -29,7 +29,7 @@
 }
 .toolsBar button{
 flex: 1;
-border-radius: 50%;
+/* border-radius: 50%; */
 text-align: center;
 padding-left: 0rpx;
 padding-right: 0rpx

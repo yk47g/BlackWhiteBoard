@@ -9,7 +9,7 @@
 //   return index;
 // }
 let canvas_ID = "testCanvas"
-function release(...list){//释放内存函数。
+function release(...list) {//释放内存函数。
   for (let i = 0; i < list.length; i++) {
     delete list[i]
     list[i] = null
@@ -44,7 +44,7 @@ class ToolsStatus {
       y: -100,
       value: "",
       focus: true,
-      fontSize:16
+      fontSize: 16
     };
 
   }
@@ -110,7 +110,7 @@ class DrawBoard {
 
     return this.actions[index]
   }
-  
+
 }
 class Action {//绘制事件类
 
@@ -125,26 +125,27 @@ class Action {//绘制事件类
     console.log("新绘制事件：" + type);
     this.mode = {};
 
-    switch(type){
-      case Action_type.line :
-      this.mode = new CGLine()
-      break
+    switch (type) {
+      case Action_type.line:
+        this.mode = new CGLine()
+        break
       case Action_type.shape:
-      this.mode = new CGShape()
-      break
+        this.mode = new CGShape()
+        break
       case Action_type.image:
-      this.mode = new CGImage()
-      break 
+        this.mode = new CGImage()
+        break
       case Action_type.text:
-      
-      this.mode = new CGText()
-      break
+
+        this.mode = new CGText()
+        break
     }
 
     this.type = type;//对应toolsStatus备注
     this.user = "IMtao";
     this.time = "123";
-  
+    this.select = false //当被鼠标选中状态。
+
   }
 }
 let Action_type = {
@@ -185,13 +186,13 @@ class CGLine {
     var index = length - 1 - index
 
     //当越界处理、
-    index = index<0 ?  0 :index
-    index = index > length ? length -1 :index
+    index = index < 0 ? 0 : index
+    index = index > length ? length - 1 : index
     return this.points[index]
   }
-  getPointByIndex(index ) {
-   let length = this.points.length
-    return this.getLastPoint(length -1 - index )
+  getPointByIndex(index) {
+    let length = this.points.length
+    return this.getLastPoint(length - 1 - index)
   }
 
   every(compute) {//一个遍历函数，遍历当前路径下所有的点，参数为一个处理函数 
@@ -202,25 +203,26 @@ class CGLine {
   }
 }
 
-class CGShape extends CGLine{
-  constructor(){
+class CGShape extends CGLine {
+  constructor() {
     super()
   }
 }
 
-class CGImage{
-  constructor(){
+class CGImage {
+  constructor() {
 
   }
 }
-class CGText{
-  constructor(){
+class CGText {
+  constructor() {
     this.text = "";
     this.size = 16;
     this.color = "black";
     this.position = null;
   }
 }
+
 
 Page({
 
@@ -233,13 +235,13 @@ Page({
 
 
   },
-  draw_line_curve(ctx,thisPoint,lsPoint,lssPoint ,color="black",width = 3){
-   //曲线优化
+  draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "black", width = 3) {
+    //曲线优化
     //起点为： 上一个点和上上个点的中点
     //控制点为：上一个点
     //终点为：上一个点和当前点的中点
 
-   
+
     // let ctx = wx.createCanvasContext(canvas_ID);
     // ctx.beginPath()
     ctx.lineJoin = "round"
@@ -250,7 +252,7 @@ Page({
     if (lssPoint == null) {
       ctx.moveTo(...lsPoint.getJsonArr())
       ctx.lineTo(...thisPoint.getJsonArr())
-    } else{
+    } else {
       let [lsX, lsY, tX, tY, lssX, lssY] = [...lsPoint.getJsonArr(), ...thisPoint.getJsonArr(), ...lssPoint.getJsonArr()]
       ctx.moveTo((lssX + lsX) / 2, (lsY + lssY) / 2)
       ctx.quadraticCurveTo(...lsPoint.getJsonArr(), (lsX + tX) / 2, (lsY + tY) / 2)
@@ -260,10 +262,10 @@ Page({
     // ctx.draw(true)不直接在此函数默认执行draw 避免出现闪烁的现象。
 
   },
-  draw_text(ctx,cgText){
-    
+  draw_text(ctx, cgText) {
+
     ctx.setFontSize(cgText.size);
-    ctx.fillText(cgText.text,...cgText.position.getJsonArr() );
+    ctx.fillText(cgText.text, ...cgText.position.getJsonArr());
     // ctx.draw(true);
   },
   //draw 方法不会调用draw 显示，需要在外部调用。
@@ -273,26 +275,26 @@ Page({
 
     if (disFocus == true || toolsStatus.nowStatus != 0) {
       console.log('结束输入文字')
-      
+
       let text = toolsStatus.keyBord.value
-      
-      if (text != "" ) {
+
+      if (text != "") {
         let size = 16
         let lsAction = (datas.drawBoard.addAction(Action_type.text)).mode//为CGText
         lsAction.text = text
         lsAction.size = size
-        lsAction.position = new CGPoint(toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9) 
+        lsAction.position = new CGPoint(toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9)
         let ctx = wx.createCanvasContext(canvas_ID);
-        this.draw_text(ctx,lsAction)
+        this.draw_text(ctx, lsAction)
         ctx.draw(true);
-    
+
       }
 
       toolsStatus.nowStatus = 0//清空等待输入状态
       this.setData({
         "toolsStatus.keyBord.display": 0,
         "toolsStatus.keyBord.focus": false,
-        "toolsStatus.keyBord.value":""
+        "toolsStatus.keyBord.value": ""
       })
 
     } else {
@@ -308,20 +310,138 @@ Page({
       })
     }
   },
-  compute_line(thisPoint){//只在手移动绘画时被调用。
+  compute_line(thisPoint) {//只在手移动绘画时被调用。
 
     let datas = this.data
-    let  lsAction = datas.drawBoard.getLastAction().mode//此处lsAction 类型为CGLine
+    let lsAction = datas.drawBoard.getLastAction().mode//此处lsAction 类型为CGLine
     let lsPoint = lsAction.getLastPoint();//上一个点
     let lssPoint = lsAction.getLastPoint(1);//上一个点
     let ctx = wx.createCanvasContext(canvas_ID);
     lsAction.addPoint(...thisPoint.getJsonArr())//把点加到数据库中。
-    this.draw_line_curve(ctx,thisPoint,lsPoint,lssPoint)
-    ctx.stroke()   
+    this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
+    ctx.stroke()
     ctx.draw(true)
     release(ctx)
+  },
+  compute_mouse(thisPoint) {
+    let action_index = 0
+
+
+
+    let delAction = datas.drawBoard.actions[action_index]
+    let linewidth = delAction.lineWidth + 3
+    // datas.drawBoard.actions.splice(action_index,1);//删除第二次绘制事件
+
+    ctx.fillStyle = 'red';
+
+    delAction.every(function (point) {
+      ctx.fillRect(point.x - linewidth / 2, point.y - linewidth / 2, linewidth, linewidth)
+    })
+    ctx.draw(true)
+
+  },
+  mouse_selectAction(action) {
+    var maxXY = {
+      x: -5000,
+      y: -5000
+    };
+    var minXY = {
+      x: 5000,
+      y: 5000
+    }
+    switch (action.type) {
+      case Action_type.line:
+        const cgline = action.mode
+        // console.log(cgline)
+        cgline.every(function (point) {
+          maxXY.x = point.x > maxXY.x ? point.x : maxXY.x
+          maxXY.y = point.y > maxXY.y ? point.y : maxXY.y
+
+          minXY.x = point.x < minXY.x ? point.x : minXY.x
+          minXY.y = point.y < minXY.y ? point.y : minXY.y
+        })
+        break
+
+      case Action_type.shape:
+
+        break
+      case Action_type.image:
+
+        break
+      case Action_type.text:
+
+        break
+    }
+    let interval = 3
+    let pointSize = 6
+    let pointSize_offset = pointSize / 2
+    maxXY.x += interval
+    maxXY.y += interval
+    minXY.x -= interval
+    minXY.y -= interval
+    //开始绘制选框
+    let ctx = wx.createCanvasContext(canvas_ID);
+    //左上角开始顺时针。
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 2
+    ctx.fillStyle = "red"
+    ctx.fillRect(minXY.x - pointSize_offset, minXY.y - pointSize_offset, pointSize, pointSize)
+    ctx.moveTo(minXY.x, minXY.y)
+    ctx.lineTo(maxXY.x, minXY.y)
+
+    ctx.fillRect(maxXY.x - pointSize_offset, minXY.y - pointSize_offset, pointSize, pointSize)
+    ctx.moveTo(maxXY.x, minXY.y)
+    ctx.lineTo(maxXY.x, maxXY.y)
+
+    ctx.fillRect(maxXY.x - pointSize_offset, maxXY.y - pointSize_offset, pointSize, pointSize)
+    ctx.moveTo(maxXY.x, maxXY.y)
+    ctx.lineTo(minXY.x, maxXY.y)
+
+    ctx.fillRect(minXY.x - pointSize_offset, maxXY.y - pointSize_offset, pointSize, pointSize)
+    ctx.moveTo(minXY.x, maxXY.y)
+    ctx.lineTo(minXY.x, minXY.y)
+    ctx.stroke()
+    ctx.draw(true)
   }
   ,
+  ergodicEach_Action(point) {//遍历每一个绘制事件的点并返回与其最近的绘制事件。返回action索引
+    let actions = this.data.drawBoard.actions
+    var distance = 1000//限定值取消焦点。
+    var tempValue = 0
+    var selectIndex = -1//找到被选择的action索引。
+    for (let a = 0; a < actions.length; a++) {
+      const iAction = actions[a];
+      switch (iAction.type) {
+        case Action_type.line:
+          const cgline = iAction.mode
+          for (let i = 0; i < cgline.points.length; i++) {
+
+           
+            tempValue = Math.pow(point.x - cgline.points[i].x,2) + Math.pow(point.y - cgline.points[i].y,2)
+            console.log(tempValue)
+            if(tempValue<distance){
+              distance = tempValue
+              selectIndex = a
+            }
+          }
+
+          break
+
+        case Action_type.shape:
+
+          break
+        case Action_type.image:
+
+          break
+        case Action_type.text:
+          const cgText = iAction.mode
+
+          break
+      }
+
+    }
+    return selectIndex
+  },
   loadDrawBoard() {
     this.data.drawBoard = null;//画布对象创建，不能直接在data创建。
     this.data.drawBoard = new DrawBoard();
@@ -336,51 +456,56 @@ Page({
     })
     console.log(this.data.toolsStatus)
   },
- 
-  reloadDrawBoard(){
-    
+
+  reloadDrawBoard() {
+
     let actions = this.data.drawBoard.actions
     let ctxb = wx.createCanvasContext(canvas_ID);
     let ctx = wx.createCanvasContext(canvas_ID);
-  
+
     // ctx.draw()//清空画布内容。
 
-    for (let i = 0; i < actions.length; i++) {//遍历每一个绘制事件
-      const iAction = actions[i];
-      switch(iAction.type){
-        case Action_type.line :
-        const cgline = iAction.mode
-        // if(cgline.points.length<3){//只有两个点时
-            // this.draw_line_curve( cgline.points[1],cgline.points[0],null) 
-        // }else{
-              // }
-          if(cgline.points.length>2){
+    for (let a = 0; a < actions.length; a++) {//遍历每一个绘制事件
+      const iAction = actions[a];
+
+      switch (iAction.type) {
+        case Action_type.line:
+          const cgline = iAction.mode
+          // if(cgline.points.length<3){//只有两个点时
+          // this.draw_line_curve( cgline.points[1],cgline.points[0],null) 
+          // }else{
+          // }
+          if (cgline.points.length > 2) {
             for (let i = 1; i < cgline.points.length; i++) {
-              this.draw_line_curve(ctx,cgline.points[i],cgline.points[i-1],cgline.points[i-2])    
+              this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
             }
-            ctx.stroke()   
+            ctx.stroke()
           }
-        break
+          break
 
         case Action_type.shape:
-     
-        break
+
+          break
         case Action_type.image:
-       
-        break 
+
+          break
         case Action_type.text:
-        const cgText = iAction.mode
-        this.draw_text(ctx,cgText)
-        break
+          const cgText = iAction.mode
+          this.draw_text(ctx, cgText)
+          break
       }
-     
+      // if(iAction.select ){
+      //     this.mouse_selectAction(iAction)
+      // }
     }
     ctxb.draw()
 
     ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
-    release(ctx,ctxb)
+    release(ctx, ctxb)
   },
-  
+
+
+
 
   //--------页面加载事件------
   /**
@@ -451,8 +576,6 @@ Page({
     //让画布失去焦点。
     // this.compute_textInput({},true)
 
-
-
     switch (buttonId) {
       case "tools_pen":
         console.log("画笔开启");
@@ -487,21 +610,7 @@ Page({
         console.log("选区开启");
         datas.toolsStatus.toolType = ToolsStatus_type.mouse;
         datas.toolsStatus.nowStatus = 0;
-
-        let action_index = 0
-
-
-        let delAction = datas.drawBoard.actions[action_index]
-        let linewidth = delAction.lineWidth + 3
-        // datas.drawBoard.actions.splice(action_index,1);//删除第二次绘制事件
-
-        ctx.fillStyle = 'red';
-
-        delAction.every(function (point) {
-          ctx.fillRect(point.x - linewidth / 2, point.y - linewidth / 2, linewidth, linewidth)
-        })
-        ctx.draw(true)
-        datas.drawBoard.reload()
+        // this.mouse_selectAction(this.data.drawBoard.getLastAction())
         break;
       case "tools_pigment":
         console.log("颜料点击");
@@ -526,7 +635,7 @@ Page({
         lsAction.lineWidth = 3
         lsAction.color = "black"
         lsAction.mode.addPoint(...thisPoint.getJsonArr())
-        
+
         return
 
       case ToolsStatus_type.text:
@@ -534,6 +643,19 @@ Page({
         return
 
       case ToolsStatus_type.mouse:
+
+
+        let index = this.ergodicEach_Action(thisPoint)
+        this.reloadDrawBoard()
+        if(index != -1 ){
+          let action = this.data.drawBoard.getActionByindex(index)
+          action.select = !action.select 
+          this.mouse_selectAction(action)
+        }
+       
+       
+      
+      
         return
 
       case ToolsStatus_type.eraser:
@@ -547,18 +669,18 @@ Page({
   },
 
   canvas_touchmove(e) {
-    
+
     let toolsStatus = this.data.toolsStatus
- 
+
     let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
 
     switch (toolsStatus.toolType) {
-        case ToolsStatus_type.pen:
+      case ToolsStatus_type.pen:
         //系统的运行逻辑：先加点再进行绘画。
         this.compute_line(thisPoint)
 
         return;
-        case ToolsStatus_type.text:
+      case ToolsStatus_type.text:
         this.setData({
           "toolsStatus.keyBord.x": thisPoint.x,
           "toolsStatus.keyBord.y": thisPoint.y,
@@ -589,7 +711,7 @@ Page({
     // })
 
 
-  },  
+  },
 
   textFieldInput(e) {
 
