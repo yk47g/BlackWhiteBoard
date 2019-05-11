@@ -8,7 +8,7 @@
 //   }
 //   return index;
 // }
-let canvas_ID = "testCanvas"
+var canvas_ID = "CanvasDisplay"
 function release(...list) {//释放内存函数。
   for (let i = 0; i < list.length; i++) {
     delete list[i]
@@ -125,7 +125,15 @@ class ToolsStatus {
       }
     }
   }
-
+  isSelect(indexValue){
+    for (let i = 0; i < this.select.actionsIndex.length; i++) {
+      const element = this.select.actionsIndex[i];
+      if (indexValue == element) {
+        return true
+      }
+    }
+    return false
+  }
 }
 let ToolsStatus_type = {//当做枚举来用。
   pen: 0,
@@ -143,7 +151,7 @@ let Mouse_MoveType = {//移动的操作类型。
   canvas_move: 4,
   canvas_flex: 5
 }
-function estimateForMouse(points) {//判断选中时，鼠标的按下事件是什么类型。返回离的最近的点的索引
+function estimateForMouse(points) {//用以判断按下角点拉伸时的类型。返回离的最近的点的索引
   var distance = 100//允许的偏差距离。
   var tempValue = 0
   var selectindex = -1
@@ -270,10 +278,18 @@ class CGPoint {//坐标点类
   }
   isInclude(ULPoint, DRPoint, r) {//判读当前对象的点是否在这个矩形区域内
     //r表示容错半径
-    if (this.x > DRPoint.x + r || this.x < ULPoint.x - r) {
+    let maxXY ={
+      x:ULPoint.x>DRPoint.x?ULPoint.x:DRPoint.x,
+      y:ULPoint.y>DRPoint.y?ULPoint.y:DRPoint.y
+    } 
+    let minXY ={
+      x:ULPoint.x<DRPoint.x?ULPoint.x:DRPoint.x,
+      y:ULPoint.y<DRPoint.y?ULPoint.y:DRPoint.y
+    } 
+    if (this.x > maxXY.x + r || this.x < minXY.x - r) {
       return false
     }
-    if (this.y > DRPoint.y + r || this.y < ULPoint.y - r) {
+    if (this.y > maxXY.y + r || this.y < minXY.y - r) {
       return false
     }
     return true
@@ -348,7 +364,7 @@ Page({
   data: {
     drawBoard: {},
     toolsStatus: {},//工具选择状态
-
+    exchange:0
 
   },
   draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "black", width = 3) {
@@ -363,6 +379,7 @@ Page({
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
     ctx.lineWidth = width
+    ctx.fillStyle = color
     ctx.strokeStyle = color
     // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
     if (lssPoint == null) {
@@ -456,9 +473,10 @@ Page({
     ctx.draw(true)
 
   },
-  mouse_selectAction(action, selecting = false) {//处理选区 按下事件,单选
+  mouse_selectAction(ctx,action, selecting = false) {//处理选区 按下事件时显示的选框
     //当selecting时，为多选。传入action为两个point，手指的起点和终点。
-    let ctx = wx.createCanvasContext(canvas_ID);
+   
+ 
     let points = this.data.toolsStatus.select.points
     ctx.strokeStyle = "rgb(190,235,248)"//"rgb(230,249,255)"
     ctx.lineWidth = 2
@@ -539,14 +557,15 @@ Page({
 
     ctx.moveTo(minXY.x, maxXY.y)
     ctx.lineTo(minXY.x, minXY.y)
-    ctx.stroke()
-    ctx.draw(true)
+    // ctx.stroke()
+    // ctx.draw(true)
   }
   ,
   ergodicEach_Action(point) {//遍历每一个绘制事件的点并返回与其最近的绘制事件。返回与点最近的action的索引
     //point参数 为两个点的数组时为框选，起点终点，返回action索引数组，
     let actions = this.data.drawBoard.actions
-    let toolsStatus = this.data.drawBoard.toolsStatus
+    let toolsStatus = this.data.toolsStatus
+   
     var distance = 500//允许的偏差距离。
     var tempValue = 0
     var selectIndex = -1//找到被选择的action索引。
@@ -571,14 +590,12 @@ Page({
                 // toolsStatus.deleteSelect(selectIndex)
               }
             } else {//框选
-
-              maxXY = point[0].getJson()
-              minXY = point[1].getJson()
-              var condition = 0
-              if (ipoint.x < maxXY.x && ipoint.x > minXY.x) {
-
+              // console.log(point)
+             
+              if (ipoint.isInclude(point[0],point[1],0)) {
+               
+                toolsStatus.addSelect(iAction)
               }
-
 
             }
           }
@@ -598,9 +615,13 @@ Page({
       }
 
     }
+    if (typeof (point.x) != "undefined") {
+      return selectIndex
+    } else{
+      return toolsStatus.select.actionsIndex
+    } 
 
-
-    return selectIndex
+  
   },
   loadDrawBoard() {
     this.data.drawBoard = null;//画布对象创建，不能直接在data创建。
@@ -620,9 +641,19 @@ Page({
   reloadDrawBoard() {
 
     let actions = this.data.drawBoard.actions
-    let ctxb = wx.createCanvasContext(canvas_ID);
-    let ctx = wx.createCanvasContext(canvas_ID);
+    var ctx ,ctxb
+    if (canvas_ID == "CanvasMemory") {
+      canvas_ID = "CanvasDisplay"
+      ctxb = wx.createCanvasContext("CanvasMemory");
+     ctx = wx.createCanvasContext(canvas_ID);//即将要显示的canvas
+    }else{
+      canvas_ID = "CanvasMemory"
+      ctxb = wx.createCanvasContext("CanvasDisplay");
+     ctx = wx.createCanvasContext(canvas_ID);
+    }
+     
 
+    let toolsStatus = this.data.toolsStatus
     // ctx.draw()//清空画布内容。
 
     for (let a = 0; a < actions.length; a++) {//遍历每一个绘制事件
@@ -654,13 +685,22 @@ Page({
           this.draw_text(ctx, cgText)
           break
       }
+
+
+      if (toolsStatus.isSelect(a)) {
+        this.mouse_selectAction(ctx,iAction)
+        // ctx.stroke()
+      }
       // if(iAction.select ){
       //     this.mouse_selectAction(iAction)
       // }
     }
-    ctxb.draw()
 
     ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
+    this.setData({
+      exchange:!this.data.exchange
+    })
+    // ctxb.draw()
     release(ctx, ctxb)
   },
 
@@ -732,7 +772,7 @@ Page({
   changeStatus(e) {//画布工具栏点击事件
     let buttonId = e.currentTarget.id;
     let datas = this.data
-    let ctx = wx.createCanvasContext("testCanvas");
+    let ctx = wx.createCanvasContext(canvas_ID);
     //让画布失去焦点。
     // this.compute_textInput({},true)
 
@@ -845,7 +885,10 @@ Page({
           // } else {//之前为被选中。
           toolsStatus.select.selecting = true
           toolsStatus.addSelect(index)
-          this.mouse_selectAction(action)
+          let ctx = wx.createCanvasContext(canvas_ID);
+          this.mouse_selectAction(ctx,action)
+          ctx.stroke()
+          ctx.draw(true)
           toolsStatus.mouseMoveType = Mouse_MoveType.simpleSelect
 
 
@@ -854,17 +897,24 @@ Page({
 
 
         } else {
-          //点击空白地方，取消所有点的选中状态。
-          toolsStatus.select.selecting = false
-          toolsStatus.select.actionsIndex = null
+          
+          if (toolsStatus.select.selecting == true && thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
+            
+            condition.addValue(Condition_Type.touchDown_center)
+          } else {
+            //点击空白地方，取消所有点的选中状态。
+            toolsStatus.select.selecting = false
+            toolsStatus.select.actionsIndex = null
 
-          toolsStatus.mouseMoveType = Mouse_MoveType.none
-          condition.deleteAll()
-          condition.addValue(Condition_Type.touchDown_none)
-          toolsStatus.select.actionsIndex = []
+            toolsStatus.mouseMoveType = Mouse_MoveType.none
+            condition.deleteAll()
+            condition.addValue(Condition_Type.touchDown_none)
+            toolsStatus.select.actionsIndex = []
 
-          // toolsStatus.select.points=null
-          // toolsStatus.select.points=new Array(4)
+            // toolsStatus.select.points=null
+            // toolsStatus.select.points=new Array(4)
+          }
+
 
 
         }
@@ -914,23 +964,44 @@ Page({
 
         if (condition.meet(Condition_Type.touchDown_none)) {
           toolsStatus.mouseMoveType = Mouse_MoveType.multipleSelecting
+          //状态：进行多选
         }
 
-        if (toolsStatus.select.selecting == true && condition.meet(Condition_Type.touchDown_select)) {
-
-          if (thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {//
+        if (toolsStatus.select.selecting == true ) {
+          if ( thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
+            // condition.meet(Condition_Type.touchDown_select)
             //当前按下在选中图层中。
             condition.addValue(Condition_Type.touchDown_center)
             toolsStatus.mouseMoveType = Mouse_MoveType.model_move
-
+            //状态：图层移动
           }
         }
-        if (condition.meet(Condition_Type.touchDown_none)) {
-          toolsStatus.mouseMoveType = Mouse_MoveType.multipleSelecting
-        }
+
         switch (toolsStatus.mouseMoveType) {
           case Mouse_MoveType.model_move:
             console.log("移动图层")
+            // if (action.select == true) {
+            //   //已经被选中了，再按下。判断伸缩移动事件。
+
+            //   let type = estimateForMouse(action.selectAttribute.points)
+            //   switch(type){
+            //     case 0:
+
+            //     case 1:
+
+            //     break
+            //     case 2:
+            //     case 3:
+
+            //     default:
+
+            //   }
+
+            // } else {//之前为被选中。
+            // toolsStatus.select.selecting = true
+            // toolsStatus.addSelect(index)
+            // this.mouse_selectAction(action)
+            // }
             return
             if (selectindex != -1) {//手指为下有模型
 
@@ -942,28 +1013,7 @@ Page({
 
               let action = this.data.drawBoard.getActionByindex(selectindex)
 
-              // if (action.select == true) {
-              //   //已经被选中了，再按下。判断伸缩移动事件。
 
-              //   let type = estimateForMouse(action.selectAttribute.points)
-              //   switch(type){
-              //     case 0:
-
-              //     case 1:
-
-              //     break
-              //     case 2:
-              //     case 3:
-
-              //     default:
-
-              //   }
-
-              // } else {//之前为被选中。
-              toolsStatus.select.selecting = true
-              toolsStatus.addSelect(index)
-              this.mouse_selectAction(action)
-              // }
 
 
             } else {
@@ -981,17 +1031,13 @@ Page({
 
           case Mouse_MoveType.multipleSelecting:
             //多选的触发条件：按下空白地方、继续移动
-            this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
+            let ctx = wx.createCanvasContext(canvas_ID);
+            this.mouse_selectAction(ctx,[mouseActions[0].startPoint, mouseActions[0].endPoint], true)
+            ctx.stroke()
+            ctx.draw(true)
             break;
-
-
-        }
-
-
-
-
-
-        //  if (action.select == true) {
+          case Mouse_MoveType.model_felx:
+           //  if (action.select == true) {
         //     //已经被选中了，再按下。判断伸缩移动事件。
 
         //     let type = estimateForMouse(action.selectAttribute.points)
@@ -1012,6 +1058,10 @@ Page({
         //     action.select = true
         //     this.mouse_selectAction(action)
         //   }
+          break
+
+        }
+
         return
 
       case ToolsStatus_type.eraser:
@@ -1029,9 +1079,9 @@ Page({
     let toolsStatus = this.data.toolsStatus
     let lsAction = this.data.drawBoard.getLastAction()
     let condition = toolsStatus.condition
-    toolsStatus.mouseActions = []
+  
     // toolsStatus.mouseActions = {}
-    condition.deleteAll()
+   
     if (lsAction.type == Action_type.line) {
       if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
         this.data.drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
@@ -1040,11 +1090,19 @@ Page({
     switch (toolsStatus.toolType) {
       case ToolsStatus_type.mouse:
         if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
-            this.reloadDrawBoard()
+
+          let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint,toolsStatus.mouseActions[0].endPoint])
+          if (index.length>0) {
+            console.log("选中"+index.length +"个图层 ")
+            // toolsStatus.select.selecting = true
+          }
+          this.reloadDrawBoard()
         }
         break
     }
-   
+    //清空鼠标事件和本次条件
+    condition.deleteAll()
+    toolsStatus.mouseActions = []
     // let lsAction = datas.drawBoard.getLastAction()
     // lsAction.every(function(point){
 

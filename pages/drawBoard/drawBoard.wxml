@@ -1,7 +1,9 @@
 
 <view>
 <view class='main'>
-<canvas  class="drawCanvas" canvas-id="testCanvas" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'    disable-scroll="true">
+<canvas  class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}"   disable-scroll="true">
+</canvas>
+<canvas  class="drawCanvas" canvas-id="CanvasMemory"  bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'  disable-scroll="true" style="{{exchange  ? '':'display:none;'}}">
 </canvas>
 <!-- 画布不支持单击事件 -->
 
