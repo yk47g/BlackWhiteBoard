@@ -8,13 +8,15 @@
 //   }
 //   return index;
 // }
-var canvas_ID = "CanvasDisplay"
+let canvas_ID = "CanvasDisplay"
 function release(...list) {//释放内存函数。
   for (let i = 0; i < list.length; i++) {
     delete list[i]
     list[i] = null
   }
 }
+
+// console.log(Object.assign({a:2,c:{point:[10]}},{b:3,c:{point:[20]}}))
 class MouseAction {//用来记录手指移动距离等数据
   constructor(startPoint) {
     this.distance = 0;//1️以像素的平方为单位
@@ -125,7 +127,7 @@ class ToolsStatus {
       }
     }
   }
-  isSelect(indexValue){
+  isSelect(indexValue) {
     for (let i = 0; i < this.select.actionsIndex.length; i++) {
       const element = this.select.actionsIndex[i];
       if (indexValue == element) {
@@ -278,14 +280,14 @@ class CGPoint {//坐标点类
   }
   isInclude(ULPoint, DRPoint, r) {//判读当前对象的点是否在这个矩形区域内
     //r表示容错半径
-    let maxXY ={
-      x:ULPoint.x>DRPoint.x?ULPoint.x:DRPoint.x,
-      y:ULPoint.y>DRPoint.y?ULPoint.y:DRPoint.y
-    } 
-    let minXY ={
-      x:ULPoint.x<DRPoint.x?ULPoint.x:DRPoint.x,
-      y:ULPoint.y<DRPoint.y?ULPoint.y:DRPoint.y
-    } 
+    let maxXY = {
+      x: ULPoint.x > DRPoint.x ? ULPoint.x : DRPoint.x,
+      y: ULPoint.y > DRPoint.y ? ULPoint.y : DRPoint.y
+    }
+    let minXY = {
+      x: ULPoint.x < DRPoint.x ? ULPoint.x : DRPoint.x,
+      y: ULPoint.y < DRPoint.y ? ULPoint.y : DRPoint.y
+    }
     if (this.x > maxXY.x + r || this.x < minXY.x - r) {
       return false
     }
@@ -355,6 +357,33 @@ class CGText {
   }
 }
 
+class LocalStorage {
+  constructor() {
+
+
+  }
+  initActions() {
+    let datas = getCurrentPages()[0].data
+
+    let drawBoard = datas.drawBoard
+  
+    let localActions = wx.getStorageSync("actions")
+   
+    for (let i = 0; i < localActions.length; i++) {
+      const element = localActions[i];
+      drawBoard.addAction(element.type)
+      console.log(drawBoard)
+      let lsAction = drawBoard.getLastAction();
+      // lsAction = Object.assign(lsAction, element)
+    }
+
+
+    console.log(drawBoard)
+    console.log("以上")
+  }
+}
+
+
 
 Page({
 
@@ -364,10 +393,10 @@ Page({
   data: {
     drawBoard: {},
     toolsStatus: {},//工具选择状态
-    exchange:0
+    exchange: 0
 
   },
-  draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "black", width = 3) {
+  draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "red", width = 3) {
     //曲线优化
     //起点为： 上一个点和上上个点的中点
     //控制点为：上一个点
@@ -396,7 +425,7 @@ Page({
 
   },
   draw_text(ctx, cgText) {
-
+    ctx.fillStyle =cgText.color
     ctx.setFontSize(cgText.size);
     ctx.fillText(cgText.text, ...cgText.position.getJsonArr());
     // ctx.draw(true);
@@ -473,10 +502,10 @@ Page({
     ctx.draw(true)
 
   },
-  mouse_selectAction(ctx,action, selecting = false) {//处理选区 按下事件时显示的选框
+  mouse_selectAction(ctx, action, selecting = false) {//处理选区 按下事件时显示的选框
     //当selecting时，为多选。传入action为两个point，手指的起点和终点。
-   
- 
+
+
     let points = this.data.toolsStatus.select.points
     ctx.strokeStyle = "rgb(190,235,248)"//"rgb(230,249,255)"
     ctx.lineWidth = 2
@@ -565,7 +594,7 @@ Page({
     //point参数 为两个点的数组时为框选，起点终点，返回action索引数组，
     let actions = this.data.drawBoard.actions
     let toolsStatus = this.data.toolsStatus
-   
+
     var distance = 500//允许的偏差距离。
     var tempValue = 0
     var selectIndex = -1//找到被选择的action索引。
@@ -591,9 +620,9 @@ Page({
               }
             } else {//框选
               // console.log(point)
-             
-              if (ipoint.isInclude(point[0],point[1],0)) {
-               
+
+              if (ipoint.isInclude(point[0], point[1], 0)) {
+
                 toolsStatus.addSelect(iAction)
               }
 
@@ -617,13 +646,14 @@ Page({
     }
     if (typeof (point.x) != "undefined") {
       return selectIndex
-    } else{
+    } else {
       return toolsStatus.select.actionsIndex
-    } 
+    }
 
-  
+
   },
   loadDrawBoard() {
+  
     this.data.drawBoard = null;//画布对象创建，不能直接在data创建。
     this.data.drawBoard = new DrawBoard();
     this.data.toolsStatus = new ToolsStatus();
@@ -636,22 +666,23 @@ Page({
       'toolsStatus.keyBord.display': 0
     })
     console.log(this.data.toolsStatus)
+    // new LocalStorage().initActions()
   },
 
   reloadDrawBoard() {
 
     let actions = this.data.drawBoard.actions
-    var ctx ,ctxb
-    if (canvas_ID == "CanvasMemory") {
-      canvas_ID = "CanvasDisplay"
-      ctxb = wx.createCanvasContext("CanvasMemory");
-     ctx = wx.createCanvasContext(canvas_ID);//即将要显示的canvas
-    }else{
-      canvas_ID = "CanvasMemory"
-      ctxb = wx.createCanvasContext("CanvasDisplay");
-     ctx = wx.createCanvasContext(canvas_ID);
+    var ctx, ctxb
+    if (canvas_ID != "CanvasMemory") {
+      // canvas_ID = "CanvasDisplay"
+      // ctxb = wx.createCanvasContext("CanvasMemory");
+      ctx = wx.createCanvasContext(canvas_ID);//即将要显示的canvas
+    } else {
+      //   canvas_ID = "CanvasMemory"
+      //   ctxb = wx.createCanvasContext("CanvasDisplay");
+      //  ctx = wx.createCanvasContext(canvas_ID);
     }
-     
+
 
     let toolsStatus = this.data.toolsStatus
     // ctx.draw()//清空画布内容。
@@ -688,7 +719,7 @@ Page({
 
 
       if (toolsStatus.isSelect(a)) {
-        this.mouse_selectAction(ctx,iAction)
+        this.mouse_selectAction(ctx, iAction)
         // ctx.stroke()
       }
       // if(iAction.select ){
@@ -697,9 +728,9 @@ Page({
     }
 
     ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
-    this.setData({
-      exchange:!this.data.exchange
-    })
+    // this.setData({
+    //   exchange:!this.data.exchange
+    // })
     // ctxb.draw()
     release(ctx, ctxb)
   },
@@ -787,10 +818,12 @@ Page({
 
         // ctx.clearRect(0, 0, datas.drawBoard.width, datas.drawBoard.height)
         ctx.draw()
+
         // this.loadDrawBoard();
         this.reloadDrawBoard()
         datas.toolsStatus.toolType = ToolsStatus_type.eraser;
         datas.toolsStatus.nowStatus = 0;
+
         break;
       case "tools_shape":
         console.log("矩形开启");
@@ -814,6 +847,16 @@ Page({
         break;
       case "tools_pigment":
         console.log("颜料点击");
+
+        try {
+          wx.setStorageSync("actions", this.data.drawBoard.actions)
+          console.log(wx.getStorageSync("actions").getLastAction)
+
+
+        } catch (e) {
+
+        }
+
         break;
     }
 
@@ -886,7 +929,7 @@ Page({
           toolsStatus.select.selecting = true
           toolsStatus.addSelect(index)
           let ctx = wx.createCanvasContext(canvas_ID);
-          this.mouse_selectAction(ctx,action)
+          this.mouse_selectAction(ctx, action)
           ctx.stroke()
           ctx.draw(true)
           toolsStatus.mouseMoveType = Mouse_MoveType.simpleSelect
@@ -897,9 +940,9 @@ Page({
 
 
         } else {
-          
+
           if (toolsStatus.select.selecting == true && thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
-            
+
             condition.addValue(Condition_Type.touchDown_center)
           } else {
             //点击空白地方，取消所有点的选中状态。
@@ -967,8 +1010,8 @@ Page({
           //状态：进行多选
         }
 
-        if (toolsStatus.select.selecting == true ) {
-          if ( thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
+        if (toolsStatus.select.selecting == true) {
+          if (thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
             // condition.meet(Condition_Type.touchDown_select)
             //当前按下在选中图层中。
             condition.addValue(Condition_Type.touchDown_center)
@@ -1032,33 +1075,33 @@ Page({
           case Mouse_MoveType.multipleSelecting:
             //多选的触发条件：按下空白地方、继续移动
             let ctx = wx.createCanvasContext(canvas_ID);
-            this.mouse_selectAction(ctx,[mouseActions[0].startPoint, mouseActions[0].endPoint], true)
+            this.mouse_selectAction(ctx, [mouseActions[0].startPoint, mouseActions[0].endPoint], true)
             ctx.stroke()
             ctx.draw(true)
             break;
           case Mouse_MoveType.model_felx:
-           //  if (action.select == true) {
-        //     //已经被选中了，再按下。判断伸缩移动事件。
+            //  if (action.select == true) {
+            //     //已经被选中了，再按下。判断伸缩移动事件。
 
-        //     let type = estimateForMouse(action.selectAttribute.points)
-        //     switch(type){
-        //       case 0:
+            //     let type = estimateForMouse(action.selectAttribute.points)
+            //     switch(type){
+            //       case 0:
 
-        //       case 1:
+            //       case 1:
 
-        //       break
-        //       case 2:
-        //       case 3:
+            //       break
+            //       case 2:
+            //       case 3:
 
-        //       default:
+            //       default:
 
-        //     }
+            //     }
 
-        //   } else {//之前为被选中。
-        //     action.select = true
-        //     this.mouse_selectAction(action)
-        //   }
-          break
+            //   } else {//之前为被选中。
+            //     action.select = true
+            //     this.mouse_selectAction(action)
+            //   }
+            break
 
         }
 
@@ -1079,9 +1122,9 @@ Page({
     let toolsStatus = this.data.toolsStatus
     let lsAction = this.data.drawBoard.getLastAction()
     let condition = toolsStatus.condition
-  
+
     // toolsStatus.mouseActions = {}
-   
+
     if (lsAction.type == Action_type.line) {
       if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
         this.data.drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
@@ -1091,9 +1134,9 @@ Page({
       case ToolsStatus_type.mouse:
         if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
 
-          let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint,toolsStatus.mouseActions[0].endPoint])
-          if (index.length>0) {
-            console.log("选中"+index.length +"个图层 ")
+          let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
+          if (index.length > 0) {
+            console.log("选中" + index.length + "个图层 ")
             // toolsStatus.select.selecting = true
           }
           this.reloadDrawBoard()
@@ -1107,7 +1150,6 @@ Page({
     // lsAction.every(function(point){
 
 
-    //   // console.log(this)
     // })
 
 

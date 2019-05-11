@@ -3,8 +3,8 @@
 <view class='main'>
 <canvas  class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}"   disable-scroll="true">
 </canvas>
-<canvas  class="drawCanvas" canvas-id="CanvasMemory"  bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'  disable-scroll="true" style="{{exchange  ? '':'display:none;'}}">
-</canvas>
+<!-- <canvas  class="drawCanvas" canvas-id="CanvasMemory"  bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'  disable-scroll="true" style="{{exchange  ? '':'display:none;'}}">
+</canvas> -->
 <!-- 画布不支持单击事件 -->
 
 <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}"  style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-6}}px;top: {{toolsStatus.keyBord.y - 8}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
