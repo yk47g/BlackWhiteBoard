@@ -66,6 +66,16 @@ const Condition_Type = {
   twoFinger_sameDirect: "twoFinger_sameDirect",//两个手指远离
 }
 
+function isRectOverlap(mousePoints, rectPoints)//高效判断两个矩形是否相交。
+{
+  //mousePoints会进行坐标大小判断。
+  //根据矩形相交的对立事件进行判断
+  let r1 = { left: Math.min(mousePoints[0].x,mousePoints[1].x) , right:   Math.max(mousePoints[0].x,mousePoints[1].x), top: Math.min(mousePoints[0].y, mousePoints[1].y), bottom: Math.max(mousePoints[0].y, mousePoints[1].y) }
+  let r2 = { left: rectPoints[0].x, right: rectPoints[1].x, top: rectPoints[0].y, bottom: rectPoints[1].y }
+
+  return !(r1.left > r2.right || r1.top > r2.bottom || r2.left > r1.right || r2.top > r1.bottom)
+}
+
 
 class ToolsStatus {
   /**
@@ -304,6 +314,7 @@ class CGPoint {//坐标点类
     }
     return false
   }
+
 }
 
 class CGLine {
@@ -351,10 +362,11 @@ class CGImage {
 class CGText {
   constructor() {
     this.text = "";
-    this.size = 16;
+    this.size = 19;
     this.color = "black";
-    this.position = null;
+    this.position = null;//一个点起点  
   }
+
 }
 
 class LocalStorage {
@@ -366,9 +378,9 @@ class LocalStorage {
     let datas = getCurrentPages()[0].data
 
     let drawBoard = datas.drawBoard
-  
+
     let localActions = wx.getStorageSync("actions")
-   
+
     for (let i = 0; i < localActions.length; i++) {
       const element = localActions[i];
       drawBoard.addAction(element.type)
@@ -405,6 +417,7 @@ Page({
 
     // let ctx = wx.createCanvasContext(canvas_ID);
     // ctx.beginPath()
+    ctx.setLineDash([0, 0]);
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
     ctx.lineWidth = width
@@ -425,7 +438,7 @@ Page({
 
   },
   draw_text(ctx, cgText) {
-    ctx.fillStyle =cgText.color
+    ctx.fillStyle = cgText.color
     ctx.setFontSize(cgText.size);
     ctx.fillText(cgText.text, ...cgText.position.getJsonArr());
     // ctx.draw(true);
@@ -441,7 +454,7 @@ Page({
       let text = toolsStatus.keyBord.value
 
       if (text != "") {
-        let size = 16
+        let size = 30
         let lsAction = (datas.drawBoard.addAction(Action_type.text)).mode//为CGText
         lsAction.text = text
         lsAction.size = size
@@ -507,9 +520,14 @@ Page({
 
 
     let points = this.data.toolsStatus.select.points
-    ctx.strokeStyle = "rgb(190,235,248)"//"rgb(230,249,255)"
+    let interval = 3
+    let pointSize = 6
+    let pointSize_offset = pointSize / 2
+    ctx.beginPath()
+    ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
     ctx.lineWidth = 2
     ctx.fillStyle = "pink"
+    ctx.setLineDash([3, 6]);
     var maxXY = {
       x: -10000,
       y: -10000
@@ -540,12 +558,15 @@ Page({
 
           break
         case Action_type.text:
-
+          const cgText = action.mode
+          maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width + 3
+          maxXY.y = cgText.position.y + 4
+          minXY.x = cgText.position.x - 3
+          minXY.y = cgText.position.y - cgText.size * 0.7 - 4
+          console.log("maxmin = ", maxXY, minXY)
           break
       }
-      let interval = 3
-      let pointSize = 6
-      let pointSize_offset = pointSize / 2
+
       maxXY.x += interval
       maxXY.y += interval
       minXY.x -= interval
@@ -557,10 +578,7 @@ Page({
       points[1] = new CGPoint(maxXY.x - pointSize_offset, minXY.y - pointSize_offset)
       points[2] = new CGPoint(maxXY.x - pointSize_offset, maxXY.y - pointSize_offset)
       points[3] = new CGPoint(minXY.x - pointSize_offset, maxXY.y - pointSize_offset)
-      ctx.fillRect(...points[0].getJsonArr(), pointSize, pointSize)
-      ctx.fillRect(...points[1].getJsonArr(), pointSize, pointSize)
-      ctx.fillRect(...points[2].getJsonArr(), pointSize, pointSize)
-      ctx.fillRect(...points[3].getJsonArr(), pointSize, pointSize)
+
     } else {
       //当selecting时，传入action为两个point，手指的起点和终点。
 
@@ -571,7 +589,6 @@ Page({
       minXY = points[0].getJson()
       maxXY = points[2].getJson()
     }
-
 
 
 
@@ -586,8 +603,20 @@ Page({
 
     ctx.moveTo(minXY.x, maxXY.y)
     ctx.lineTo(minXY.x, minXY.y)
+
+
+    if (selecting == false) {
+      ctx.fillRect(...points[0].getJsonArr(), pointSize, pointSize)
+      ctx.fillRect(...points[1].getJsonArr(), pointSize, pointSize)
+      ctx.fillRect(...points[2].getJsonArr(), pointSize, pointSize)
+      ctx.fillRect(...points[3].getJsonArr(), pointSize, pointSize)
+      ctx.fill()
+
+    }
+
+
     // ctx.stroke()
-    // ctx.draw(true)
+    // 
   }
   ,
   ergodicEach_Action(point) {//遍历每一个绘制事件的点并返回与其最近的绘制事件。返回与点最近的action的索引
@@ -610,22 +639,15 @@ Page({
 
             if (typeof (point.x) != "undefined") {//点选
               tempValue = Math.pow(point.x - ipoint.x, 2) + Math.pow(point.y - ipoint.y, 2)
-              // console.log(tempValue)
               if (tempValue < distance) {
                 distance = tempValue
                 selectIndex = a
-              } else {
-                // iAction.select = false
-                // toolsStatus.deleteSelect(selectIndex)
               }
             } else {//框选
-              // console.log(point)
 
               if (ipoint.isInclude(point[0], point[1], 0)) {
-
-                toolsStatus.addSelect(iAction)
+                toolsStatus.addSelect(a)
               }
-
             }
           }
 
@@ -638,8 +660,30 @@ Page({
 
           break
         case Action_type.text:
+          let ctx = wx.createCanvasContext(canvas_ID);
           const cgText = iAction.mode
+          let textWidth = ctx.measureText(cgText.text).width
+          let startPoint = new CGPoint(cgText.position.x, cgText.position.y - cgText.size * 0.7 - 4)
+          let endPoint = new CGPoint(cgText.position.x + ctx.measureText(cgText.text).width, cgText.position.y + 4)
+          // console.log(textWidth)
+          // console.log(cgText.position)
+          if (typeof (point.x) != "undefined") {//点选
+            if (point.isInclude(startPoint, endPoint, 5)) {
+              selectIndex = a
+              // console.log("选中文字")
+            }
+          } else {//框选
+            //通过判断框的四个角点是否在区域内以实现高效判断
 
+            // let urPoint = new CGPoint(point[1].x,point[0].y)//右上角的点。
+            // let dlPoint = new CGPoint(point[0].x,point[1].y)//左下角的点。
+            if (isRectOverlap(point,[startPoint, endPoint])) {
+              console.log("矩形相交")
+              toolsStatus.addSelect(a)
+            }
+          }
+
+          release(ctx)
           break
       }
 
@@ -653,7 +697,7 @@ Page({
 
   },
   loadDrawBoard() {
-  
+
     this.data.drawBoard = null;//画布对象创建，不能直接在data创建。
     this.data.drawBoard = new DrawBoard();
     this.data.toolsStatus = new ToolsStatus();
@@ -702,6 +746,7 @@ Page({
               this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
             }
             ctx.stroke()
+
           }
           break
 
@@ -716,18 +761,23 @@ Page({
           this.draw_text(ctx, cgText)
           break
       }
+    }
+    ctx.draw()
+    //避免错误，在后面再画选框
+    if (toolsStatus.select.selecting == true) {
+      for (let a = 0; a < actions.length; a++) {//遍历每一个绘制事件
+        const iAction = actions[a];
+        if (toolsStatus.isSelect(a)) {
 
-
-      if (toolsStatus.isSelect(a)) {
-        this.mouse_selectAction(ctx, iAction)
-        // ctx.stroke()
+          this.mouse_selectAction(ctx, iAction)
+          ctx.stroke()
+          ctx.draw(true)
+        }
       }
-      // if(iAction.select ){
-      //     this.mouse_selectAction(iAction)
-      // }
     }
 
-    ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
+
+    // ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
     // this.setData({
     //   exchange:!this.data.exchange
     // })
@@ -898,11 +948,9 @@ Page({
 
         let index = this.ergodicEach_Action(thisPoint)
         let condition = toolsStatus.condition
-        this.reloadDrawBoard()
+
         //进行状态判断。
         let toolselect = toolsStatus.select
-
-
 
         if (index != -1) {
           //按下图形内容区域
@@ -953,7 +1001,7 @@ Page({
             condition.deleteAll()
             condition.addValue(Condition_Type.touchDown_none)
             toolsStatus.select.actionsIndex = []
-
+            this.reloadDrawBoard()
             // toolsStatus.select.points=null
             // toolsStatus.select.points=new Array(4)
           }
@@ -1139,6 +1187,7 @@ Page({
             console.log("选中" + index.length + "个图层 ")
             // toolsStatus.select.selecting = true
           }
+          toolsStatus.select.selecting = true
           this.reloadDrawBoard()
         }
         break
