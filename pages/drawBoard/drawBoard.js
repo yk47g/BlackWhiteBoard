@@ -394,9 +394,13 @@ class LocalStorage {
     console.log(drawBoard)
     console.log("以上")
   }
+
+  changeToObject(name){
+    
+  }
 }
 
-var drawBoard = {}
+var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
 Page({
 
@@ -514,6 +518,9 @@ Page({
       ctx.fillRect(point.x - linewidth / 2, point.y - linewidth / 2, linewidth, linewidth)
     })
     ctx.draw(true)
+
+  },
+  compute_eraser(){
 
   },
   mouse_selectAction(ctx, action, selecting = false) {//处理选区 按下事件时显示的选框
@@ -786,7 +793,7 @@ Page({
     release(ctx, ctxb)
     console.log("reload结束",Date.now())
   },
-
+//-------以上为画布动作的处理事件-----
 
 
 
@@ -868,11 +875,8 @@ Page({
       case "tools_eraser":
         console.log("橡皮开启");
 
-        // ctx.clearRect(0, 0, drawBoard.width, drawBoard.height)
-        ctx.draw()
-
-        // this.loadDrawBoard();
-        this.reloadDrawBoard()
+        // ctx.draw()
+        // this.reloadDrawBoard()
         datas.toolsStatus.toolType = ToolsStatus_type.eraser;
         datas.toolsStatus.nowStatus = 0;
 
@@ -944,53 +948,33 @@ Page({
         return
 
       case ToolsStatus_type.mouse:
-
+      case ToolsStatus_type.eraser:
 
         let index = this.ergodicEach_Action(thisPoint)
         let condition = toolsStatus.condition
-
-        //进行状态判断。
-        let toolselect = toolsStatus.select
-
         if (index != -1) {
           //按下图形内容区域
+          let ctx = wx.createCanvasContext(canvas_ID);
+          if (toolsStatus.toolType == ToolsStatus_type.eraser) {//橡皮
+            //删除绘制事件。
+            drawBoard.actions.splice(index,1)
+            // ctx.clip()
+            this.reloadDrawBoard()
+            return
+          }
           let action = drawBoard.getActionByindex(index)
-
-          // if (action.select == true) {
-          //   //已经被选中了，再按下。判断伸缩移动事件。
-
-          //   let type = estimateForMouse(action.selectAttribute.points)
-          //   switch(type){
-          //     case 0:
-
-          //     case 1:
-
-          //     break
-          //     case 2:
-          //     case 3:
-
-          //     default:
-
-          //   }
-
-          // } else {//之前为被选中。
           toolsStatus.select.selecting = true
           toolsStatus.addSelect(index)
-          let ctx = wx.createCanvasContext(canvas_ID);
+         
           this.mouse_selectAction(ctx, action)
           ctx.stroke()
           ctx.draw(true)
           toolsStatus.mouseMoveType = Mouse_MoveType.simpleSelect
-
-
           condition.addValue(Condition_Type.touchDown_select)
-          // }
-
-
+  
         } else {
 
           if (toolsStatus.select.selecting == true && thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
-
             condition.addValue(Condition_Type.touchDown_center)
           } else {
             //点击空白地方，取消所有点的选中状态。
@@ -1010,11 +994,9 @@ Page({
 
         }
 
+    
+      
         return
-
-      case ToolsStatus_type.eraser:
-        return
-
       case ToolsStatus_type.shape:
         return
 
@@ -1050,13 +1032,27 @@ Page({
         return
 
       case ToolsStatus_type.mouse:
+      case ToolsStatus_type.eraser:
+      
+ 
+       
+        if (toolsStatus.toolType == ToolsStatus_type.eraser) {//橡皮
+          //删除绘制事件。
+          let selectindex = this.ergodicEach_Action(thisPoint)//获取与手指最近的绘制事件
+          if (selectindex != -1) {
+            drawBoard.actions.splice(selectindex,1)
+          // ctx.clip()
+          this.reloadDrawBoard()
 
-        let selectindex = this.ergodicEach_Action(thisPoint)//获取与手指最近的绘制事件
+        
+          }
+          return
+        }
         this.reloadDrawBoard()
-
         if (condition.meet(Condition_Type.touchDown_none)) {
           toolsStatus.mouseMoveType = Mouse_MoveType.multipleSelecting
           //状态：进行多选
+       
         }
 
         if (toolsStatus.select.selecting == true) {
@@ -1137,8 +1133,7 @@ Page({
 
         return
 
-      case ToolsStatus_type.eraser:
-        return
+   
 
       case ToolsStatus_type.shape:
         return
@@ -1150,16 +1145,12 @@ Page({
     //触摸完毕，进行曲线调整。
 
     let toolsStatus = this.data.toolsStatus
-    let lsAction = drawBoard.getLastAction()
+   
     let condition = toolsStatus.condition
 
     // toolsStatus.mouseActions = {}
 
-    if (lsAction.type == Action_type.line) {
-      if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
-        drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
-      }
-    }
+    
     switch (toolsStatus.toolType) {
       case ToolsStatus_type.mouse:
         if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
@@ -1173,6 +1164,15 @@ Page({
           this.reloadDrawBoard()
         }
         break
+
+      case ToolsStatus_type.pen:
+      let lsAction = drawBoard.getLastAction()
+      if (lsAction.type == Action_type.line) {
+        if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
+          drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
+        }
+      }
+      break
     }
     //清空鼠标事件和本次条件
     condition.deleteAll()
