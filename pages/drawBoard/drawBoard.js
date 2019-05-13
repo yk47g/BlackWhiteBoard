@@ -71,7 +71,7 @@ function isRectOverlap(mousePoints, rectPoints)//高效判断两个矩形是否�
 {
   //mousePoints会进行坐标大小判断。
   //根据矩形相交的对立事件进行判断
-  let r1 = { left: Math.min(mousePoints[0].x,mousePoints[1].x) , right:   Math.max(mousePoints[0].x,mousePoints[1].x), top: Math.min(mousePoints[0].y, mousePoints[1].y), bottom: Math.max(mousePoints[0].y, mousePoints[1].y) }
+  let r1 = { left: Math.min(mousePoints[0].x, mousePoints[1].x), right: Math.max(mousePoints[0].x, mousePoints[1].x), top: Math.min(mousePoints[0].y, mousePoints[1].y), bottom: Math.max(mousePoints[0].y, mousePoints[1].y) }
   let r2 = { left: rectPoints[0].x, right: rectPoints[1].x, top: rectPoints[0].y, bottom: rectPoints[1].y }
 
   return !(r1.left > r2.right || r1.top > r2.bottom || r2.left > r1.right || r2.top > r1.bottom)
@@ -278,8 +278,8 @@ let Action_type = {
 class CGPoint {//坐标点类
 
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
+    this.x = parseInt(x);
+    this.y = parseInt(y);
   }
   getJsonArr() {
 
@@ -395,8 +395,8 @@ class LocalStorage {
     console.log("以上")
   }
 
-  changeToObject(name){
-    
+  changeToObject(name) {
+
   }
 }
 
@@ -408,7 +408,7 @@ Page({
    * 页面的初始数据
    */
   data: {
-  
+
     toolsStatus: {},//工具选择状态
     exchange: 0
 
@@ -422,13 +422,16 @@ Page({
 
     // let ctx = wx.createCanvasContext(canvas_ID);
     // ctx.beginPath()
-    ctx.setLineDash([0, 0]);
-    ctx.lineJoin = "round"
-    ctx.lineCap = "round"
-    ctx.lineWidth = width
-    ctx.fillStyle = color
-    ctx.strokeStyle = color
+
+    // ctx.setLineDash([0, 0]);
+    // ctx.lineJoin = "round"
+    // ctx.lineCap = "round"
+    // ctx.lineWidth = width
+    // ctx.fillStyle = color
+    // ctx.strokeStyle = color
+
     // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
+    lssPoint = null
     if (lssPoint == null) {
       ctx.moveTo(...lsPoint.getJsonArr())
       ctx.lineTo(...thisPoint.getJsonArr())
@@ -437,6 +440,7 @@ Page({
       ctx.moveTo((lssX + lsX) / 2, (lsY + lssY) / 2)
       ctx.quadraticCurveTo(...lsPoint.getJsonArr(), (lsX + tX) / 2, (lsY + tY) / 2)
     }
+
 
     // ctx.stroke()
     // ctx.draw(true)不直接在此函数默认执行draw 避免出现闪烁的现象。
@@ -520,7 +524,7 @@ Page({
     ctx.draw(true)
 
   },
-  compute_eraser(){
+  compute_eraser() {
 
   },
   mouse_selectAction(ctx, action, selecting = false) {//处理选区 按下事件时显示的选框
@@ -532,10 +536,10 @@ Page({
     let pointSize = 6
     let pointSize_offset = pointSize / 2
     ctx.beginPath()
-    ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
-    ctx.lineWidth = 2
-    ctx.fillStyle = "pink"//"rgb(32,222,147)"
-    ctx.setLineDash([3, 6]);
+    // ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
+    // ctx.lineWidth = 2
+    // ctx.fillStyle = "pink"//"rgb(32,222,147)"
+    // ctx.setLineDash([3, 6]);
     var maxXY = {
       x: -10000,
       y: -10000
@@ -625,6 +629,7 @@ Page({
 
     // ctx.stroke()
     // 
+    // return  [minXY]
   }
   ,
   ergodicEach_Action(point) {//遍历每一个绘制事件的点并返回与其最近的绘制事件。返回与点最近的action的索引
@@ -685,7 +690,7 @@ Page({
 
             // let urPoint = new CGPoint(point[1].x,point[0].y)//右上角的点。
             // let dlPoint = new CGPoint(point[0].x,point[1].y)//左下角的点。
-            if (isRectOverlap(point,[startPoint, endPoint])) {
+            if (isRectOverlap(point, [startPoint, endPoint])) {
               console.log("矩形相交")
               toolsStatus.addSelect(a)
             }
@@ -722,12 +727,15 @@ Page({
   },
 
   reloadDrawBoard() {
-    console.log("开始reload",Date.now())
+
+    var time = Date.now()
     let actions = drawBoard.actions
+    let toolsStatus = this.data.toolsStatus
     var ctx, ctxb
     if (canvas_ID != "CanvasMemory") {
       // canvas_ID = "CanvasDisplay"
       // ctxb = wx.createCanvasContext("CanvasMemory");
+
       ctx = wx.createCanvasContext(canvas_ID);//即将要显示的canvas
     } else {
       //   canvas_ID = "CanvasMemory"
@@ -736,11 +744,14 @@ Page({
     }
 
 
-    let toolsStatus = this.data.toolsStatus
-    // ctx.draw()//清空画布内容。
 
+
+
+    // ctx.draw()//清空画布内容。
+    time = Date.now()
     for (let a = 0; a < actions.length; a++) {//遍历每一个绘制事件
       const iAction = actions[a];
+
 
       switch (iAction.type) {
         case Action_type.line:
@@ -749,12 +760,15 @@ Page({
           // this.draw_line_curve( cgline.points[1],cgline.points[0],null) 
           // }else{
           // }
+
           if (cgline.points.length > 2) {
+            ctx.beginPath()
             for (let i = 1; i < cgline.points.length; i++) {
               this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
             }
-            ctx.stroke()
 
+            ctx.closePath()
+            ctx.stroke()
           }
           break
 
@@ -769,21 +783,42 @@ Page({
           this.draw_text(ctx, cgText)
           break
       }
+
     }
-    ctx.draw()
-    //避免错误，在后面再画选框
+    console.log("遍历所有路径所需时间：", Date.now() - time)
     if (toolsStatus.select.selecting == true) {
+      // ctx.save()
+
       for (let a = 0; a < actions.length; a++) {//遍历每一个绘制事件
         const iAction = actions[a];
+
         if (toolsStatus.isSelect(a)) {
 
           this.mouse_selectAction(ctx, iAction)
+          // let clipPoints = this.data.toolsStatus.select.points
           ctx.stroke()
-          ctx.draw(true)
+          // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
+          // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
+          // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,10,clipPoints[3].y+5)//left
+          // ctx.rect(clipPoints[1].x-5,clipPoints[1].y-5 ,10,clipPoints[2].y+5)//right
+          // ctx.clip()
+
+
         }
       }
     }
 
+    ctx.draw(false, () => {
+
+      if (this.data.toolsStatus.mouseMoveType == Mouse_MoveType.model_move) {
+        this.reloadDrawBoard()
+      }
+    })
+    //避免错误，在后面再画选框
+
+    // if (toolsStatus.select.selecting == true) {
+    //   ctx.restore()
+    // }
 
     // ctx.draw()//等到页面所有的路径都绘制完毕再显示到页面上。
     // this.setData({
@@ -791,9 +826,9 @@ Page({
     // })
     // ctxb.draw()
     release(ctx, ctxb)
-    console.log("reload结束",Date.now())
+    // console.log("reload结束",Date.now())
   },
-//-------以上为画布动作的处理事件-----
+  //-------以上为画布动作的处理事件-----
 
 
 
@@ -903,13 +938,55 @@ Page({
         break;
       case "tools_pigment":
         console.log("颜料点击");
+        let time = Date.now()
+        for (let i = 0; i < 1; i++) {
 
+          this.reloadDrawBoard()
+        }
+        console.log("1 次所需时间", Date.now() - time)
+
+        // ctx.draw(t,function(e){
+        //   console.log(3,e)
+        // })
         try {
           wx.setStorageSync("actions", drawBoard.actions)
-          console.log(wx.getStorageSync("actions").getLastAction)
+          // console.log(wx.getStorageSync("actions").getLastAction)
         } catch (e) {
 
         }
+
+        break;
+
+      case "tools_debug":
+        var candata
+        wx.canvasGetImageData({
+          canvasId: canvas_ID,
+          x: 0,
+          y: 0,
+          width: drawBoard.width,
+          height: drawBoard.height,
+          success: function (res) {
+            candata = new Uint8ClampedArray(res.data)
+
+
+          }
+        })
+        console.log(candata)
+        ctx.draw()
+        wx.canvasPutImageData({
+          canvasId: canvas_ID,
+          data: candata.buffer,
+          x: 0,
+          y: 0,
+          width: drawBoard.width,
+          height: drawBoard.height,
+          complete: function (res) {
+            console.log(res)
+          }
+        })
+
+
+
 
         break;
     }
@@ -917,6 +994,10 @@ Page({
 
   },
 
+  canvas_errOutput(e) {
+    console.log("画布发生错误", e)
+
+  },
   canvas_touchstart(e) {
     let datas = this.data
     let toolsStatus = datas.toolsStatus
@@ -957,7 +1038,7 @@ Page({
           let ctx = wx.createCanvasContext(canvas_ID);
           if (toolsStatus.toolType == ToolsStatus_type.eraser) {//橡皮
             //删除绘制事件。
-            drawBoard.actions.splice(index,1)
+            drawBoard.actions.splice(index, 1)
             // ctx.clip()
             this.reloadDrawBoard()
             return
@@ -965,13 +1046,13 @@ Page({
           let action = drawBoard.getActionByindex(index)
           toolsStatus.select.selecting = true
           toolsStatus.addSelect(index)
-         
+
           this.mouse_selectAction(ctx, action)
           ctx.stroke()
           ctx.draw(true)
           toolsStatus.mouseMoveType = Mouse_MoveType.simpleSelect
           condition.addValue(Condition_Type.touchDown_select)
-  
+
         } else {
 
           if (toolsStatus.select.selecting == true && thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
@@ -994,8 +1075,8 @@ Page({
 
         }
 
-    
-      
+
+
         return
       case ToolsStatus_type.shape:
         return
@@ -1009,7 +1090,7 @@ Page({
     let toolsStatus = this.data.toolsStatus
 
     let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
- 
+
     let mouseActions = toolsStatus.mouseActions
     let condition = toolsStatus.condition
     for (let i = 0; i < e.touches.length; i++) {
@@ -1033,26 +1114,26 @@ Page({
 
       case ToolsStatus_type.mouse:
       case ToolsStatus_type.eraser:
-      
- 
-       
+
+
+
         if (toolsStatus.toolType == ToolsStatus_type.eraser) {//橡皮
           //删除绘制事件。
           let selectindex = this.ergodicEach_Action(thisPoint)//获取与手指最近的绘制事件
           if (selectindex != -1) {
-            drawBoard.actions.splice(selectindex,1)
-          // ctx.clip()
-          this.reloadDrawBoard()
+            drawBoard.actions.splice(selectindex, 1)
+            // ctx.clip()
+            this.reloadDrawBoard()
+            console.log("删除")
 
-        
           }
           return
         }
-        this.reloadDrawBoard()
+
         if (condition.meet(Condition_Type.touchDown_none)) {
           toolsStatus.mouseMoveType = Mouse_MoveType.multipleSelecting
+          this.reloadDrawBoard()
           //状态：进行多选
-       
         }
 
         if (toolsStatus.select.selecting == true) {
@@ -1060,17 +1141,21 @@ Page({
             // condition.meet(Condition_Type.touchDown_select)
             //当前按下在选中图层中。
             condition.addValue(Condition_Type.touchDown_center)
-            toolsStatus.mouseMoveType = Mouse_MoveType.model_move
+
+            if (toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
+              toolsStatus.mouseMoveType = Mouse_MoveType.model_move
+              this.reloadDrawBoard()
+            }
             //状态：图层移动
           }
         }
 
         switch (toolsStatus.mouseMoveType) {
           case Mouse_MoveType.model_move:
-     
+
             let lastPoint = toolsStatus.mouseActions[0].lastPoint
             let endPoint = toolsStatus.mouseActions[0].endPoint
-            let [OffestX,OffestY] = [endPoint.x - lastPoint.x,endPoint.y - lastPoint.y]
+            let [OffestX, OffestY] = [endPoint.x - lastPoint.x, endPoint.y - lastPoint.y]
             let actions = drawBoard.actions
             for (let i = 0; i < actions.length; i++) {
               const iAction = actions[i];
@@ -1078,22 +1163,24 @@ Page({
                 switch (iAction.type) {
                   case Action_type.line:
                     const cgline = iAction.mode
-                    cgline.every(function(point){
+                    cgline.every(function (point) {
                       point.x += OffestX
                       point.y += OffestY
                     })
-                    this.reloadDrawBoard()
+                    let time = Date.now()
+                    // this.reloadDrawBoard()
+                    console.log("完成一次移动所需时间：", Date.now() - time)
                     break
                   case Action_type.shape:
                     break
                   case Action_type.image:
                     break
                   case Action_type.text:
-                   
+
                     break
                 }
               }
-              
+
             }
             return
             break
@@ -1133,7 +1220,7 @@ Page({
 
         return
 
-   
+
 
       case ToolsStatus_type.shape:
         return
@@ -1145,12 +1232,12 @@ Page({
     //触摸完毕，进行曲线调整。
 
     let toolsStatus = this.data.toolsStatus
-   
+
     let condition = toolsStatus.condition
 
     // toolsStatus.mouseActions = {}
 
-    
+
     switch (toolsStatus.toolType) {
       case ToolsStatus_type.mouse:
         if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
@@ -1160,19 +1247,24 @@ Page({
             console.log("选中" + index.length + "个图层 ")
             // toolsStatus.select.selecting = true
           }
+
           toolsStatus.select.selecting = true
+
           this.reloadDrawBoard()
+
+        } if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move) {
+          toolsStatus.mouseMoveType = Mouse_MoveType.none
         }
         break
 
       case ToolsStatus_type.pen:
-      let lsAction = drawBoard.getLastAction()
-      if (lsAction.type == Action_type.line) {
-        if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
-          drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
+        let lsAction = drawBoard.getLastAction()
+        if (lsAction.type == Action_type.line) {
+          if (lsAction.mode.points.length <= 2) {//小于两个点时，删除路径。
+            drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
+          }
         }
-      }
-      break
+        break
     }
     //清空鼠标事件和本次条件
     condition.deleteAll()
@@ -1193,6 +1285,10 @@ Page({
   textFieldInput_lostFocus(e) {//文字输入的失去焦点事件
     this.compute_textInput({}, true)
 
+  }
+  ,
+  longtabdemo(e) {
+    console.log(333,e)
   }
   //-------响应事件写上面------
 

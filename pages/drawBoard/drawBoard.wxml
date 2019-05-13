@@ -1,26 +1,40 @@
 
 <view>
 <view class='main'>
-<canvas  class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}"   disable-scroll="true">
+
+
+
+<scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="0px" scroll-top="0px">
+<canvas  class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput"  disable-scroll="true">
 </canvas>
-<!-- <canvas  class="drawCanvas" canvas-id="CanvasMemory"  bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'  disable-scroll="true" style="{{exchange  ? '':'display:none;'}}">
-</canvas> -->
+<canvas  class="drawCanvas" canvas-id="CanvasMemory"  bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend'  disable-scroll="true" style="{{exchange  ? '':'display:none;'}}">
+</canvas>
+</scroll-view>
+
+
 <!-- 画布不支持单击事件 -->
 
 <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}"  style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-6}}px;top: {{toolsStatus.keyBord.y - 8}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
+
+<cover-view class='toolsBar'>
+<button plain catchtap='changeStatus' id='tools_select'><cover-image src='/icons/select_n.png'style="width:35px;height:35px"  bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+
+<button plain catchtap='changeStatus' id='tools_pen'><cover-image src='/icons/pen.png'style="width:35px;height:35px" mode='widthFix' bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+
+<button plain catchtap='changeStatus' id='tools_eraser'><cover-image src='/icons/eraser.png'style="width:35px;height:35px"  mode='widthFix' bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+
+<button plain catchtap='changeStatus' id='tools_shape'><cover-image src='/icons/shape.png'style="width:35px;height:35px" mode='widthFix' bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+
+<button plain catchtap='changeStatus' id='tools_text'><cover-image src='/icons/text.png'style="width:35px;height:35px" mode='widthFix' bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+
+<button plain catchtap='changeStatus' id='tools_pigment'><cover-image src='/icons/color.png'style="width:35px;height:35px"  bindtap='longtabdemo' longpress="longtabdemo"></cover-image></button>
+<!-- 
+<button plain catchtap='changeStatus' id='tools_debug'>测试</button> -->
+
+ 
+</cover-view>
+
 </view>
   
-
-
-<view class='toolsBar'>
-
-<button bindtap='changeStatus' id='tools_pen'>笔</button>
-<button bindtap='changeStatus' id='tools_eraser'>橡皮</button>
-<button bindtap='changeStatus' id='tools_shape'>形状</button>
-<button bindtap='changeStatus' id='tools_text'>文字</button>
-<button bindtap='changeStatus' id='tools_select'>选区</button>
-<button bindtap='changeStatus' id='tools_pigment'>颜料</button>
-</view>
-
 </view>
 

@@ -1,7 +1,9 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/drawBoard/drawBoard"
+      "pages/drawBoard/drawBoard",
+    "pages/index/index"
+    
+
    
     
   ],
