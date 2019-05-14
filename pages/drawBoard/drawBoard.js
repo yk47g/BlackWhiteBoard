@@ -9,6 +9,8 @@
 // }
 let canvas_ID = "CanvasDisplay"
 
+var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
+
 
 function release(...list) { //释放内存函数。
     for (let i = 0; i < list.length; i++) {
@@ -265,7 +267,7 @@ class Action { //绘制事件类
      * 3.图片
      * */
     constructor(type,user = "unknow", time = "2019") {
-        console.log("新绘制事件：" + type);
+       
         this.mode = {};
 
         switch (type) {
@@ -483,50 +485,28 @@ class CGText {
 
 class LocalStorage {
     constructor() {
-
-
-    }
-    initActions() {
-        let datas = getCurrentPages()[0].data
-
-        let drawBoard = drawBoard
-
-        let localActions = wx.getStorageSync("actions")
-
-        for (let i = 0; i < localActions.length; i++) {
-            const element = localActions[i];
-            drawBoard.addAction(element.type)
-            console.log(drawBoard)
-            let lsAction = drawBoard.getLastAction();
-            // lsAction = Object.assign(lsAction, element)
-        }
-
-
-        console.log(drawBoard)
-        console.log("以上")
-    }
-
-    changeToObject(name) {
+        this.lastReadTime = "10:33"
 
     }
+  
+    read(){//读取函数
+        let json = wx.getStorageSync("drawBoard")
+        drawBoard = null;
+        drawBoard = new DrawBoard();
+
+        drawBoard.initByJson(json)
+        console.log("读取画布数据：", drawBoard)
+        let page = getCurrentPages()[0]
+        page.reloadDrawBoard()
+      
+    }
+    save(){
+        wx.setStorageSync("drawBoard", drawBoard) 
+    }
+
 }
 
-
-let demo = new DrawBoard("blue",222,333)
-demo.addAction(Action_type.line)
-demo.getLastAction().mode.addPoint(2,3)
-demo.getLastAction().mode.lineWidth  = 20
-demo.getLastAction().mode.addPoint(99,23.3)
-demo.addAction(Action_type.text)
-demo.getLastAction().mode.text = "你好"
-wx.setStorageSync("demo", demo)
-
-let json = wx.getStorageSync("demo")
-console.log("json为", json)
-let rdemo = new DrawBoard()
-
-console.log("读取后为：", rdemo.initByJson(json), "原对象为：", demo)
-var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
+//以上为类，暂时还没移到文件外。
 
 Page({
 
@@ -834,23 +814,7 @@ Page({
 
 
     },
-    loadDrawBoard() {
-
-        drawBoard = null; //画布对象创建，不能直接在data创建。
-        drawBoard = new DrawBoard();
-        this.data.toolsStatus = new ToolsStatus();
-        // console.log(this.data.toolsStatus)
-        (new Dom()).getElementByString(".drawCanvas", (res) => {
-            drawBoard.width = res[0].width
-            drawBoard.height = res[0].height
-        })
-        this.setData({
-            'toolsStatus.keyBord.display': 0
-        })
-        console.log(this.data.toolsStatus)
-        // new LocalStorage().initActions()
-    },
-
+   
     reloadDrawBoard() {
 
         var time = Date.now()
@@ -869,11 +833,8 @@ Page({
         }
 
 
-
-
-
         // ctx.draw()//清空画布内容。
-        time = Date.now()
+        // time = Date.now()
         for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
             const iAction = actions[a];
 
@@ -910,7 +871,7 @@ Page({
             }
 
         }
-        console.log("遍历所有路径所需时间：", Date.now() - time)
+        // console.log("遍历所有路径所需时间：", Date.now() - time)
         if (toolsStatus.select.selecting == true) {
             // ctx.save()
 
@@ -953,6 +914,25 @@ Page({
         release(ctx, ctxb)
         // console.log("reload结束",Date.now())
     },
+    loadDrawBoard() {
+        (new Dom()).getElementByString(".drawCanvas", (res) => {
+            drawBoard.width = res[0].width
+            drawBoard.height = res[0].height
+        })
+        drawBoard = null; //画布对象创建，不能直接在data创建。
+        drawBoard = new DrawBoard();
+        this.data.toolsStatus = new ToolsStatus();
+        // console.log(this.data.toolsStatus)
+        let storage = new LocalStorage()
+         storage.read()
+        
+        this.setData({
+            'toolsStatus.keyBord.display': 0
+        })
+    
+        
+    },
+
     //-------以上为画布动作的处理事件-----
 
 
@@ -1083,33 +1063,9 @@ Page({
                 break;
 
             case "tools_debug":
-                var candata
-                wx.canvasGetImageData({
-                    canvasId: canvas_ID,
-                    x: 0,
-                    y: 0,
-                    width: drawBoard.width,
-                    height: drawBoard.height,
-                    success: function (res) {
-                        candata = new Uint8ClampedArray(res.data)
-
-
-                    }
-                })
-                console.log(candata)
-                ctx.draw()
-                wx.canvasPutImageData({
-                    canvasId: canvas_ID,
-                    data: candata.buffer,
-                    x: 0,
-                    y: 0,
-                    width: drawBoard.width,
-                    height: drawBoard.height,
-                    complete: function (res) {
-                        console.log(res)
-                    }
-                })
-
+                let storage = new LocalStorage()
+                storage.save()
+                storage.read()
 
 
 

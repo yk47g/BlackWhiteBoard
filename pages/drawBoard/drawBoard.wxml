@@ -27,7 +27,7 @@
             <button plain catchtap='changeStatus' id='tools_pigment'>
                 <cover-image src='/icons/color.png'></cover-image>
             </button>
-            <!-- <button plain catchtap='changeStatus' id='tools_debug'>测试</button> -->
+            <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
         </cover-view>
 
     </view>
