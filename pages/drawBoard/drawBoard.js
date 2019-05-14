@@ -207,11 +207,31 @@ class Dom { //模拟dom操作取元素属性类
 }
 
 class DrawBoard {
-    constructor() {
+    constructor(backgroundColor = "",width = 0,height= 0) {
         this.actions = []; //画布的所有绘制路径事件  
-        this.backgroundColor = "white"; //默认背景颜色
-        this.width = 0;
-        this.height = 0;
+        this.backgroundColor =backgroundColor; //默认背景颜色
+        this.width = width;
+        this.height = height;
+    }
+    initByJson(json) {//cgpoint 对象的json
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "actions") {
+                    let actionsJson = json["actions"]
+                    for (let i = 0; i < actionsJson.length; i++) {
+                        this.addAction(actionsJson[i].type)
+                        this.actions[i].initByJson(actionsJson[i])
+                    }
+                } else {
+                    this[key] = json[key]
+                }
+
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
     }
     addAction(type) {
         this.actions.push(new Action(type)); //添加一次绘制事件
@@ -244,7 +264,7 @@ class Action { //绘制事件类
      * 2.文字
      * 3.图片
      * */
-    constructor(type) {
+    constructor(type,user = "unknow", time = "2019") {
         console.log("新绘制事件：" + type);
         this.mode = {};
 
@@ -264,11 +284,45 @@ class Action { //绘制事件类
                 break
         }
         this.type = type; //对应toolsStatus备注
-        this.user = "IMtao";
-        this.time = "123";
+        this.user = user;
+        this.time = time;
 
     }
+    initByJson(json) {
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "mode") {
+                    let modeJson = json["mode"]
+                    switch (json["type"]) {
+                        case Action_type.line:
+                            this.mode = new CGLine().initByJson(modeJson)
+                            break
+                        case Action_type.shape:
+                            this.mode = new CGShape().initByJson(modeJson)
+                            break
+                        case Action_type.image:
+                            this.mode = new CGImage().initByJson(modeJson)
+                            break
+                        case Action_type.text:
+            
+                            this.mode = new CGText().initByJson(modeJson)
+                            break
+                    }
+
+
+                } else {
+                    this[key] = json[key]
+                }
+
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
+    }
 }
+
 let Action_type = {
     line: 0,
     shape: 1,
@@ -279,9 +333,21 @@ let Action_type = {
 
 class CGPoint { //坐标点类
 
-    constructor(x, y) {
+    constructor(x = 0, y = 0) {
         this.x = parseInt(x);
         this.y = parseInt(y);
+    }
+    initByJson(json) {//cgpoint 对象的json
+        for (const key in this) {
+
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+
+                this[key] = json[key]
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
     }
     getJsonArr() {
 
@@ -318,13 +384,37 @@ class CGPoint { //坐标点类
         return false
     }
 
+
+
 }
 
+
+
 class CGLine {
-    constructor() {
+    constructor(lineWidth = 5, color = "black") {
         this.points = []; //CGPoint类型
-        this.lineWidth = 5;
-        this.color = "red";
+        this.lineWidth = lineWidth;
+        this.color = color;
+    }
+    initByJson(json) {//cgpoint 对象的json
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "points") {
+                    let pointsJson = json["points"]
+                    for (let i = 0; i < pointsJson.length; i++) {
+                        this.addPoint(0, 0)
+                        this.points[i].initByJson(pointsJson[i])
+                    }
+                } else {
+                    this[key] = json[key]
+                }
+
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
     }
     addPoint(x, y) {
         this.points.push(new CGPoint(x, y))
@@ -351,6 +441,7 @@ class CGLine {
     }
 }
 
+
 class CGShape extends CGLine {
     constructor() {
         super()
@@ -363,13 +454,31 @@ class CGImage {
     }
 }
 class CGText {
-    constructor() {
-        this.text = "";
-        this.size = 19;
-        this.color = "black";
-        this.position = new CGPoint(0, 0); //一个点起点  
+    constructor(text = "",point = new CGPoint(0, 0),size = 16,color = "black",) {
+        this.text = text;
+        this.size = size;
+        this.color = color ;
+        this.position = point; //一个点起点  
     }
+    initByJson(json) {//cgpoint 对象的json
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "position") {
+                    let pointJson = json["position"]
 
+                    this[key] = new CGPoint().initByJson(pointJson)
+
+                } else {
+                    this[key] = json[key]
+                }
+
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
+    }
 }
 
 class LocalStorage {
@@ -402,6 +511,21 @@ class LocalStorage {
     }
 }
 
+
+let demo = new DrawBoard("blue",222,333)
+demo.addAction(Action_type.line)
+demo.getLastAction().mode.addPoint(2,3)
+demo.getLastAction().mode.lineWidth  = 20
+demo.getLastAction().mode.addPoint(99,23.3)
+demo.addAction(Action_type.text)
+demo.getLastAction().mode.text = "你好"
+wx.setStorageSync("demo", demo)
+
+let json = wx.getStorageSync("demo")
+console.log("json为", json)
+let rdemo = new DrawBoard()
+
+console.log("读取后为：", rdemo.initByJson(json), "原对象为：", demo)
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
 Page({
@@ -1190,10 +1314,10 @@ Page({
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.model_move:
 
-                        let lastPoint = toolsStatus.mouseActions[0].lastPoint
-                        let endPoint = toolsStatus.mouseActions[0].endPoint
-                        let [OffestX, OffestY] = [endPoint.x - lastPoint.x, endPoint.y - lastPoint.y]
-                        let actions = drawBoard.actions
+                        var lastPoint = toolsStatus.mouseActions[0].lastPoint
+                        var endPoint = toolsStatus.mouseActions[0].endPoint
+                        var [OffestX, OffestY] = [endPoint.x - lastPoint.x, endPoint.y - lastPoint.y]
+                        var actions = drawBoard.actions
                         for (let i = 0; i < actions.length; i++) {
                             const iAction = actions[i];
                             if (toolsStatus.isSelect(i)) {
@@ -1233,15 +1357,20 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         console.log("拉伸图层")
-                        let startPoint = toolsStatus.mouseActions[0].startPoint
-                        let endPoint1 = toolsStatus.mouseActions[0].endPoint//垃圾js这里都不能定义endPoint
-                        let [OffestX, OffestY] = [endPoint1.x - startPoint.x, endPoint1.y - startPoint.y]
+                        var startPoint = toolsStatus.mouseActions[0].startPoint
+                        var endPoint = toolsStatus.mouseActions[0].endPoint//垃圾js这里都不能定义endPoint
+                        var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]
+                        let cornerIndex = 0
+                        var relativePoint = toolsStatus.select.points[cornerIndex]//按下哪个角点，正对角线另一侧的点。
+                        let owidth = toolsStatus.select.points[1].x - toolsStatus.select.points[0].x
+                        let oheight = toolsStatus.select.points[2].y - toolsStatus.select.points[1].y
+                        let nwidth = endPoint.x - relativePoint.x
+                        let nheight = endPoint.y - relativePoint.y
 
-                        let actions = drawBoard.actions
-                        let autoOriginPoint = toolsStatus.select.points[0]
+                        var actions = drawBoard.actions
 
-                        let directRatio = autoOriginPoint.x < startPoint.x ? 1 : -1//拉伸方向比例常数。
-                        let [ratioX, ratioY] = [OffestX / startPoint.x, OffestY / startPoint.y]
+
+                        var [ratioX, ratioY] = [nwidth / owidth, nheight / oheight]
 
                         console.log("x=", ratioX, "y=", ratioY)
                         return
