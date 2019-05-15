@@ -209,9 +209,9 @@ class Dom { //模拟dom操作取元素属性类
 }
 
 class DrawBoard {
-    constructor(backgroundColor = "",width = 0,height= 0) {
+    constructor(backgroundColor = "", width = 0, height = 0) {
         this.actions = []; //画布的所有绘制路径事件  
-        this.backgroundColor =backgroundColor; //默认背景颜色
+        this.backgroundColor = backgroundColor; //默认背景颜色
         this.width = width;
         this.height = height;
     }
@@ -266,8 +266,8 @@ class Action { //绘制事件类
      * 2.文字
      * 3.图片
      * */
-    constructor(type,user = "unknow", time = "2019") {
-       
+    constructor(type, user = "unknow", time = "2019") {
+
         this.mode = {};
 
         switch (type) {
@@ -306,7 +306,7 @@ class Action { //绘制事件类
                             this.mode = new CGImage().initByJson(modeJson)
                             break
                         case Action_type.text:
-            
+
                             this.mode = new CGText().initByJson(modeJson)
                             break
                     }
@@ -390,6 +390,41 @@ class CGPoint { //坐标点类
 
 }
 
+class CGRect {//矩形类
+
+    constructor(points) {//可传入两个或四个点以计算矩形的大小等属性。
+        var tempPoints
+        if (points.length ==2 ) {
+            tempPoints = points
+        }else if (points.length == 4) {
+            tempPoints = [points[0],points[2]]
+        }else{
+            console.log("参数错误。")
+            
+        }
+      
+        this.points = tempPoints //本类用两个点来保存一个cgrect
+        this.width =  Math.abs(tempPoints[1].x- tempPoints[0].x)
+        this.height = Math.abs(tempPoints[1].y- tempPoints[0].y)
+    }
+
+    getBorderRectParameter(index,r){//获取一个矩形四个边 对应的矩形的参数，用以画布性能优化。返回数组，直接...使用
+        switch (index) {
+            case 0://上
+            return [this.points[0].x-r,this.points[0].y-r,this.width+2*r,2*r]
+            case 1://右
+            return [this.points[1].x-r,this.points[0].y-r,2*r,this.height +2*r]
+            case 2://下
+            return [this.points[0].x-r,this.points[1].y-r,2*r,this.width+2*r,2*r]
+            case 3://左
+            return [this.points[0].x-r,this.points[0].y-r,2*r,this.height+2*r,2*r]
+       
+        }
+       
+    }
+    
+
+}
 
 
 class CGLine {
@@ -456,10 +491,10 @@ class CGImage {
     }
 }
 class CGText {
-    constructor(text = "",point = new CGPoint(0, 0),size = 16,color = "black",) {
+    constructor(text = "", point = new CGPoint(0, 0), size = 16, color = "black", ) {
         this.text = text;
         this.size = size;
-        this.color = color ;
+        this.color = color;
         this.position = point; //一个点起点  
     }
     initByJson(json) {//cgpoint 对象的json
@@ -483,25 +518,26 @@ class CGText {
     }
 }
 
-class LocalStorage {
+class LocalStorage {//本地存储类
     constructor() {
         this.lastReadTime = "10:33"
 
     }
-  
-    read(){//读取函数
+
+    read() {//读取函数
         let json = wx.getStorageSync("drawBoard")
+        let page = getCurrentPages()[0]
         drawBoard = null;
         drawBoard = new DrawBoard();
-
         drawBoard.initByJson(json)
         console.log("读取画布数据：", drawBoard)
-        let page = getCurrentPages()[0]
         page.reloadDrawBoard()
-      
+
+
+
     }
-    save(){
-        wx.setStorageSync("drawBoard", drawBoard) 
+    save() {
+        wx.setStorageSync("drawBoard", drawBoard)
     }
 
 }
@@ -516,8 +552,8 @@ Page({
     data: {
 
         toolsStatus: {}, //工具选择状态
-        exchange: 0
-
+        exchange: 0,
+        toolBarDetailindex:-1//弹出的画笔调节窗口。
     },
     draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "red", width = 3) {
         //曲线优化
@@ -814,7 +850,7 @@ Page({
 
 
     },
-   
+
     reloadDrawBoard() {
 
         var time = Date.now()
@@ -924,13 +960,13 @@ Page({
         this.data.toolsStatus = new ToolsStatus();
         // console.log(this.data.toolsStatus)
         let storage = new LocalStorage()
-         storage.read()
-        
+        storage.read()
+
         this.setData({
             'toolsStatus.keyBord.display': 0
         })
-    
-        
+
+
     },
 
     //-------以上为画布动作的处理事件-----
@@ -1008,9 +1044,18 @@ Page({
 
         switch (buttonId) {
             case "tools_pen":
+              
+                if ( datas.toolsStatus.toolType == ToolsStatus_type.pen) {
+                    console.log("弹出调节窗口")
+                    this.setData({
+                        toolBarDetailindex:0
+
+                    })
+                }
                 console.log("画笔开启");
                 datas.toolsStatus.toolType = ToolsStatus_type.pen;
                 datas.toolsStatus.nowStatus = 0;
+
                 break;
             case "tools_eraser":
                 console.log("橡皮开启");
@@ -1158,8 +1203,11 @@ Page({
                     this.mouse_selectAction(ctx, action)
                     ctx.stroke()
                     ctx.draw(true)
-                    toolsStatus.mouseMoveType = Mouse_MoveType.simpleSelect
+                    toolsStatus.mouseMoveType = Mouse_MoveType.model_move
                     condition.addValue(Condition_Type.touchDown_select)
+                    condition.addValue(Condition_Type.touchDown_center)
+
+                    this.reloadDrawBoard()//开启持续刷新图层样式。
 
                 } else {
 
@@ -1268,6 +1316,7 @@ Page({
                 // }
 
                 switch (toolsStatus.mouseMoveType) {
+                    case Mouse_MoveType.simpleSelect:
                     case Mouse_MoveType.model_move:
 
                         var lastPoint = toolsStatus.mouseActions[0].lastPoint
@@ -1313,6 +1362,11 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         console.log("拉伸图层")
+                        let actionsIndex = toolsStatus.select.actionsIndex
+                        for (let iaction = 0; iaction < actionsIndex.length; iaction++) {
+                            const iaction = actionsIndex[iaction];
+                            
+                        }
                         var startPoint = toolsStatus.mouseActions[0].startPoint
                         var endPoint = toolsStatus.mouseActions[0].endPoint//垃圾js这里都不能定义endPoint
                         var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]
@@ -1329,7 +1383,7 @@ Page({
                         var [ratioX, ratioY] = [nwidth / owidth, nheight / oheight]
 
                         console.log("x=", ratioX, "y=", ratioY)
-                        return
+
                         for (let i = 0; i < actions.length; i++) {
                             const iAction = actions[i];
                             if (toolsStatus.isSelect(i)) {
@@ -1350,13 +1404,13 @@ Page({
                                         break
                                     case Action_type.text:
                                         const cgText = iAction.mode
-                                        cgText.position.x += OffestX
-                                        cgText.position.y += OffestY
+                                        cgText.size *= ratioX
                                         break
                                 }
                             }
 
                         }
+                        this.reloadDrawBoard()
                         break
 
                 }
@@ -1432,6 +1486,12 @@ Page({
     },
     button_longpress(e) {
         console.log(e)
+    },
+    closeDeatilPane(e){
+        console.log(e)
+        this.setData({
+            toolBarDetailindex:-1
+        })
     }
     //-------响应事件写上面------
 
