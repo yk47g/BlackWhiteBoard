@@ -1,6 +1,6 @@
 <view>
     <view class='main'>
-        <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="0px" scroll-top="0px">
+        <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView_now.left}}" scroll-top="{{scrollView_now.top}}" >
             <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
             <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas>
         </scroll-view>

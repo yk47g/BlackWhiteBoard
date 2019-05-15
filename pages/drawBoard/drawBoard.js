@@ -335,9 +335,13 @@ let Action_type = {
 
 class CGPoint { //坐标点类
 
-    constructor(x = 0, y = 0) {
-        this.x = parseInt(x);
-        this.y = parseInt(y);
+    constructor(x = 0, y = 0,toInt = false) {
+        if (toInt == true) {
+            x = parseInt(x)
+            y = parseInt(y)
+        }
+        this.x = x;
+        this.y = y;
     }
     initByJson(json) {//cgpoint 对象的json
         for (const key in this) {
@@ -553,7 +557,11 @@ Page({
 
         toolsStatus: {}, //工具选择状态
         exchange: 0,
-        toolBarDetailindex:-1//弹出的画笔调节窗口。
+        toolBarDetailindex:-1,//弹出的画笔调节窗口。
+        scrollView_now:{
+            top:0,
+            left:0
+        }
     },
     draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "red", width = 3) {
         //曲线优化
@@ -968,7 +976,22 @@ Page({
 
 
     },
-
+    compute_scrollGesture(finger1_Offest,finger2_Offest,ismove ){
+        if (ismove) {
+            console.log("移动画布")
+            let nX = -finger1_Offest.x   + this.data.scrollView_now.left
+            let nY = -finger1_Offest.y   + this.data.scrollView_now.top
+            nX = nX>0 ? nX:0
+            nY = nY>0?nY:0
+            console.log(nX,nY)
+            this.setData({
+                "scrollView_now.top":nY,
+                "scrollView_now.left":nX
+            })
+        }else{
+            console.log("拉伸画布")
+        }
+    },
     //-------以上为画布动作的处理事件-----
 
 
@@ -1261,24 +1284,46 @@ Page({
     canvas_touchmove(e) {
 
         let toolsStatus = this.data.toolsStatus
-
-        let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y) //当前新的点，
+        let touches = e.touches
+        let thisPoint = new CGPoint(touches[0].x, touches[0].y) //当前新的点，
 
         let mouseActions = toolsStatus.mouseActions
         let condition = toolsStatus.condition
-        if (touches.length==2) {
-            console.log("两个手指。")
-        }
-        for (let i = 0; i < e.touches.length; i++) {
-            const touch = e.touches[i];
-            toolsStatus.mouseActions[i].lastPoint = toolsStatus.mouseActions[i].endPoint
-            toolsStatus.mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
+       
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            mouseActions[i].lastPoint = mouseActions[i].endPoint
+            mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
          
         }
-
+        
         //先进行全局的两指操作判断。
         if (touches.length==2) {
-            var [OffestX, OffestY] = [endPoint.x - lastPoint.x, endPoint.y - lastPoint.y]
+            //计算两个手指xy偏差，是否趋近于一样
+            let finger1_Offest = {x:mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x,y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y}
+            let finger2_Offest = {x:mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x,y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y}
+            
+            console.log("手指1",finger1_Offest,"手指2",finger2_Offest)
+            //移动时，手指偏差值 乘积为整数
+            if ((Math.abs(finger1_Offest.x) +Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y))>0.8) {
+                if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y>=0) {
+            
+
+                    if ( (finger1_Offest.x == 0 && finger1_Offest.x == finger1_Offest.y ) || (finger2_Offest.x == 0 && finger2_Offest.x == finger2_Offest.y  )) {
+                        //拉伸。
+                        this.compute_scrollGesture(finger1_Offest,finger2_Offest,false)
+                    }else{
+                       //移动
+                        this.compute_scrollGesture(finger1_Offest,finger2_Offest,true)
+                        
+                    }
+                }else{
+                       //拉伸。
+                       this.compute_scrollGesture(finger1_Offest,finger2_Offest,false)
+                }
+            }
+            
+            return
         }
 
 
