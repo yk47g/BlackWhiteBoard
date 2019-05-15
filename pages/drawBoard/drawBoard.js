@@ -1041,14 +1041,23 @@ Page({
         let ctx = wx.createCanvasContext(canvas_ID);
         //让画布失去焦点。
         // this.compute_textInput({},true)
-
+      
         switch (buttonId) {
             case "tools_pen":
               
                 if ( datas.toolsStatus.toolType == ToolsStatus_type.pen) {
                     console.log("弹出调节窗口")
+                    let animation = wx.createAnimation({
+                        duration:3000,
+                        timingFunction:"ease-in-out"}
+                        )
+                       
+                    animation.translate(100,-100);
+                    animation.step()
+                    
                     this.setData({
-                        toolBarDetailindex:0
+                        toolBarDetailindex:0,
+                        animation_background:animation.export()
 
                     })
                 }
@@ -1127,13 +1136,14 @@ Page({
     canvas_touchstart(e) {
         let datas = this.data
         let toolsStatus = datas.toolsStatus
-        let thisPoint = new CGPoint(e.touches[0].x, e.touches[0].y)
+        let touches = e.touches
+        let thisPoint = new CGPoint(touches[0].x,touches[0].y)
 
 
-        for (let i = 0; i < e.touches.length; i++) {
-            const touch = e.touches[i];
-
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
             toolsStatus.mouseActions.push(new MouseAction(new CGPoint(touch.x, touch.y)))
+         
         }
         // toolsStatus.mouseActions.push()
 
@@ -1256,11 +1266,21 @@ Page({
 
         let mouseActions = toolsStatus.mouseActions
         let condition = toolsStatus.condition
+        if (touches.length==2) {
+            console.log("两个手指。")
+        }
         for (let i = 0; i < e.touches.length; i++) {
             const touch = e.touches[i];
             toolsStatus.mouseActions[i].lastPoint = toolsStatus.mouseActions[i].endPoint
             toolsStatus.mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
+         
         }
+
+        //先进行全局的两指操作判断。
+        if (touches.length==2) {
+            var [OffestX, OffestY] = [endPoint.x - lastPoint.x, endPoint.y - lastPoint.y]
+        }
+
 
         switch (toolsStatus.toolType) {
             case ToolsStatus_type.pen:
@@ -1299,21 +1319,7 @@ Page({
                     //状态：进行多选
                 }
 
-                // if (toolsStatus.select.selecting == true && condition.meet(Condition_Type.touchDown_select)) {
-                //     if (thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
-                //         // condition.meet(Condition_Type.touchDown_select)
-                //         //当前按下在选中图层中。
-                //         condition.addValue(Condition_Type.touchDown_center)
-
-                //         if (toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
-                //             //不是则为移动图层。
-                //             toolsStatus.mouseMoveType = Mouse_MoveType.model_move
-                //             this.reloadDrawBoard()
-                //         }
-
-                //         //状态：图层移动
-                //     }
-                // }
+           
 
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.simpleSelect:

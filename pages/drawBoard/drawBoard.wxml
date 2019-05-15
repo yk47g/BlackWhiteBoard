@@ -30,9 +30,10 @@
             <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
         </cover-view>
 
-        <cover-view class="toolsBarDeatil {{toolBarDetailindex>=0 ?'animation_background':''}}" style="{{toolBarDetailindex>=0 ? '':'display:none;'}}" bindtap="closeDeatilPane">
-            <cover-view class="toolsBarDeatil_pen {{toolBarDetailindex>=0 ?'animation_toolsBarDeatil':''}}">
-             
+        <cover-view class="toolsBarDeatil" wx:if="{{toolBarDetailindex >= 0}}" bindtap="closeDeatilPane" animation="animation_background">
+        <!-- style="{{>=0 ? '':'display:none;'}}"  -->
+            <cover-view class="toolsBarDeatil_pen {{toolBarDetailindex>=0 ?'animation_toolsBarDeatil':''}}" animation="animation_background">
+            当前字体大小为
             </cover-view>
         </cover-view>
     </view>

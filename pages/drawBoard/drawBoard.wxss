@@ -75,11 +75,11 @@
 .toolsBarDeatil cover-view{
   box-sizing: border-box;
   position: absolute;
-  bottom: -40vh;
+  bottom: 0vh;
   width: 100vw;
   height:40vh;
   border-radius: 40rpx 40rpx 0 0;
-  
+   
   background:rgba(255, 255, 255, 0.95);
   padding: 30rpx;
 
@@ -90,8 +90,8 @@
   transition: background 1s
 }
 .animation_toolsBarDeatil{
-  bottom: 0;
-  transition: bottom 0.3s
+
+  transition: bottom,height 0.3s
 
 }
 
