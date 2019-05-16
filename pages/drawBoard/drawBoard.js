@@ -1204,6 +1204,16 @@ Page({
                         //判断是否拉伸图层。
                         condition.addValue(Condition_Type.touchDown_corner)
                         toolsStatus.mouseMoveType = Mouse_MoveType.model_felx
+                        //为拉伸的图层添加当前原宽高度属性。
+                        let actionsIndex = toolsStatus.select.actionsIndex
+                        for (let i = 0; i < actionsIndex.length; iaction++) {
+                            const index = actionsIndex[i];
+                            
+                            drawBoard.getActionByindex(index).oldRect = {
+                                
+                            }
+
+                        }
                         return;
                     }
 
