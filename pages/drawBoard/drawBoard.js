@@ -21,12 +21,22 @@ function release(...list) { //释放内存函数。
 
 // console.log(Object.assign({a:2,c:{point:[10]}},{b:3,c:{point:[20]}}))
 class MouseAction { //用来记录手指移动距离等数据
-    constructor(startPoint) {
+    constructor(startPoint,touch ) {
         this.distance = 0; //1️以像素的平方为单位
         this.startPoint = startPoint //cgpoint类型
         this.lastPoint = startPoint
         this.endPoint = startPoint
         this.time = 0
+        this.identifier = touch.identifier
+    }
+    isExist(mouseActions){
+        for (let i = 0; i < mouseActions.length; i++) {
+            const element = mouseActions[i];
+            if (element.identifier == this.identifier) {
+                return i
+            }
+        }
+        return -1
 
     }
 }
@@ -113,7 +123,7 @@ class ToolsStatus {
         };
         this.select = {
             selecting: false, //当前有焦点被选中。
-            points: new Array(4), //四个点顺时针，cgpoin类型
+            // points: new Array(4), //四个点顺时针，cgpoin类型 一个图层被选中时的矩形边框。
             actionsIndex: []
         }
         this.mouseMoveType = -1
@@ -324,7 +334,7 @@ class Action { //绘制事件类
         return this
     }
 
-    getSelectRectObject(){//获取被点击后呈现出来的 选中框 矩形对象。。
+    getSelectRectObject() {//返回 被点击后呈现出来的 选中框 矩形对象。。
         var maxXY = {
             x: -10000,
             y: -10000
@@ -367,7 +377,7 @@ class Action { //绘制事件类
         maxXY.y += interval
         minXY.x -= interval
         minXY.y -= interval
-       return new CGRect([new CGPoint(minXY.x,minXY.y),new CGPoint(maxXY.x,maxXY.y)])
+        return new CGRect([new CGPoint(minXY.x, minXY.y), new CGPoint(maxXY.x, maxXY.y)])
     }
 
 }
@@ -382,7 +392,7 @@ let Action_type = {
 
 class CGPoint { //坐标点类
 
-    constructor(x = 0, y = 0,toInt = false) {
+    constructor(x = 0, y = 0, toInt = false) {
         if (toInt == true) {
             x = parseInt(x)
             y = parseInt(y)
@@ -445,58 +455,67 @@ class CGRect {//矩形类
 
     constructor(points) {//可传入两个或四个点以计算矩形的大小等属性。
         var tempPoints
-        if (points.length ==2 ) {
+        if (points.length == 2) {
             tempPoints = points
-        }else if (points.length == 4) {
-            tempPoints = [points[0],points[2]]
-        }else{
+        } else if (points.length == 4) {
+            tempPoints = [points[0], points[2]]
+        } else {
             console.log("参数错误。")
-            
+
         }
-      
+
         this.points = tempPoints //cgrect的属性：恒定为两个点，形容一个cgrect位置大小。
-        this.width =  Math.abs(tempPoints[1].x- tempPoints[0].x)
-        this.height = Math.abs(tempPoints[1].y- tempPoints[0].y)
+        this.width = Math.abs(tempPoints[1].x - tempPoints[0].x)
+        this.height = Math.abs(tempPoints[1].y - tempPoints[0].y)
     }
 
-    getBorderRectParameter(index,r){//获取一个矩形四个边 对应的矩形的参数，用以画布性能优化。返回数组，直接...使用
+    getBorderRectParameter(index, r) {//获取一个矩形四个边 对应的矩形的参数，用以画布性能优化。返回数组，直接...使用
         switch (index) {
             case 0://上
-            return [this.points[0].x-r,this.points[0].y-r,this.width+2*r,2*r]
+                return [this.points[0].x - r, this.points[0].y - r, this.width + 2 * r, 2 * r]
             case 1://右
-            return [this.points[1].x-r,this.points[0].y-r,2*r,this.height +2*r]
+                return [this.points[1].x - r, this.points[0].y - r, 2 * r, this.height + 2 * r]
             case 2://下
-            return [this.points[0].x-r,this.points[1].y-r,2*r,this.width+2*r,2*r]
+                return [this.points[0].x - r, this.points[1].y - r, 2 * r, this.width + 2 * r, 2 * r]
             case 3://左
-            return [this.points[0].x-r,this.points[0].y-r,2*r,this.height+2*r,2*r]
-       
+                return [this.points[0].x - r, this.points[0].y - r, 2 * r, this.height + 2 * r, 2 * r]
+
         }
-       
+
     }
-   
-    getMin(){
+
+    getMin() {
         return {
-            x:this.points[0].x,
-            y:this.points[0].y
+            x: this.points[0].x,
+            y: this.points[0].y
         }
     }
-    getMax(){
+    getMax() {
         return {
-            x:this.points[1].x,
-            y:this.points[1].y
+            x: this.points[1].x,
+            y: this.points[1].y
         }
     }
-    getMinX(){
+    getMinX() {
         return this.points[0].x
     }
-    getMinY(){
+    getMinY() {
         return this.points[0].y
     }
-    getMaxY(){
+    getMaxY() {
         return this.points[1].y
     }
-    getMaxX(){
+    getMaxX() {
         return this.points[1].x
+    }
+    getFourPoints() {
+
+
+        return [new CGPoint(this.points[0].x, this.points[0].y)
+            , new CGPoint(this.points[1].x, this.points[0].y)
+            , new CGPoint(this.points[1].x, this.points[1].y)
+            , new CGPoint(this.points[0].x, this.points[1].y)];
+
     }
 }
 
@@ -627,11 +646,14 @@ Page({
 
         toolsStatus: {}, //工具选择状态
         exchange: 0,
-        toolBarDetailindex:-1,//弹出的画笔调节窗口。
-        scrollView_now:{
-            top:0,
-            left:0
-        }
+        toolBarDetailindex: -1,//弹出的画笔调节窗口。
+        scrollView: {
+            lstop: 0,
+            lsleft: 0,
+            ntop:0,
+            nleft:0,
+        },
+        useToReadDrawBord: drawBoard
     },
     draw_line_curve(ctx, thisPoint, lsPoint, lssPoint, color = "red", width = 3) {
         //曲线优化
@@ -751,11 +773,9 @@ Page({
         //当selecting时，为多选。传入action为两个point，手指的起点和终点。
 
 
-        let points = this.data.toolsStatus.select.points
-       
-        let pointSize = 6
-        let pointSize_offset = pointSize / 2
-        ctx.beginPath()
+        let points = []//角点的特殊处理。
+
+
         // ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
         // ctx.lineWidth = 2
         // ctx.fillStyle = "pink"//"rgb(32,222,147)"
@@ -768,16 +788,22 @@ Page({
             x: 10000,
             y: 10000
         }
+        let pointSize = 6//角点的大小
+        let pointSize_offset = pointSize / 2 //角点位置偏移量。
         if (selecting == false) {
 
-    
+
             //开始绘制选框
+
             let rect = action.getSelectRectObject()
- 
+            action.selectRect = rect
             minXY = rect.getMin()
             maxXY = rect.getMax()
-         
+
             //左上角开始顺时针。
+            //这四个点为角点绘制。。
+
+
             points[0] = new CGPoint(minXY.x - pointSize_offset, minXY.y - pointSize_offset)
             points[1] = new CGPoint(maxXY.x - pointSize_offset, minXY.y - pointSize_offset)
             points[2] = new CGPoint(maxXY.x - pointSize_offset, maxXY.y - pointSize_offset)
@@ -785,17 +811,13 @@ Page({
 
         } else {
             //当selecting时，传入action为两个point，手指的起点和终点。
-
-            points[0] = new CGPoint(action[0].x, action[0].y)
-            points[1] = new CGPoint(action[1].x, action[0].y)
-            points[2] = new CGPoint(action[1].x, action[1].y)
-            points[3] = new CGPoint(action[0].x, action[1].y)
             minXY = points[0].getJson()
             maxXY = points[2].getJson()
         }
 
 
-
+        ctx.beginPath()
+        //绘制边线。
         ctx.moveTo(minXY.x, minXY.y)
         ctx.lineTo(maxXY.x, minXY.y)
 
@@ -967,7 +989,7 @@ Page({
                 if (toolsStatus.isSelect(a)) {
 
                     this.mouse_selectAction(ctx, iAction)
-                    // let clipPoints = this.data.toolsStatus.select.points
+                
                     ctx.stroke()
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
                     // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
@@ -1015,21 +1037,22 @@ Page({
         this.setData({
             'toolsStatus.keyBord.display': 0
         })
-        console.log("首次加载：", drawBoard)
+
     },
-    compute_scrollGesture(finger1_Offest,finger2_Offest,ismove ){
+    compute_scrollGesture(finger1_Offest, finger2_Offest, ismove) {
         if (ismove) {
-            console.log("移动画布")
-            let nX = -finger1_Offest.x   + this.data.scrollView_now.left
-            let nY = -finger1_Offest.y   + this.data.scrollView_now.top
-            nX = nX>0 ? nX:0
-            nY = nY>0?nY:0
-            console.log(nX,nY)
+            
+            let nX = -(finger1_Offest.x+finger2_Offest.x)/2 + this.data.scrollView.lsleft
+            let nY = -(finger1_Offest.y+finger2_Offest.x)/2 + this.data.scrollView.lstop
+            nX = nX > 0 ? nX : 0
+            nY = nY > 0 ? nY : 0
+            console.log(nX, nY)
             this.setData({
-                "scrollView_now.top":nY,
-                "scrollView_now.left":nX
+                "scrollView.ntop": nY,
+                "scrollView.nleft": nX
             })
-        }else{
+            
+        } else {
             console.log("拉伸画布")
         }
     },
@@ -1105,23 +1128,24 @@ Page({
         let ctx = wx.createCanvasContext(canvas_ID);
         //让画布失去焦点。
         // this.compute_textInput({},true)
-      
+
         switch (buttonId) {
             case "tools_pen":
-              
-                if ( datas.toolsStatus.toolType == ToolsStatus_type.pen) {
+
+                if (datas.toolsStatus.toolType == ToolsStatus_type.pen) {
                     console.log("弹出调节窗口")
                     let animation = wx.createAnimation({
-                        duration:3000,
-                        timingFunction:"ease-in-out"}
-                        )
-                       
-                    animation.translate(100,-100);
+                        duration: 3000,
+                        timingFunction: "ease-in-out"
+                    }
+                    )
+
+                    animation.translate(100, -100);
                     animation.step()
-                    
+
                     this.setData({
-                        toolBarDetailindex:0,
-                        animation_background:animation.export()
+                        toolBarDetailindex: 0,
+                        animation_background: animation.export()
 
                     })
                 }
@@ -1198,18 +1222,27 @@ Page({
 
     },
     canvas_touchstart(e) {
-        console.log( "??",drawBoard)
+
         let datas = this.data
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
-        let thisPoint = new CGPoint(touches[0].x,touches[0].y)
+        let thisPoint = new CGPoint(touches[0].x, touches[0].y)
 
-
+       
         for (let i = 0; i < touches.length; i++) {
             const touch = touches[i];
-            toolsStatus.mouseActions.push(new MouseAction(new CGPoint(touch.x, touch.y)))
+            let mouseAction = new MouseAction(new CGPoint(touch.x, touch.y),touch)
+            let isExistIndex = mouseAction.isExist(toolsStatus.mouseActions)
+         
+            if (isExistIndex == -1 ) {
+                toolsStatus.mouseActions.push(mouseAction)
+            }else{
+                toolsStatus.mouseActions[isExistIndex] = mouseAction
+            }
+          
          
         }
+ 
         // toolsStatus.mouseActions.push()
 
         console.log("按下")
@@ -1218,13 +1251,13 @@ Page({
             case ToolsStatus_type.pen:
 
                 drawBoard.addAction(Action_type.line); //开始添加一次绘制事件
-             
-                
+
+
                 let lsAction = drawBoard.getLastAction(); //并且开始记录
                 lsAction.lineWidth = 3
                 lsAction.color = "black"
                 lsAction.mode.addPoint(...thisPoint.getJsonArr())
-                console.log("添加路径。",drawBoard)
+
                 return
 
             case ToolsStatus_type.text:
@@ -1237,44 +1270,57 @@ Page({
                 if (toolsStatus.select.selecting == true) {//已经有图层被选中。
                     //判断是否为按下角点
                     var cornerPointIndex = -1;
-                    for (let i = 0; i < toolsStatus.select.points.length; i++) {
-                        const point = toolsStatus.select.points[i];
-                        if (point.isDistance(thisPoint, 30)) {
-                            cornerPointIndex = i
-                        }
-                    }
 
-                    if (cornerPointIndex != -1) {
-                        //判断是否拉伸图层。
-                        condition.addValue(Condition_Type.touchDown_corner)
-                        toolsStatus.mouseMoveType = Mouse_MoveType.model_felx
-                        //为拉伸的图层添加当前原宽高度属性。
-                        let actionsIndex = toolsStatus.select.actionsIndex
-                        for (let i = 0; i < actionsIndex.length; iaction++) {
-                            const index = actionsIndex[i];
-                            
-                            drawBoard.getActionByindex(index).oldRect = {
-                                
+                    for (let i = 0; i < toolsStatus.select.actionsIndex.length; i++) {
+                        //遍历获取每一个action的矩形选择区域。！！
+                        const actionindex = toolsStatus.select.actionsIndex[i];
+                        let showRect = drawBoard.getActionByindex(actionindex).selectRect
+
+                        rectpoints = showRect.getFourPoints()
+
+                        for (let i = 0; i < 4; i++) {
+                            const point = rectpoints[i];
+                            if (point.isDistance(thisPoint, 30)) {
+                                cornerPointIndex = i
+                                this.modelFlex_cornerIndex = i//设置为全局变量传输。
                             }
-
                         }
-                        return;
-                    }
+
+                        if (cornerPointIndex != -1) {
+                            //判断是否拉伸图层。
+                            condition.addValue(Condition_Type.touchDown_corner)
+                            toolsStatus.mouseMoveType = Mouse_MoveType.model_felx
+                            //为拉伸的图层添加当前原宽高度属性。
+
+                            let actionsIndex = toolsStatus.select.actionsIndex
+                            for (let i = 0; i < actionsIndex.length; i++) {
+
+                                let action = drawBoard.getActionByindex(i);
+                                action.oRect = action.getSelectRectObject()
+                                console.log(action)
+                            }
+                            return;
+                        }
+
+                        // if (condition.meet(Condition_Type.touchDown_select)) {}
+
+                        //判断是否在选框区域内，是则下一步为移动图层。
+                        if (thisPoint.isInclude(rectpoints[0], rectpoints[2], 0)) {
+                            // condition.meet(Condition_Type.touchDown_select)
+                            //当前按下在选中图层中。
+                            condition.addValue(Condition_Type.touchDown_center)
+
+                            // if (toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {}
+                            toolsStatus.mouseMoveType = Mouse_MoveType.model_move //状态：图层移动
+                            this.reloadDrawBoard()//开启持续刷新图层样式。
+                            return
+                        }
+
+                    } 
 
 
-                    // if (condition.meet(Condition_Type.touchDown_select)) {}
 
-                    //判断是否在选框区域内，是则下一步为移动图层。
-                    if (thisPoint.isInclude(toolsStatus.select.points[0], toolsStatus.select.points[2], 0)) {
-                        // condition.meet(Condition_Type.touchDown_select)
-                        //当前按下在选中图层中。
-                        condition.addValue(Condition_Type.touchDown_center)
 
-                        // if (toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {}
-                        toolsStatus.mouseMoveType = Mouse_MoveType.model_move //状态：图层移动
-                        this.reloadDrawBoard()//开启持续刷新图层样式。
-                        return
-                    }
 
 
                 }
@@ -1286,8 +1332,8 @@ Page({
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.addSelect(index)
-                   
-                    this.mouse_selectAction(ctx, action)
+
+                    this.mouse_selectAction(ctx, action)//绘制选中的边框样式，并设置action的属性selectRect为rect对象。
                     ctx.stroke()
                     ctx.draw(true)
                     toolsStatus.mouseMoveType = Mouse_MoveType.model_move
@@ -1308,8 +1354,7 @@ Page({
                     toolsStatus.select.actionsIndex = []
                     toolsStatus.select.selecting = false
                     this.reloadDrawBoard()
-                    // toolsStatus.select.points=null
-                    // toolsStatus.select.points=new Array(4)
+                
 
 
 
@@ -1343,40 +1388,44 @@ Page({
 
         let mouseActions = toolsStatus.mouseActions
         let condition = toolsStatus.condition
-       
+
         for (let i = 0; i < touches.length; i++) {
             const touch = touches[i];
             mouseActions[i].lastPoint = mouseActions[i].endPoint
             mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
-         
-        }
-        
-        //先进行全局的两指操作判断。
-        if (touches.length==2) {
-            //计算两个手指xy偏差，是否趋近于一样
-            let finger1_Offest = {x:mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x,y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y}
-            let finger2_Offest = {x:mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x,y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y}
-            
-            console.log("手指1",finger1_Offest,"手指2",finger2_Offest)
-            //移动时，手指偏差值 乘积为整数
-            if ((Math.abs(finger1_Offest.x) +Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y))>0.8) {
-                if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y>=0) {
-            
 
-                    if ( (finger1_Offest.x == 0 && finger1_Offest.x == finger1_Offest.y ) || (finger2_Offest.x == 0 && finger2_Offest.x == finger2_Offest.y  )) {
+        }
+
+        //先进行全局的两指操作判断。
+        if (touches.length == 2) {
+            //计算两个手指xy偏差，是否趋近于一样
+            let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].startPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].startPoint.y }
+            let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].startPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].startPoint.y }
+
+            console.log("手指1", finger1_Offest, "手指2", finger2_Offest)
+            //移动时，手指偏差值 乘积为正数
+            
+            this.compute_scrollGesture(finger1_Offest, finger2_Offest, true)
+            
+            return
+            if ((Math.abs(finger1_Offest.x) + Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y)) > 0.8) {
+                if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y >= 0) {
+
+
+                    if ((finger1_Offest.x == 0 && finger1_Offest.x == finger1_Offest.y) || (finger2_Offest.x == 0 && finger2_Offest.x == finger2_Offest.y)) {
                         //拉伸。
-                        this.compute_scrollGesture(finger1_Offest,finger2_Offest,false)
-                    }else{
-                       //移动
-                        this.compute_scrollGesture(finger1_Offest,finger2_Offest,true)
-                        
+                        this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
+                    } else {
+                        //移动
+                      
+
                     }
-                }else{
-                       //拉伸。
-                       this.compute_scrollGesture(finger1_Offest,finger2_Offest,false)
+                } else {
+                    //拉伸。
+                    this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
                 }
             }
-            
+
             return
         }
 
@@ -1418,7 +1467,7 @@ Page({
                     //状态：进行多选
                 }
 
-           
+
 
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.simpleSelect:
@@ -1468,53 +1517,54 @@ Page({
                     case Mouse_MoveType.model_felx:
                         console.log("拉伸图层")
                         let actionsIndex = toolsStatus.select.actionsIndex
-                        for (let iaction = 0; iaction < actionsIndex.length; iaction++) {
-                            const iaction = actionsIndex[iaction];
-                            
-                        }
+                        //按下的是哪个角点。
+                        let cornerIndex = this.modelFlex_cornerIndex
+                        let orignPointIndex = cornerIndex >= 2 ? (this.modelFlex_cornerIndex - 2) : (this.modelFlex_cornerIndex + 2)
+                        console.log("原点：", orignPointIndex)
+
+                       
                         var startPoint = toolsStatus.mouseActions[0].startPoint
-                        var endPoint = toolsStatus.mouseActions[0].endPoint//垃圾js这里都不能定义endPoint
+                        var endPoint = toolsStatus.mouseActions[0].endPoint
                         var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]
-                        let cornerIndex = 0
-                        var relativePoint = toolsStatus.select.points[cornerIndex]//按下哪个角点，正对角线另一侧的点。
-                        let owidth = toolsStatus.select.points[1].x - toolsStatus.select.points[0].x
-                        let oheight = toolsStatus.select.points[2].y - toolsStatus.select.points[1].y
-                        let nwidth = endPoint.x - relativePoint.x
-                        let nheight = endPoint.y - relativePoint.y
-
-                        var actions = drawBoard.actions
-
-
-                        var [ratioX, ratioY] = [nwidth / owidth, nheight / oheight]
-
-                        console.log("x=", ratioX, "y=", ratioY)
-
-                        for (let i = 0; i < actions.length; i++) {
-                            const iAction = actions[i];
-                            if (toolsStatus.isSelect(i)) {
-                                switch (iAction.type) {
-                                    case Action_type.line:
-                                        const cgline = iAction.mode
-                                        cgline.every(function (point) {
-                                            point.x += OffestX
-                                            point.y += OffestY
-                                        })
-                                        let time = Date.now()
-                                        // this.reloadDrawBoard()
-                                        console.log("完成一次拉伸所需时间：", Date.now() - time)
-                                        break
-                                    case Action_type.shape:
-                                        break
-                                    case Action_type.image:
-                                        break
-                                    case Action_type.text:
-                                        const cgText = iAction.mode
-                                        cgText.size *= ratioX
-                                        break
-                                }
+                        console.log(cornerIndex)
+                        for (let i = 0; i < actionsIndex.length; i++) {
+                            let action = drawBoard.getActionByindex(i);
+                            let relativeOriginPoint = action.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
+                           
+                            //删除临时添加的orect属性
+                            let oRect = action.oRect
+                            let nRect = {
+                                width: oRect.width + OffestX,
+                                height: oRect.height + OffestY
                             }
 
+                            var [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
+                            console.log("w", ratioW, "h", ratioH)
+                            switch (action.type) {
+                                case Action_type.line:
+                                    const cgline = action.mode
+                                    cgline.every(function (point) {
+
+                                        point.x = (point.x - relativeOriginPoint.x) * (1-ratioW)
+                                        point.y = (point.y - relativeOriginPoint.y) * (1-ratioH)
+                                    })
+                                    let time = Date.now()
+                                    // this.reloadDrawBoard()
+                                    console.log("完成一次拉伸所需时间：", Date.now() - time)
+                                    break
+                                case Action_type.shape:
+                                    break
+                                case Action_type.image:
+                                    break
+                                case Action_type.text:
+                                    const cgText = action.mode
+                                    cgText.size *= ratioX
+                                    break
+                            }
                         }
+
+
+
                         this.reloadDrawBoard()
                         break
 
@@ -1539,32 +1589,52 @@ Page({
 
         // toolsStatus.mouseActions = {}
 
+        let touches = e.touches
+        if (touches.length ==2) {
+            let scrollView = this.data.scrollView
+            scrollView.lstop = ntop
+            scrollView.lsleft = nleft
+        }
 
         switch (toolsStatus.toolType) {
             case ToolsStatus_type.mouse:
-                if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
 
-                    let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
-                    if (index.length > 0) {
-                        console.log("选中" + index.length + "个图层 ")
-                        // toolsStatus.select.selecting = true
-                    }
+                switch (toolsStatus.mouseMoveType) {
+                    case Mouse_MoveType.multipleSelecting:
+                        let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
+                        if (index.length > 0) {
+                            console.log("选中" + index.length + "个图层 ")
+                            // toolsStatus.select.selecting = true
+                        }
 
-                    toolsStatus.select.selecting = true
+                        toolsStatus.select.selecting = true
 
-                    this.reloadDrawBoard()
+                        this.reloadDrawBoard()
+                        break;
+                    case Mouse_MoveType.model_move:
+                        toolsStatus.mouseMoveType = Mouse_MoveType.none
+                        break;
+                    case Mouse_MoveType.model_felx:
+                        let actionsIndex = toolsStatus.select.actionsIndex
+                        for (let i = 0; i < actionsIndex.length; i++) {
+                            let action = drawBoard.getActionByindex(i);
+                            //删除临时添加的orect属性
+                            delete action.oRect
 
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move) {
-                    toolsStatus.mouseMoveType = Mouse_MoveType.none
-                }
+
+
                 break
 
             case ToolsStatus_type.pen:
                 let lsAction = drawBoard.getLastAction()
                 if (lsAction.type == Action_type.line) {
                     if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
-                        console.log("路径过短，删除。",drawBoard)
+                        console.log("路径过短，删除。", drawBoard)
 
                         drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
                     }
@@ -1594,10 +1664,10 @@ Page({
     button_longpress(e) {
         console.log(e)
     },
-    closeDeatilPane(e){
+    closeDeatilPane(e) {
         console.log(e)
         this.setData({
-            toolBarDetailindex:-1
+            toolBarDetailindex: -1
         })
     }
     //-------响应事件写上面------
