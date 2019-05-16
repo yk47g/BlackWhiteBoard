@@ -323,6 +323,53 @@ class Action { //绘制事件类
         }
         return this
     }
+
+    getSelectRectObject(){//获取被点击后呈现出来的 选中框 矩形对象。。
+        var maxXY = {
+            x: -10000,
+            y: -10000
+        };
+        var minXY = {
+            x: 10000,
+            y: 10000
+        }
+        let interval = 3 //选择框与最值点的容差间隔。
+        switch (this.type) {
+            case Action_type.line:
+                const cgline = this.mode
+                // console.log(cgline)
+                cgline.every(function (point) {
+                    maxXY.x = point.x > maxXY.x ? point.x : maxXY.x
+                    maxXY.y = point.y > maxXY.y ? point.y : maxXY.y
+
+                    minXY.x = point.x < minXY.x ? point.x : minXY.x
+                    minXY.y = point.y < minXY.y ? point.y : minXY.y
+                })
+                break
+
+            case Action_type.shape:
+
+                break
+            case Action_type.image:
+
+                break
+            case Action_type.text:
+                const cgText = action.mode
+                maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width + 3
+                maxXY.y = cgText.position.y + 4
+                minXY.x = cgText.position.x - 3
+                minXY.y = cgText.position.y - cgText.size * 0.7 - 4
+                console.log("maxmin = ", maxXY, minXY)
+                break
+        }
+
+        maxXY.x += interval
+        maxXY.y += interval
+        minXY.x -= interval
+        minXY.y -= interval
+       return new CGRect([new CGPoint(minXY.x,minXY.y),new CGPoint(maxXY.x,maxXY.y)])
+    }
+
 }
 
 let Action_type = {
@@ -407,7 +454,7 @@ class CGRect {//矩形类
             
         }
       
-        this.points = tempPoints //本类用两个点来保存一个cgrect
+        this.points = tempPoints //cgrect的属性：恒定为两个点，形容一个cgrect位置大小。
         this.width =  Math.abs(tempPoints[1].x- tempPoints[0].x)
         this.height = Math.abs(tempPoints[1].y- tempPoints[0].y)
     }
@@ -426,8 +473,31 @@ class CGRect {//矩形类
         }
        
     }
-    
-
+   
+    getMin(){
+        return {
+            x:this.points[0].x,
+            y:this.points[0].y
+        }
+    }
+    getMax(){
+        return {
+            x:this.points[1].x,
+            y:this.points[1].y
+        }
+    }
+    getMinX(){
+        return this.points[0].x
+    }
+    getMinY(){
+        return this.points[0].y
+    }
+    getMaxY(){
+        return this.points[1].y
+    }
+    getMaxX(){
+        return this.points[1].x
+    }
 }
 
 
@@ -534,8 +604,8 @@ class LocalStorage {//本地存储类
         drawBoard = null;
         drawBoard = new DrawBoard();
         drawBoard.initByJson(json)
-        console.log("读取画布数据：", drawBoard)
         page.reloadDrawBoard()
+        console.log("已完成画布重载：", drawBoard)
 
 
 
@@ -682,7 +752,7 @@ Page({
 
 
         let points = this.data.toolsStatus.select.points
-        let interval = 3
+       
         let pointSize = 6
         let pointSize_offset = pointSize / 2
         ctx.beginPath()
@@ -700,41 +770,13 @@ Page({
         }
         if (selecting == false) {
 
-            switch (action.type) {
-                case Action_type.line:
-                    const cgline = action.mode
-                    // console.log(cgline)
-                    cgline.every(function (point) {
-                        maxXY.x = point.x > maxXY.x ? point.x : maxXY.x
-                        maxXY.y = point.y > maxXY.y ? point.y : maxXY.y
-
-                        minXY.x = point.x < minXY.x ? point.x : minXY.x
-                        minXY.y = point.y < minXY.y ? point.y : minXY.y
-                    })
-                    break
-
-                case Action_type.shape:
-
-                    break
-                case Action_type.image:
-
-                    break
-                case Action_type.text:
-                    const cgText = action.mode
-                    maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width + 3
-                    maxXY.y = cgText.position.y + 4
-                    minXY.x = cgText.position.x - 3
-                    minXY.y = cgText.position.y - cgText.size * 0.7 - 4
-                    console.log("maxmin = ", maxXY, minXY)
-                    break
-            }
-
-            maxXY.x += interval
-            maxXY.y += interval
-            minXY.x -= interval
-            minXY.y -= interval
+    
             //开始绘制选框
-
+            let rect = action.getSelectRectObject()
+ 
+            minXY = rect.getMin()
+            maxXY = rect.getMax()
+         
             //左上角开始顺时针。
             points[0] = new CGPoint(minXY.x - pointSize_offset, minXY.y - pointSize_offset)
             points[1] = new CGPoint(maxXY.x - pointSize_offset, minXY.y - pointSize_offset)
@@ -973,8 +1015,7 @@ Page({
         this.setData({
             'toolsStatus.keyBord.display': 0
         })
-
-
+        console.log("首次加载：", drawBoard)
     },
     compute_scrollGesture(finger1_Offest,finger2_Offest,ismove ){
         if (ismove) {
@@ -1157,6 +1198,7 @@ Page({
 
     },
     canvas_touchstart(e) {
+        console.log( "??",drawBoard)
         let datas = this.data
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
@@ -1170,17 +1212,19 @@ Page({
         }
         // toolsStatus.mouseActions.push()
 
-        console.log("按下", thisPoint)
+        console.log("按下")
         switch (toolsStatus.toolType) {
 
             case ToolsStatus_type.pen:
 
                 drawBoard.addAction(Action_type.line); //开始添加一次绘制事件
+             
+                
                 let lsAction = drawBoard.getLastAction(); //并且开始记录
                 lsAction.lineWidth = 3
                 lsAction.color = "black"
                 lsAction.mode.addPoint(...thisPoint.getJsonArr())
-
+                console.log("添加路径。",drawBoard)
                 return
 
             case ToolsStatus_type.text:
@@ -1242,7 +1286,7 @@ Page({
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.addSelect(index)
-
+                   
                     this.mouse_selectAction(ctx, action)
                     ctx.stroke()
                     ctx.draw(true)
@@ -1520,7 +1564,9 @@ Page({
                 let lsAction = drawBoard.getLastAction()
                 if (lsAction.type == Action_type.line) {
                     if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
-                        drawBoard.actions.splice(lsAction.mode.points.length - 1, 1)
+                        console.log("路径过短，删除。",drawBoard)
+
+                        drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
                     }
                 }
                 break
