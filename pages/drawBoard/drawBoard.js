@@ -1669,6 +1669,15 @@ Page({
         this.setData({
             toolBarDetailindex: -1
         })
+    },
+
+    button_settings(){
+        console.log("点击了设置按钮");
+        wx.navigateTo(
+            {
+                url: '/pages/settings/settings'
+            }
+        )
     }
     //-------响应事件写上面------
 
