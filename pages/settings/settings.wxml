@@ -1,5 +1,22 @@
-<view>
-    <view class='main'>
-        hello!
+<view class="main">
+    <view class="userInfoClass">
+        <view class="userIcon" bindtap="tap_userIcon">
+            <image src="" ></image>
+        </view>
+        <view class="userNameId" bindtap="tap_NameId" >
+            <text>{{userName}}</text>
+            <text>{{userId}}</text>
+        </view>
+    </view>
+    <view class="myGroupClass">
+        <view class="myGroupIcon">
+
+        </view>
+        <view class="myGroupButtons">
+
+        </view>
+    </view>
+    <view class="settingsButtons">
+        
     </view>
 </view>
