@@ -1,4 +1,5 @@
 {
+  "navigationStyle": "custom",
   "usingComponents": {},
   "pageOrientation": "auto",
   "navigationBarTitleText": "黑白板",
