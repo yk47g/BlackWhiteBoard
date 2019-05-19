@@ -1,6 +1,4 @@
 {
-  "usingComponents": {},
   "pageOrientation": "auto",
-  "navigationBarTitleText": "设置",
-  "disableSwipeBack":true
+  "navigationBarTitleText": ""
 }
