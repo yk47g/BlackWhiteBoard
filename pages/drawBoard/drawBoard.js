@@ -21,7 +21,7 @@ function release(...list) { //释放内存函数。
 
 // console.log(Object.assign({a:2,c:{point:[10]}},{b:3,c:{point:[20]}}))
 class MouseAction { //用来记录手指移动距离等数据
-    constructor(startPoint,touch ) {
+    constructor(startPoint, touch) {
         this.distance = 0; //1️以像素的平方为单位
         this.startPoint = startPoint //cgpoint类型
         this.lastPoint = startPoint
@@ -29,7 +29,7 @@ class MouseAction { //用来记录手指移动距离等数据
         this.time = 0
         this.identifier = touch.identifier
     }
-    isExist(mouseActions){
+    isExist(mouseActions) {
         for (let i = 0; i < mouseActions.length; i++) {
             const element = mouseActions[i];
             if (element.identifier == this.identifier) {
@@ -394,11 +394,13 @@ class CGPoint { //坐标点类
 
     constructor(x = 0, y = 0, toInt = false) {
         if (toInt == true) {
-            x = parseInt(x)
-            y = parseInt(y)
+            this.x = parseInt(x)
+            this.y = parseInt(y)
+        } else {
+            this.x = x;
+            this.y = y;
         }
-        this.x = x;
-        this.y = y;
+
     }
     initByJson(json) {//cgpoint 对象的json
         for (const key in this) {
@@ -419,6 +421,20 @@ class CGPoint { //坐标点类
     getJson() {
         const json = { x: this.x, y: this.y }
         return json
+    }
+    getByCGPointObject(cgpoint, proportion) {
+        /** 
+         * 为了渲染图层拉伸效果而做的方法。
+         * proportion : 比例
+         * 
+         * */
+
+        if (proportion == 1) {
+            return cgpoint
+        }
+        this.x = (cgpoint.x - proportion.relativeOriginPoint.x) * proportion.width + proportion.relativeOriginPoint.x
+        this.y = (cgpoint.y - proportion.relativeOriginPoint.y) * proportion.height + proportion.relativeOriginPoint.y
+        return this
     }
     isInclude(ULPoint, DRPoint, r) { //判读当前对象的点是否在这个矩形区域内
         //r表示容错半径
@@ -509,8 +525,6 @@ class CGRect {//矩形类
         return this.points[1].x
     }
     getFourPoints() {
-
-
         return [new CGPoint(this.points[0].x, this.points[0].y)
             , new CGPoint(this.points[1].x, this.points[0].y)
             , new CGPoint(this.points[1].x, this.points[1].y)
@@ -626,8 +640,6 @@ class LocalStorage {//本地存储类
         page.reloadDrawBoard()
         console.log("已完成画布重载：", drawBoard)
 
-
-
     }
     save() {
         wx.setStorageSync("drawBoard", drawBoard)
@@ -648,10 +660,8 @@ Page({
         exchange: 0,
         toolBarDetailindex: -1,//弹出的画笔调节窗口。
         scrollView: {
-            lstop: 0,
-            lsleft: 0,
-            ntop:0,
-            nleft:0,
+            ntop: 0,
+            nleft: 0,
         },
         useToReadDrawBord: drawBoard
     },
@@ -673,7 +683,7 @@ Page({
         // ctx.strokeStyle = color
 
         // ctx.setShadow(0, 0, style_lineWidth*2,"rgba(0,0,0,0.3)")
-        lssPoint = null
+
         if (lssPoint == null) {
             ctx.moveTo(...lsPoint.getJsonArr())
             ctx.lineTo(...thisPoint.getJsonArr())
@@ -811,7 +821,7 @@ Page({
 
         } else {
             //当selecting时，传入action为两个point，手指的起点和终点。
-            console.log(points)
+
             points = action
             minXY = points[0].getJson()
             maxXY = points[1].getJson()
@@ -948,7 +958,6 @@ Page({
         for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
             const iAction = actions[a];
 
-
             switch (iAction.type) {
                 case Action_type.line:
                     const cgline = iAction.mode
@@ -959,8 +968,22 @@ Page({
 
                     if (cgline.points.length > 2) {
                         ctx.beginPath()
-                        for (let i = 1; i < cgline.points.length; i++) {
-                            this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
+                        var proportion = 1
+
+                        if (typeof (iAction.proportion) != "undefined") {
+                            proportion = iAction.proportion
+                            console.log("比例为：", iAction.proportion)
+                        }
+
+                        for (let i = 2; i < cgline.points.length; i++) {
+                            let thisPoint = new CGPoint().getByCGPointObject(cgline.points[i], proportion, iAction.relativeOriginPoint)
+
+                            let lsPoint = new CGPoint().getByCGPointObject(cgline.points[i - 1], proportion, iAction.relativeOriginPoint)
+
+                            let lssPoint = new CGPoint().getByCGPointObject(cgline.points[i - 2], proportion, iAction.relativeOriginPoint)
+                            this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
+                            // this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
+
                         }
 
                         ctx.closePath()
@@ -982,7 +1005,7 @@ Page({
 
         }
         // console.log("遍历所有路径所需时间：", Date.now() - time)
-        if (toolsStatus.select.selecting == true) {
+        if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx) {
             // ctx.save()
 
             for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
@@ -991,7 +1014,7 @@ Page({
                 if (toolsStatus.isSelect(a)) {
 
                     this.mouse_selectAction(ctx, iAction)
-                
+
                     ctx.stroke()
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
                     // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
@@ -1043,20 +1066,53 @@ Page({
     },
     compute_scrollGesture(finger1_Offest, finger2_Offest, ismove) {
         if (ismove) {
-            
-            let nX = -(finger1_Offest.x+finger2_Offest.x)/2 + this.data.scrollView.lsleft
-            let nY = -(finger1_Offest.y+finger2_Offest.x)/2 + this.data.scrollView.lstop
-            nX = nX > 0 ? nX : 0
-            nY = nY > 0 ? nY : 0
-            console.log(nX, nY)
+
+            let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
+            let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
+            nX = parseInt(nX > 0 ? nX : 0)
+            nY = parseInt(nY > 0 ? nY : 0)
+            this.data.scrollView.ntop = nY
+            this.data.scrollView.nleft = nX
+            // console.log("x=",nX," y=",nY)
             this.setData({
                 "scrollView.ntop": nY,
                 "scrollView.nleft": nX
             })
-            
+
         } else {
             console.log("拉伸画布")
         }
+    },
+    compute_completeModelFlex(action) {
+        //拖动时的呈现都是临时的，并不会实时修改内存中点的数据。
+        //松手后调用了这里才是完成拉伸路径数据的更新。          
+        console.log("old", action)
+        switch (action.type) {
+            case Action_type.line:
+                const cgline = action.mode
+                cgline.every(function (point) {
+                    point.x = (point.x - action.proportion.relativeOriginPoint.x) * action.proportion.width + action.proportion.relativeOriginPoint.x
+                    point.y = (point.y - action.proportion.relativeOriginPoint.y) * action.proportion.height + action.proportion.relativeOriginPoint.y
+                   
+
+                })
+                break
+            case Action_type.shape:
+                break
+            case Action_type.image:
+                break
+            case Action_type.text:
+                const cgText = action.mode
+                cgText.size *= ratioX
+                break
+        }
+        console.log("new", action)
+
+
+    },
+    reset_status(toolType = 0){//重置工具状态
+
+
     },
     //-------以上为画布动作的处理事件-----
 
@@ -1229,22 +1285,22 @@ Page({
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
         let thisPoint = new CGPoint(touches[0].x, touches[0].y)
+        console.log("按下", thisPoint)
 
-       
         for (let i = 0; i < touches.length; i++) {
             const touch = touches[i];
-            let mouseAction = new MouseAction(new CGPoint(touch.x, touch.y),touch)
+            let mouseAction = new MouseAction(new CGPoint(touch.x, touch.y), touch)
             let isExistIndex = mouseAction.isExist(toolsStatus.mouseActions)
-         
-            if (isExistIndex == -1 ) {
+
+            if (isExistIndex == -1) {
                 toolsStatus.mouseActions.push(mouseAction)
-            }else{
+            } else {
                 toolsStatus.mouseActions[isExistIndex] = mouseAction
             }
-          
-         
+
+
         }
- 
+
         // toolsStatus.mouseActions.push()
 
         switch (toolsStatus.toolType) {
@@ -1317,7 +1373,7 @@ Page({
                             return
                         }
 
-                    } 
+                    }
 
 
 
@@ -1355,7 +1411,7 @@ Page({
                     toolsStatus.select.actionsIndex = []
                     toolsStatus.select.selecting = false
                     this.reloadDrawBoard()
-                
+
 
 
 
@@ -1400,14 +1456,14 @@ Page({
         //先进行全局的两指操作判断。
         if (touches.length == 2) {
             //计算两个手指xy偏差，是否趋近于一样
-            let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].startPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].startPoint.y }
-            let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].startPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].startPoint.y }
+            let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y }
+            let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y }
 
             console.log("手指1", finger1_Offest, "手指2", finger2_Offest)
             //移动时，手指偏差值 乘积为正数
-            
+
             this.compute_scrollGesture(finger1_Offest, finger2_Offest, true)
-            
+
             return
             if ((Math.abs(finger1_Offest.x) + Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y)) > 0.8) {
                 if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y >= 0) {
@@ -1418,7 +1474,7 @@ Page({
                         this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
                     } else {
                         //移动
-                      
+
 
                     }
                 } else {
@@ -1511,10 +1567,10 @@ Page({
                     case Mouse_MoveType.multipleSelecting:
                         //多选的触发条件：按下空白地方、继续移动
                         let ctx = wx.createCanvasContext(canvas_ID);
-                        console.log(33)
+
                         this.mouse_selectAction(ctx, [mouseActions[0].startPoint, mouseActions[0].endPoint], true)
-                        
-                        console.log(3313)
+
+
                         ctx.stroke()
                         ctx.draw(true)
                         break;
@@ -1524,17 +1580,17 @@ Page({
                         //按下的是哪个角点。
                         let cornerIndex = this.modelFlex_cornerIndex
                         let orignPointIndex = cornerIndex >= 2 ? (this.modelFlex_cornerIndex - 2) : (this.modelFlex_cornerIndex + 2)
-                        console.log("原点：", orignPointIndex)
+                        // console.log("原点：", orignPointIndex, "按下的是:", cornerIndex)
 
-                       
+
                         var startPoint = toolsStatus.mouseActions[0].startPoint
                         var endPoint = toolsStatus.mouseActions[0].endPoint
                         var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]
-                        console.log(cornerIndex)
+
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(i);
                             let relativeOriginPoint = action.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
-                           
+
                             //删除临时添加的orect属性
                             let oRect = action.oRect
                             let nRect = {
@@ -1543,32 +1599,13 @@ Page({
                             }
 
                             var [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
-                            console.log("w", ratioW, "h", ratioH)
-                            switch (action.type) {
-                                case Action_type.line:
-                                    const cgline = action.mode
-                                    cgline.every(function (point) {
 
-                                        point.x = (point.x - relativeOriginPoint.x) * (1-ratioW)
-                                        point.y = (point.y - relativeOriginPoint.y) * (1-ratioH)
-                                    })
-                                    let time = Date.now()
-                                    // this.reloadDrawBoard()
-                                    console.log("完成一次拉伸所需时间：", Date.now() - time)
-                                    break
-                                case Action_type.shape:
-                                    break
-                                case Action_type.image:
-                                    break
-                                case Action_type.text:
-                                    const cgText = action.mode
-                                    cgText.size *= ratioX
-                                    break
+                            action.proportion = {
+                                width: ratioW,
+                                height: ratioH,
+                                relativeOriginPoint: relativeOriginPoint
                             }
                         }
-
-
-
                         this.reloadDrawBoard()
                         break
 
@@ -1594,12 +1631,6 @@ Page({
         // toolsStatus.mouseActions = {}
 
         let touches = e.touches
-        if (touches.length ==2) {
-            let scrollView = this.data.scrollView
-            scrollView.lstop = ntop
-            scrollView.lsleft = nleft
-        }
-
         switch (toolsStatus.toolType) {
             case ToolsStatus_type.mouse:
 
@@ -1620,12 +1651,18 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         let actionsIndex = toolsStatus.select.actionsIndex
+
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(i);
+                            this.compute_completeModelFlex(action)
+
                             //删除临时添加的orect属性
                             delete action.oRect
-
+                            delete action.proportion
                         }
+
+                        toolsStatus.mouseMoveType = Mouse_MoveType.none
+                        this.reloadDrawBoard()
                         break;
                     default:
                         break;
@@ -1647,7 +1684,7 @@ Page({
         }
         //清空鼠标事件和本次条件
         condition.deleteAll()
-        
+
         toolsStatus.mouseActions = []
         // let lsAction = drawBoard.getLastAction()
         // lsAction.every(function(point){
@@ -1676,7 +1713,7 @@ Page({
         })
     },
 
-    button_settings(){
+    button_settings() {
         console.log("点击了设置按钮");
         wx.navigateTo(
             {
