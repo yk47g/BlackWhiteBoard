@@ -1,7 +1,12 @@
 /* pages/drawBoard/drawBoard.wxss */
 
-.main scroll-view {
+.main {
     height: 100vh;
+    position: relative;
+}
+
+.main scroll-view {
+    height: 90vh;
 }
 
 .main input {
@@ -14,7 +19,7 @@
 .settings {
   position: absolute;
   left: 2vw;
-  top: 4vh;
+  top: 1vh;
   height: 80rpx;
   width: 80rpx;
   background-color: white;
