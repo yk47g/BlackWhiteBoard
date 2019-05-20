@@ -811,8 +811,10 @@ Page({
 
         } else {
             //当selecting时，传入action为两个point，手指的起点和终点。
+            console.log(points)
+            points = action
             minXY = points[0].getJson()
-            maxXY = points[2].getJson()
+            maxXY = points[1].getJson()
         }
 
 
@@ -1245,7 +1247,6 @@ Page({
  
         // toolsStatus.mouseActions.push()
 
-        console.log("按下")
         switch (toolsStatus.toolType) {
 
             case ToolsStatus_type.pen:
@@ -1510,7 +1511,10 @@ Page({
                     case Mouse_MoveType.multipleSelecting:
                         //多选的触发条件：按下空白地方、继续移动
                         let ctx = wx.createCanvasContext(canvas_ID);
+                        console.log(33)
                         this.mouse_selectAction(ctx, [mouseActions[0].startPoint, mouseActions[0].endPoint], true)
+                        
+                        console.log(3313)
                         ctx.stroke()
                         ctx.draw(true)
                         break;
@@ -1643,6 +1647,7 @@ Page({
         }
         //清空鼠标事件和本次条件
         condition.deleteAll()
+        
         toolsStatus.mouseActions = []
         // let lsAction = drawBoard.getLastAction()
         // lsAction.every(function(point){
