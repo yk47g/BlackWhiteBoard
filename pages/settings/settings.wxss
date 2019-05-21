@@ -1,6 +1,6 @@
 .userInfoClass{
     position: absolute;
-    top: 1vh;
+    top: 2vh;
     left: 50vw;
     margin-left: -45vw;
     height: 23vh;
@@ -10,10 +10,52 @@
     border:none;
 }
 
+.userInfoClass image{
+    position: static;
+    height: 200rpx;
+    width: 200rpx;
+    border-radius: 100rpx;
+}
+
 .userIcon{
     position: absolute;
-    
-    height: 50rpx;
-    width: 50rpx;
+    top: 3vh;
+    left: 8vw;
+    height: 200rpx;
+    width: 200rpx;
+    border-radius: 100rpx;
     background-color: blue;
+}
+
+.userNameId{
+    position: absolute;
+    top: 6vh;
+    left: 42vw;
+    height: 100rpx;
+    width: 300rpx;
+    font-size : 20pt;
+	font-weight : bold;
+
+}
+
+.userId{
+    position: absolute;
+    top: 12vh;
+    left: 42vw;
+    height: 100rpx;
+    width: 300rpx;
+    font-size : 12pt;
+    color : #BABABA;
+
+}
+
+.getUserInfoView{
+    position: absolute;
+    top: 27vh;
+    left: 50vw;
+    margin-left: -45vw;
+    width: 90vw;
+    border-radius:30rpx;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    border:none;
 }

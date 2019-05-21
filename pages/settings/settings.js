@@ -5,8 +5,8 @@ Page({
      */
     data: {
         usericonUrl:"/icons/user.png",
-        userName: "Im name",
-        userId: 00001
+        userName: "钢铁侠",
+        userId: 8888888
     },
 
     onLoad: function (options) {

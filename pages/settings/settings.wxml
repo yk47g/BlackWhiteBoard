@@ -1,12 +1,17 @@
 <view class="main">
     <view class="userInfoClass">
         <view class="userIcon" bindtap="tap_userIcon">
-            <image src="" ></image>
+            <image src="{{usericonUrl}}" ></image>
         </view>
         <view class="userNameId" bindtap="tap_NameId" >
             <text>{{userName}}</text>
+        </view>
+        <view class="userId" bindtap="tap_NameId" >
             <text>{{userId}}</text>
         </view>
+    </view>
+    <view class="getUserInfoView" wx:if="{{true}}">
+            <button open-type='getUserInfo' type="primary" bindgetuserinfo="bind_GetUserInfo" >使用微信账号登陆</button>
     </view>
     <view class="myGroupClass">
         <view class="myGroupIcon">
@@ -17,6 +22,6 @@
         </view>
     </view>
     <view class="settingsButtons">
-        
+
     </view>
 </view>
