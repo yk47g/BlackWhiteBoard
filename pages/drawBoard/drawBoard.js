@@ -129,6 +129,7 @@ class ToolsStatus {
         this.mouseMoveType = -1
         this.mouseActions = [] //mouseAction 对象数组。
         this.condition = new Condition()
+        this.modelFlexData = null
     }
     addSelect(indexValue) { //避免重复
         var exist = false
@@ -393,7 +394,7 @@ let Action_type = {
 class CGPoint { //坐标点类
 
     constructor(x = 0, y = 0, toInt = false) {
-        
+
         if (toInt == true) {
             this.x = parseInt(x)
             this.y = parseInt(y)
@@ -423,20 +424,20 @@ class CGPoint { //坐标点类
         const json = { x: this.x, y: this.y }
         return json
     }
-    getByCGPointObject(cgpoint, proportion) {
+    modelFlexInit(proportion, relativeOriginPoint) {
         /** 
          * 为了渲染图层拉伸效果而做的方法。
          * proportion : 比例
-         * 
+         * relativeOriginPoint: 相对点。
          * */
 
-        if (proportion == 1) {
-            return cgpoint
-        }
+       let temp =  new CGPoint(
+           (this.x - relativeOriginPoint.x) * proportion.width + relativeOriginPoint.x,
+        (this.y - relativeOriginPoint.y) * proportion.height + relativeOriginPoint.y);
+        return temp
+        
 
-        this.x = (cgpoint.x - proportion.relativeOriginPoint.x) * proportion.width + proportion.relativeOriginPoint.x
-        this.y = (cgpoint.y - proportion.relativeOriginPoint.y) * proportion.height + proportion.relativeOriginPoint.y
-        return this
+
     }
     isInclude(ULPoint, DRPoint, r) { //判读当前对象的点是否在这个矩形区域内
         //r表示容错半径
@@ -976,17 +977,26 @@ Page({
                             proportion = iAction.proportion
                             console.log("比例为：", iAction.proportion)
                         }
+                        if (toolsStatus.modelFlexData != null) {
+                            //进行临时的图层拉伸展示。
+                            for (let i = 2; i < cgline.points.length; i++) {
+                                let thisPoint =  cgline.points[i].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
 
-                        for (let i = 2; i < cgline.points.length; i++) {
-                            let thisPoint = new CGPoint().getByCGPointObject(cgline.points[i], proportion, iAction.relativeOriginPoint)
+                                let lsPoint =  cgline.points[i-1].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
 
-                            let lsPoint = new CGPoint().getByCGPointObject(cgline.points[i - 1], proportion, iAction.relativeOriginPoint)
+                                let lssPoint =  cgline.points[i-2].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
+                                this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
 
-                            let lssPoint = new CGPoint().getByCGPointObject(cgline.points[i - 2], proportion, iAction.relativeOriginPoint)
-                            this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
-                            // this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
+                            }
+                        } else {
+                            for (let i = 2; i < cgline.points.length; i++) {
+                              
+                                this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
 
+                            }
+                            
                         }
+
 
                         ctx.closePath()
                         ctx.stroke()
@@ -1085,7 +1095,7 @@ Page({
             console.log("拉伸画布")
         }
     },
-    compute_completeModelFlex(action) {
+    compute_completeModelFlex(action,proportion) {
         //拖动时的呈现都是临时的，并不会实时修改内存中点的数据。
         //松手后调用了这里才是完成拉伸路径数据的更新。          
         console.log("old", action)
@@ -1093,9 +1103,8 @@ Page({
             case Action_type.line:
                 const cgline = action.mode
                 cgline.every(function (point) {
-                    point.x = (point.x - action.proportion.relativeOriginPoint.x) * action.proportion.width + action.proportion.relativeOriginPoint.x
-                    point.y = (point.y - action.proportion.relativeOriginPoint.y) * action.proportion.height + action.proportion.relativeOriginPoint.y
-
+                    point.x = (point.x - action.relativeOriginPoint.x) * proportion.width + action.relativeOriginPoint.x
+                    point.y = (point.y - action.relativeOriginPoint.y) * proportion.height + action.relativeOriginPoint.y
 
                 })
                 break
@@ -1354,7 +1363,7 @@ Page({
                             let actionsIndex = toolsStatus.select.actionsIndex
                             for (let i = 0; i < actionsIndex.length; i++) {
 
-                                let action = drawBoard.getActionByindex(i);
+                                let action = drawBoard.getActionByindex(actionsIndex[i]);
                                 action.oRect = action.getSelectRectObject()
                                 console.log(action)
                             }
@@ -1578,8 +1587,15 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         console.log("拉伸图层")
+
+
+                        /**
+                         * 先通过正在选中拉伸的图层计算出全局拉伸比例。
+                         * 再遍历所有选中的对象，按这个比例进行拉伸。
+                         */
                         let actionsIndex = toolsStatus.select.actionsIndex
                         //按下的是哪个角点。
+                        let action = drawBoard.getActionByindex(actionsIndex);
                         let cornerIndex = this.modelFlex_cornerIndex
                         let orignPointIndex = cornerIndex >= 2 ? (this.modelFlex_cornerIndex - 2) : (this.modelFlex_cornerIndex + 2)
                         // console.log("原点：", orignPointIndex, "按下的是:", cornerIndex)
@@ -1588,50 +1604,48 @@ Page({
                         var startPoint = toolsStatus.mouseActions[0].startPoint
                         var endPoint = toolsStatus.mouseActions[0].endPoint
                         var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]//鼠标的偏移量
+                        let oRect = action.oRect
+                        var nRect
+                        switch (cornerIndex) {//按的是左上角。
+                            case 0:
+                                nRect = {
+                                    width: oRect.width - OffestX,
+                                    height: oRect.height - OffestY
+                                }
+                                break;
+                            case 1:
+                                nRect = {
+                                    width: oRect.width + OffestX,
+                                    height: oRect.height - OffestY
+                                }
+                                break;
+                            case 2:
+                                nRect = {
+                                    width: oRect.width + OffestX,
+                                    height: oRect.height + OffestY
+                                }
+                                break;
+                            case 3:
+                                nRect = {
+                                    width: oRect.width - OffestX,
+                                    height: oRect.height + OffestY
+                                }
+                                break;
 
+                        }
+
+
+                        let [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
+                        toolsStatus.modelFlexData = {
+                            width: ratioW,
+                            height: ratioH
+                        }
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(i);
                             let relativeOriginPoint = action.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
+                            //删除临时添加的orect属性 proportion
+                            action.relativeOriginPoint = relativeOriginPoint
 
-                            //删除临时添加的orect属性
-                            let oRect = action.oRect
-                            var nRect
-                            switch (cornerIndex) {//按的是左上角。
-                                case 0:
-                                    nRect = {
-                                        width: oRect.width - OffestX,
-                                        height: oRect.height - OffestY
-                                    }
-                                    break;
-                                case 1:
-                                        nRect = {
-                                            width: oRect.width + OffestX,
-                                            height: oRect.height - OffestY
-                                        }
-                                    break;
-                                case 2:
-                                    nRect = {
-                                        width: oRect.width + OffestX,
-                                        height: oRect.height + OffestY
-                                    }
-                                    break;
-                                case 3:
-                                        nRect = {
-                                            width: oRect.width - OffestX,
-                                            height: oRect.height + OffestY
-                                        }
-                                    break;
-
-                            }
-
-
-                            var [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
-
-                            action.proportion = {
-                                width: ratioW,
-                                height: ratioH,
-                                relativeOriginPoint: relativeOriginPoint
-                            }
                         }
                         this.reloadDrawBoard()
                         break
@@ -1680,13 +1694,14 @@ Page({
                         let actionsIndex = toolsStatus.select.actionsIndex
 
                         for (let i = 0; i < actionsIndex.length; i++) {
-                            let action = drawBoard.getActionByindex(i);
-                            this.compute_completeModelFlex(action)
+                            let action = drawBoard.getActionByindex(actionsIndex[i]);
+                            this.compute_completeModelFlex(action,toolsStatus.modelFlexData)
 
                             //删除临时添加的orect属性
                             delete action.oRect
-                            delete action.proportion
+                            delete action.relativeOriginPoint
                         }
+                        toolsStatus.modelFlexData = null;
 
                         toolsStatus.mouseMoveType = Mouse_MoveType.none
                         this.reloadDrawBoard()
