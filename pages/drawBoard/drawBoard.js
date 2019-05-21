@@ -8,7 +8,11 @@
 //   return index;
 // }
 let canvas_ID = "CanvasDisplay"
-
+let DevelopConfiguration = {
+    SelectCornerDistance:30,//拉伸时与角点的距离。
+    SelectRectPadding:3,
+    SelectDistance:400//选择图层时允许的偏差距离。
+}
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
 
@@ -124,7 +128,9 @@ class ToolsStatus {
         this.select = {
             selecting: false, //当前有焦点被选中。
             // points: new Array(4), //四个点顺时针，cgpoin类型 一个图层被选中时的矩形边框。
-            actionsIndex: []
+            actionsIndex: [],
+            touchDown_actionIndex:-1//记录按下时，所选的index
+
         }
         this.mouseMoveType = -1
         this.mouseActions = [] //mouseAction 对象数组。
@@ -344,7 +350,7 @@ class Action { //绘制事件类
             x: 10000,
             y: 10000
         }
-        let interval = 3 //选择框与最值点的容差间隔。
+        let interval = DevelopConfiguration.SelectRectPadding//选择框与最值点的容差间隔。
         switch (this.type) {
             case Action_type.line:
                 const cgline = this.mode
@@ -424,18 +430,21 @@ class CGPoint { //坐标点类
         const json = { x: this.x, y: this.y }
         return json
     }
-    modelFlexInit(proportion, relativeOriginPoint) {
+    modelFlexInit(modelFlexData) {
         /** 
          * 为了渲染图层拉伸效果而做的方法。
          * proportion : 比例
          * relativeOriginPoint: 相对点。
          * */
-
-       let temp =  new CGPoint(
-           (this.x - relativeOriginPoint.x) * proportion.width + relativeOriginPoint.x,
-        (this.y - relativeOriginPoint.y) * proportion.height + relativeOriginPoint.y);
-        return temp
         
+        // relativeOriginPoint = drawBoard.getActionByindex(getCurrentPages()[0].data.toolsStatus.select.touchDown_actionIndex).relativeOriginPoint
+       
+        
+        let temp = new CGPoint(
+            (this.x - modelFlexData.relativeOriginPoint.x) * modelFlexData.width + modelFlexData.relativeOriginPoint.x,
+            (this.y - modelFlexData.relativeOriginPoint.y) * modelFlexData.height + modelFlexData.relativeOriginPoint.y);
+        return temp
+
 
 
     }
@@ -865,7 +874,7 @@ Page({
         let actions = drawBoard.actions
         let toolsStatus = this.data.toolsStatus
 
-        var distance = 500 //允许的偏差距离。
+        var distance = DevelopConfiguration.SelectDistance //允许的偏差距离。
         var tempValue = 0
         var selectIndex = -1 //找到被选择的action索引。
         var selectIndexs = []
@@ -977,25 +986,28 @@ Page({
                             proportion = iAction.proportion
                             console.log("比例为：", iAction.proportion)
                         }
-                        if (toolsStatus.modelFlexData != null) {
-                            //进行临时的图层拉伸展示。
+
+                        //进行临时的图层拉伸展示。
+                        if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
                             for (let i = 2; i < cgline.points.length; i++) {
-                                let thisPoint =  cgline.points[i].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
-
-                                let lsPoint =  cgline.points[i-1].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
-
-                                let lssPoint =  cgline.points[i-2].modelFlexInit(toolsStatus.modelFlexData,iAction.relativeOriginPoint)
-                                this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
-
+                                if ( toolsStatus.isSelect(a)  ) {
+                                    let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
+                                    let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+                                    let lssPoint = cgline.points[i - 2].modelFlexInit(toolsStatus.modelFlexData)
+                                    this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
+                                } else {
+                                    this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
+                                }
+    
                             }
-                        } else {
+                        }else{
                             for (let i = 2; i < cgline.points.length; i++) {
-                              
                                 this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
-
+    
                             }
-                            
                         }
+                        
+
 
 
                         ctx.closePath()
@@ -1095,7 +1107,7 @@ Page({
             console.log("拉伸画布")
         }
     },
-    compute_completeModelFlex(action,proportion) {
+    compute_completeModelFlex(action, modelFlexData) {
         //拖动时的呈现都是临时的，并不会实时修改内存中点的数据。
         //松手后调用了这里才是完成拉伸路径数据的更新。          
         console.log("old", action)
@@ -1103,8 +1115,8 @@ Page({
             case Action_type.line:
                 const cgline = action.mode
                 cgline.every(function (point) {
-                    point.x = (point.x - action.relativeOriginPoint.x) * proportion.width + action.relativeOriginPoint.x
-                    point.y = (point.y - action.relativeOriginPoint.y) * proportion.height + action.relativeOriginPoint.y
+                    point.x = (point.x - modelFlexData.relativeOriginPoint.x) * modelFlexData.width + modelFlexData.relativeOriginPoint.x
+                    point.y = (point.y - modelFlexData.relativeOriginPoint.y) * modelFlexData.height + modelFlexData.relativeOriginPoint.y
 
                 })
                 break
@@ -1335,22 +1347,23 @@ Page({
             case ToolsStatus_type.mouse:
 
                 let condition = toolsStatus.condition
-                if (toolsStatus.select.selecting == true) {//已经有图层被选中。
+                let select =  toolsStatus.select
+                if (select.selecting == true) {//已经有图层被选中。
                     //判断是否为按下角点
                     var cornerPointIndex = -1;
 
-                    for (let i = 0; i < toolsStatus.select.actionsIndex.length; i++) {
+                    for (let i = 0; i < select.actionsIndex.length; i++) {
                         //遍历获取每一个action的矩形选择区域。！！
-                        const actionindex = toolsStatus.select.actionsIndex[i];
+                        const actionindex = select.actionsIndex[i];
                         let showRect = drawBoard.getActionByindex(actionindex).selectRect
 
                         rectpoints = showRect.getFourPoints()
 
-                        for (let i = 0; i < 4; i++) {
-                            const point = rectpoints[i];
-                            if (point.isDistance(thisPoint, 30)) {
-                                cornerPointIndex = i
-                                this.modelFlex_cornerIndex = i//设置为全局变量传输。
+                        for (let a = 0; a < 4; a++) {
+                            const point = rectpoints[a];
+                            if (point.isDistance(thisPoint, DevelopConfiguration.SelectCornerDistance)) {
+                                cornerPointIndex = a
+                                this.modelFlex_cornerIndex = a//设置为全局变量传输。
                             }
                         }
 
@@ -1359,11 +1372,11 @@ Page({
                             condition.addValue(Condition_Type.touchDown_corner)
                             toolsStatus.mouseMoveType = Mouse_MoveType.model_felx
                             //为拉伸的图层添加当前原宽高度属性。
-
+                            toolsStatus.select.touchDown_actionIndex = select.actionsIndex[i]
                             let actionsIndex = toolsStatus.select.actionsIndex
-                            for (let i = 0; i < actionsIndex.length; i++) {
+                            for (let a = 0; a < actionsIndex.length; a++) {
 
-                                let action = drawBoard.getActionByindex(actionsIndex[i]);
+                                let action = drawBoard.getActionByindex(actionsIndex[a]);
                                 action.oRect = action.getSelectRectObject()
                                 console.log(action)
                             }
@@ -1399,6 +1412,7 @@ Page({
                     let ctx = wx.createCanvasContext(canvas_ID);
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
+                    toolsStatus.select.touchDown_actionIndex = index
                     toolsStatus.addSelect(index)
 
                     this.mouse_selectAction(ctx, action)//绘制选中的边框样式，并设置action的属性selectRect为rect对象。
@@ -1420,6 +1434,7 @@ Page({
                     toolsStatus.mouseMoveType = Mouse_MoveType.none
                     toolsStatus.select.actionsIndex = null
                     toolsStatus.select.actionsIndex = []
+                    toolsStatus.select.touchDown_actionIndex = -1
                     toolsStatus.select.selecting = false
                     this.reloadDrawBoard()
 
@@ -1438,9 +1453,12 @@ Page({
                 if (toolsStatus.toolType == ToolsStatus_type.eraser) { //橡皮
                     //删除绘制事件。
                     let index = this.ergodicEach_Action(thisPoint)
-                    drawBoard.actions.splice(index, 1)
-                    // ctx.clip()
-                    this.reloadDrawBoard()
+                    if (index != -1) {
+                        drawBoard.actions.splice(index, 1)
+                       
+                        this.reloadDrawBoard()   
+                    }
+                   
                     return
                 }
                 return
@@ -1593,9 +1611,11 @@ Page({
                          * 先通过正在选中拉伸的图层计算出全局拉伸比例。
                          * 再遍历所有选中的对象，按这个比例进行拉伸。
                          */
+                    
                         let actionsIndex = toolsStatus.select.actionsIndex
                         //按下的是哪个角点。
-                        let action = drawBoard.getActionByindex(actionsIndex);
+                        
+                        let controlAction = drawBoard.getActionByindex(toolsStatus.select.touchDown_actionIndex);
                         let cornerIndex = this.modelFlex_cornerIndex
                         let orignPointIndex = cornerIndex >= 2 ? (this.modelFlex_cornerIndex - 2) : (this.modelFlex_cornerIndex + 2)
                         // console.log("原点：", orignPointIndex, "按下的是:", cornerIndex)
@@ -1604,7 +1624,7 @@ Page({
                         var startPoint = toolsStatus.mouseActions[0].startPoint
                         var endPoint = toolsStatus.mouseActions[0].endPoint
                         var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]//鼠标的偏移量
-                        let oRect = action.oRect
+                        let oRect = controlAction.oRect
                         var nRect
                         switch (cornerIndex) {//按的是左上角。
                             case 0:
@@ -1638,14 +1658,8 @@ Page({
                         let [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
                         toolsStatus.modelFlexData = {
                             width: ratioW,
-                            height: ratioH
-                        }
-                        for (let i = 0; i < actionsIndex.length; i++) {
-                            let action = drawBoard.getActionByindex(i);
-                            let relativeOriginPoint = action.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
-                            //删除临时添加的orect属性 proportion
-                            action.relativeOriginPoint = relativeOriginPoint
-
+                            height: ratioH,
+                            relativeOriginPoint: controlAction.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
                         }
                         this.reloadDrawBoard()
                         break
@@ -1695,11 +1709,11 @@ Page({
 
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(actionsIndex[i]);
-                            this.compute_completeModelFlex(action,toolsStatus.modelFlexData)
+                            this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
 
                             //删除临时添加的orect属性
                             delete action.oRect
-                            delete action.relativeOriginPoint
+                      
                         }
                         toolsStatus.modelFlexData = null;
 
@@ -1764,5 +1778,5 @@ Page({
         )
     }
     //-------响应事件写上面------
-
 })
+    
