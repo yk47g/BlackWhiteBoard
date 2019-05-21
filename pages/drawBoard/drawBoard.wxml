@@ -26,15 +26,14 @@
             <button plain catchtap='changeStatus' id='tools_eraser' bindlongpress="button_longpress">
                 <cover-image src='/icons/eraser.png' mode='widthFix'></cover-image>
             </button>
-            <button plain catchtap='changeStatus' id='tools_shape' bindlongpress="button_longpress">
-                <cover-image src='/icons/shape.png' mode='widthFix' style='width:28px; height:28px;'></cover-image>
-            </button>
+            
             <button plain catchtap='changeStatus' id='tools_text' bindlongpress="button_longpress">
                 <cover-image src='/icons/text.png' mode='widthFix'></cover-image>
             </button>
             <button plain catchtap='changeStatus' id='tools_pigment'>
                 <cover-image src='/icons/color.png'></cover-image>
             </button>
+             <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
             <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
         </cover-view>
 

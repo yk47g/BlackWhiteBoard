@@ -7,11 +7,12 @@
 //   }
 //   return index;
 // }
+let  app = getApp()
 let canvas_ID = "CanvasDisplay"
 let DevelopConfiguration = {
-    SelectCornerDistance:30,//拉伸时与角点的距离。
-    SelectRectPadding:3,
-    SelectDistance:400//选择图层时允许的偏差距离。
+    SelectCornerDistance: 60,//拉伸时与角点的距离。
+    SelectRectPadding: 3,
+    SelectDistance: 400//选择图层时允许的偏差距离。
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
@@ -129,7 +130,7 @@ class ToolsStatus {
             selecting: false, //当前有焦点被选中。
             // points: new Array(4), //四个点顺时针，cgpoin类型 一个图层被选中时的矩形边框。
             actionsIndex: [],
-            touchDown_actionIndex:-1//记录按下时，所选的index
+            touchDown_actionIndex: -1//记录按下时，所选的index
 
         }
         this.mouseMoveType = -1
@@ -436,10 +437,10 @@ class CGPoint { //坐标点类
          * proportion : 比例
          * relativeOriginPoint: 相对点。
          * */
-        
+
         // relativeOriginPoint = drawBoard.getActionByindex(getCurrentPages()[0].data.toolsStatus.select.touchDown_actionIndex).relativeOriginPoint
-       
-        
+
+
         let temp = new CGPoint(
             (this.x - modelFlexData.relativeOriginPoint.x) * modelFlexData.width + modelFlexData.relativeOriginPoint.x,
             (this.y - modelFlexData.relativeOriginPoint.y) * modelFlexData.height + modelFlexData.relativeOriginPoint.y);
@@ -606,6 +607,11 @@ class CGShape extends CGLine {
 
 class CGImage {
     constructor() {
+        this.width = 0;
+        this.height = 0;
+        this.owidth = 0;
+        this.oheight = 0;
+        this.path = "";
 
     }
 }
@@ -990,7 +996,7 @@ Page({
                         //进行临时的图层拉伸展示。
                         if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
                             for (let i = 2; i < cgline.points.length; i++) {
-                                if ( toolsStatus.isSelect(a)  ) {
+                                if (toolsStatus.isSelect(a)) {
                                     let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
                                     let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
                                     let lssPoint = cgline.points[i - 2].modelFlexInit(toolsStatus.modelFlexData)
@@ -998,15 +1004,15 @@ Page({
                                 } else {
                                     this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
                                 }
-    
+
                             }
-                        }else{
+                        } else {
                             for (let i = 2; i < cgline.points.length; i++) {
                                 this.draw_line_curve(ctx, cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
-    
+
                             }
                         }
-                        
+
 
 
 
@@ -1019,7 +1025,8 @@ Page({
 
                     break
                 case Action_type.image:
-
+                    const cgimg = iAction.mode
+                    ctx.drawImage(cgimg.path,0,0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(),cgimg.width,cgimg.height)
                     break
                 case Action_type.text:
                     const cgText = iAction.mode
@@ -1110,7 +1117,7 @@ Page({
     compute_completeModelFlex(action, modelFlexData) {
         //拖动时的呈现都是临时的，并不会实时修改内存中点的数据。
         //松手后调用了这里才是完成拉伸路径数据的更新。          
-        console.log("old", action)
+
         switch (action.type) {
             case Action_type.line:
                 const cgline = action.mode
@@ -1129,8 +1136,6 @@ Page({
                 cgText.size *= ratioX
                 break
         }
-        console.log("new", action)
-
 
     },
     reset_status(toolType = 0) {//重置工具状态
@@ -1146,8 +1151,8 @@ Page({
      * 生命周期函数--监听页面加载
      */
     onLoad: function (options) {
-
-
+        
+       
         this.loadDrawBoard();
 
 
@@ -1258,10 +1263,36 @@ Page({
 
 
                 break;
-            case "tools_select":
+            case "tools_addImage":
                 console.log("选区开启");
+                let that = this
                 datas.toolsStatus.toolType = ToolsStatus_type.mouse;
-                datas.toolsStatus.nowStatus = 0;
+                wx.chooseImage({
+                    success(res) {
+                        const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
+                        console.log(imgPath)
+                        wx.getImageInfo({
+                            src: imgPath,
+                            success: function (res) {
+                                drawBoard.addAction(Action_type.image)
+                                let cgimg = drawBoard.getLastAction().mode
+                                cgimg.owidth = res.width//保存原始大小
+                                cgimg.oheight = res.height
+                                
+                                cgimg.width = res.width//用以拉伸后的大小。
+                                cgimg.height = res.height
+                                cgimg.path = res.path
+                                let systeminfo =app.globalData.systemInfo
+                                console.log(systeminfo.windowWidth,res.width )
+                                cgimg.position = new CGPoint(( systeminfo.windowWidth - res.width) / 2, (systeminfo.windowHeight - res.height) / 2)
+
+                                console.log(cgimg)
+                                that.reloadDrawBoard()
+                            }
+                        })
+                    }
+                })
+
                 // this.mouse_selectAction(drawBoard.getLastAction())
                 break;
             case "tools_pigment":
@@ -1347,7 +1378,7 @@ Page({
             case ToolsStatus_type.mouse:
 
                 let condition = toolsStatus.condition
-                let select =  toolsStatus.select
+                let select = toolsStatus.select
                 if (select.selecting == true) {//已经有图层被选中。
                     //判断是否为按下角点
                     var cornerPointIndex = -1;
@@ -1455,10 +1486,10 @@ Page({
                     let index = this.ergodicEach_Action(thisPoint)
                     if (index != -1) {
                         drawBoard.actions.splice(index, 1)
-                       
-                        this.reloadDrawBoard()   
+
+                        this.reloadDrawBoard()
                     }
-                   
+
                     return
                 }
                 return
@@ -1604,17 +1635,16 @@ Page({
                         ctx.draw(true)
                         break;
                     case Mouse_MoveType.model_felx:
-                        console.log("拉伸图层")
 
 
                         /**
                          * 先通过正在选中拉伸的图层计算出全局拉伸比例。
                          * 再遍历所有选中的对象，按这个比例进行拉伸。
                          */
-                    
+
                         let actionsIndex = toolsStatus.select.actionsIndex
                         //按下的是哪个角点。
-                        
+
                         let controlAction = drawBoard.getActionByindex(toolsStatus.select.touchDown_actionIndex);
                         let cornerIndex = this.modelFlex_cornerIndex
                         let orignPointIndex = cornerIndex >= 2 ? (this.modelFlex_cornerIndex - 2) : (this.modelFlex_cornerIndex + 2)
@@ -1713,7 +1743,7 @@ Page({
 
                             //删除临时添加的orect属性
                             delete action.oRect
-                      
+
                         }
                         toolsStatus.modelFlexData = null;
 
@@ -1779,4 +1809,3 @@ Page({
     }
     //-------响应事件写上面------
 })
-    
