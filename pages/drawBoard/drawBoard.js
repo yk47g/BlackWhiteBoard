@@ -393,6 +393,7 @@ let Action_type = {
 class CGPoint { //坐标点类
 
     constructor(x = 0, y = 0, toInt = false) {
+        
         if (toInt == true) {
             this.x = parseInt(x)
             this.y = parseInt(y)
@@ -432,6 +433,7 @@ class CGPoint { //坐标点类
         if (proportion == 1) {
             return cgpoint
         }
+
         this.x = (cgpoint.x - proportion.relativeOriginPoint.x) * proportion.width + proportion.relativeOriginPoint.x
         this.y = (cgpoint.y - proportion.relativeOriginPoint.y) * proportion.height + proportion.relativeOriginPoint.y
         return this
@@ -1093,7 +1095,7 @@ Page({
                 cgline.every(function (point) {
                     point.x = (point.x - action.proportion.relativeOriginPoint.x) * action.proportion.width + action.proportion.relativeOriginPoint.x
                     point.y = (point.y - action.proportion.relativeOriginPoint.y) * action.proportion.height + action.proportion.relativeOriginPoint.y
-                   
+
 
                 })
                 break
@@ -1110,7 +1112,7 @@ Page({
 
 
     },
-    reset_status(toolType = 0){//重置工具状态
+    reset_status(toolType = 0) {//重置工具状态
 
 
     },
@@ -1585,7 +1587,7 @@ Page({
 
                         var startPoint = toolsStatus.mouseActions[0].startPoint
                         var endPoint = toolsStatus.mouseActions[0].endPoint
-                        var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]
+                        var [OffestX, OffestY] = [endPoint.x - startPoint.x, endPoint.y - startPoint.y]//鼠标的偏移量
 
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(i);
@@ -1593,10 +1595,35 @@ Page({
 
                             //删除临时添加的orect属性
                             let oRect = action.oRect
-                            let nRect = {
-                                width: oRect.width + OffestX,
-                                height: oRect.height + OffestY
+                            var nRect
+                            switch (cornerIndex) {//按的是左上角。
+                                case 0:
+                                    nRect = {
+                                        width: oRect.width - OffestX,
+                                        height: oRect.height - OffestY
+                                    }
+                                    break;
+                                case 1:
+                                        nRect = {
+                                            width: oRect.width + OffestX,
+                                            height: oRect.height - OffestY
+                                        }
+                                    break;
+                                case 2:
+                                    nRect = {
+                                        width: oRect.width + OffestX,
+                                        height: oRect.height + OffestY
+                                    }
+                                    break;
+                                case 3:
+                                        nRect = {
+                                            width: oRect.width - OffestX,
+                                            height: oRect.height + OffestY
+                                        }
+                                    break;
+
                             }
+
 
                             var [ratioW, ratioH] = [nRect.width / oRect.width, nRect.height / oRect.height]
 
