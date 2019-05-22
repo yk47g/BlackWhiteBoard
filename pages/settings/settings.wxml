@@ -10,16 +10,31 @@
             <text>{{userId}}</text>
         </view>
     </view>
-    <view class="getUserInfoView" wx:if="{{true}}">
-            <button open-type='getUserInfo' type="primary" bindgetuserinfo="bind_GetUserInfo" >使用微信账号登陆</button>
-    </view>
     <view class="myGroupClass">
+        <view class="myGroupName">
+            <text>{{groupName}}</text>
+        </view>
         <view class="myGroupIcon">
-
+            <view class="myGroupUser1">
+                <image src="{{groupUser1iconUrl}}" ></image>
+            </view>
+            <view class="myGroupUser2">
+                <image src="{{groupUser2iconUrl}}" ></image>
+            </view>
+            <view class="myGroupUser3">
+                <image src="{{groupUser3iconUrl}}" ></image>
+            </view>
+            <view class="ADDmyGroupUser">
+                <image src="{{ADDgroupUsericonUrl}}" ></image>
+            </view>
         </view>
         <view class="myGroupButtons">
-
+            <button type="warn" bindtap="tap_CreateGroup" wx:if="{{false}}">创建协作</button>
+            <button type="warn" bindtap="tap_CreateGroup" wx:else>退出协作</button>
         </view>
+    </view>
+    <view class="getUserInfoView" wx:if="{{false}}">
+            <button open-type='getUserInfo' type="primary" bindgetuserinfo="bind_GetUserInfo" >使用微信账号登陆</button>
     </view>
     <view class="settingsButtons">
 

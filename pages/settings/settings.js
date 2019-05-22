@@ -4,9 +4,14 @@ Page({
      * 页面的初始数据
      */
     data: {
-        usericonUrl:"/icons/user.png",
+        usericonUrl: "/icons/user.png",
+        groupUser1iconUrl: "/icons/user.png",
+        groupUser2iconUrl: "/icons/user.png",
+        groupUser3iconUrl: "/icons/user.png",
+        ADDgroupUsericonUrl: "/icons/user.png",
         userName: "钢铁侠",
-        userId: 8888888
+        userId: 8888888,
+        groupName: "Avengers"
     },
 
     onLoad: function (options) {

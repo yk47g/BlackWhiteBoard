@@ -19,7 +19,8 @@
 
 .userIcon{
     position: absolute;
-    top: 3vh;
+    top: 50%;
+    margin-top: -100rpx;
     left: 8vw;
     height: 200rpx;
     width: 200rpx;
@@ -55,6 +56,118 @@
     left: 50vw;
     margin-left: -45vw;
     width: 90vw;
+    border-radius:30rpx;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    border:none;
+}
+
+.myGroupClass{
+    position: absolute;
+    top: 28vh;
+    left: 50vw;
+    margin-left: -45vw;
+    width: 90vw;
+    height: 34vh;
+    border-radius:30rpx;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    border:none;
+}
+
+.myGroupName{
+    position: absolute;
+    top: 1vh;
+    left: 3vw;
+    height: 100rpx;
+    width: 300rpx;
+    font-size : 12pt;
+    color : #BABABA;
+
+}
+
+.myGroupUser1{
+    position: absolute;
+    top:8vh;
+    left: 15vw;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+    background-color: blue;
+}
+
+.myGroupUser1 image{
+    position: static;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+}
+
+.myGroupUser2{
+    position: absolute;
+    top:8vh;
+    left: 21vw;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+    background-color: greenyellow;
+}
+
+.myGroupUser2 image{
+    position: static;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+}
+
+.myGroupUser3{
+    position: absolute;
+    top:8vh;
+    left: 28vw;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+    background-color: brown;
+}
+
+.myGroupUser3 image{
+    position: static;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+}
+
+.ADDmyGroupUser{
+    position: absolute;
+    top:8vh;
+    left: 40vw;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+    background-color: wheat;
+    box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.ADDmyGroupUser image{
+    position: static;
+    height: 150rpx;
+    width: 150rpx;
+    border-radius: 100rpx;
+}
+
+.myGroupButtons{
+    position: absolute;
+    top:24vh;
+    left: 45vw;
+    width: 80vw;
+    margin-left: -40vw;
+}
+
+.settingsButtons{
+    position: absolute;
+    top: 65vh;
+    left: 50vw;
+    margin-left: -45vw;
+    width: 90vw;
+    height: 33vh;
     border-radius:30rpx;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border:none;
