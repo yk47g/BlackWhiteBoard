@@ -7,12 +7,16 @@
 //   }
 //   return index;
 // }
-let  app = getApp()
+let app = getApp()
 let canvas_ID = "CanvasDisplay"
+let ctx = wx.createCanvasContext(canvas_ID);
+
 let DevelopConfiguration = {
     SelectCornerDistance: 60,//拉伸时与角点的距离。
     SelectRectPadding: 3,
-    SelectDistance: 400//选择图层时允许的偏差距离。
+    SimpleSelectDistance: 5,//进行其他单选时允许的偏差距离
+    SelectDistance: 400,//单选曲线时允许的偏差距离
+    imgDefaultShrinkProportion: 0.8//上传图片时超出大小，缩放到屏幕大小的比例
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
@@ -140,6 +144,9 @@ class ToolsStatus {
     }
     addSelect(indexValue) { //避免重复
         var exist = false
+        let action = drawBoard.actions[indexValue]
+        action.selectRect = action.getSelectRectObject()
+
         for (let i = 0; i < this.select.actionsIndex.length; i++) {
             const element = this.select.actionsIndex[i];
             if (element == indexValue) {
@@ -148,6 +155,8 @@ class ToolsStatus {
         }
         if (exist != true) {
             this.select.actionsIndex.push(indexValue)
+
+
         }
     }
     deleteSelect(indexValue) {
@@ -173,7 +182,7 @@ let ToolsStatus_type = { //当做枚举来用。
     pen: 0,
     mouse: 1,
     eraser: 2,
-    shape: 3,
+    image: 3,
     text: 4,
     color: 5
 }
@@ -369,15 +378,19 @@ class Action { //绘制事件类
 
                 break
             case Action_type.image:
+                const cgimg = this.mode
+                minXY = cgimg.position.getJson()
+                maxXY.x = minXY.x + cgimg.width
+                maxXY.y = minXY.y + cgimg.height
 
                 break
             case Action_type.text:
-                const cgText = action.mode
+                const cgText = this.mode
                 maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width + 3
                 maxXY.y = cgText.position.y + 4
                 minXY.x = cgText.position.x - 3
                 minXY.y = cgText.position.y - cgText.size * 0.7 - 4
-                console.log("maxmin = ", maxXY, minXY)
+          
                 break
         }
 
@@ -665,6 +678,7 @@ class LocalStorage {//本地存储类
 
 }
 
+
 //以上为类，暂时还没移到文件外。
 
 Page({
@@ -690,7 +704,7 @@ Page({
         //终点为：上一个点和当前点的中点
 
 
-        // let ctx = wx.createCanvasContext(canvas_ID);
+        // ctx = wx.createCanvasContext(canvas_ID);
         // ctx.beginPath()
 
         // ctx.setLineDash([0, 0]);
@@ -738,7 +752,7 @@ Page({
                 lsAction.text = text
                 lsAction.size = size
                 lsAction.position = new CGPoint(toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9)
-                let ctx = wx.createCanvasContext(canvas_ID);
+                ctx = wx.createCanvasContext(canvas_ID);
                 this.draw_text(ctx, lsAction)
                 ctx.draw(true);
 
@@ -770,7 +784,7 @@ Page({
         let lsAction = drawBoard.getLastAction().mode //此处lsAction 类型为CGLine
         let lsPoint = lsAction.getLastPoint(); //上一个点
         let lssPoint = lsAction.getLastPoint(1); //上一个点
-        let ctx = wx.createCanvasContext(canvas_ID);
+        ctx = wx.createCanvasContext(canvas_ID);
         lsAction.addPoint(...thisPoint.getJsonArr()) //把点加到数据库中。
         this.draw_line_curve(ctx, thisPoint, lsPoint, lssPoint)
         ctx.stroke()
@@ -823,8 +837,10 @@ Page({
 
             //开始绘制选框
 
-            let rect = action.getSelectRectObject()
-            action.selectRect = rect
+
+
+            action.selectRect = action.getSelectRectObject()
+            let rect = action.selectRect
             minXY = rect.getMin()
             maxXY = rect.getMax()
 
@@ -913,10 +929,25 @@ Page({
 
                     break
                 case Action_type.image:
+                    const cgimg = iAction.mode
+                    let DRPoint = new CGPoint(cgimg.position.x + cgimg.width, cgimg.position.y + cgimg.height)
+                    if (typeof (point.x) != "undefined") { //点选
+
+
+                        if (point.isInclude(cgimg.position, DRPoint, DevelopConfiguration.SimpleSelectDistance)) {
+                            selectIndex = a
+                        }
+                    } else { //框选
+
+                        if (isRectOverlap(point, [cgimg.position, DRPoint])) {
+                            console.log("矩形相交")
+                            toolsStatus.addSelect(a)
+                        }
+                    }
 
                     break
                 case Action_type.text:
-                    let ctx = wx.createCanvasContext(canvas_ID);
+                    ctx = wx.createCanvasContext(canvas_ID);
                     const cgText = iAction.mode
                     let textWidth = ctx.measureText(cgText.text).width
                     let startPoint = new CGPoint(cgText.position.x, cgText.position.y - cgText.size * 0.7 - 4)
@@ -924,7 +955,7 @@ Page({
                     // console.log(textWidth)
                     // console.log(cgText.position)
                     if (typeof (point.x) != "undefined") { //点选
-                        if (point.isInclude(startPoint, endPoint, 5)) {
+                        if (point.isInclude(startPoint, endPoint, DevelopConfiguration.SimpleSelectDistance)) {
                             selectIndex = a
                             // console.log("选中文字")
                         }
@@ -1026,7 +1057,7 @@ Page({
                     break
                 case Action_type.image:
                     const cgimg = iAction.mode
-                    ctx.drawImage(cgimg.path,0,0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(),cgimg.width,cgimg.height)
+                    ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
                     break
                 case Action_type.text:
                     const cgText = iAction.mode
@@ -1151,8 +1182,8 @@ Page({
      * 生命周期函数--监听页面加载
      */
     onLoad: function (options) {
-        
-       
+
+
         this.loadDrawBoard();
 
 
@@ -1211,7 +1242,7 @@ Page({
     changeStatus(e) { //画布工具栏点击事件
         let buttonId = e.currentTarget.id;
         let datas = this.data
-        let ctx = wx.createCanvasContext(canvas_ID);
+        ctx = wx.createCanvasContext(canvas_ID);
         //让画布失去焦点。
         // this.compute_textInput({},true)
 
@@ -1263,10 +1294,16 @@ Page({
 
 
                 break;
-            case "tools_addImage":
+            case "tools_select":
                 console.log("选区开启");
-                let that = this
                 datas.toolsStatus.toolType = ToolsStatus_type.mouse;
+                datas.toolsStatus.nowStatus = 0;
+                // this.mouse_selectAction(drawBoard.getLastAction())
+                break;
+            case "tools_addImage":
+
+                let that = this
+                datas.toolsStatus.toolType = ToolsStatus_type.image;
                 wx.chooseImage({
                     success(res) {
                         const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
@@ -1274,17 +1311,32 @@ Page({
                         wx.getImageInfo({
                             src: imgPath,
                             success: function (res) {
+                                let systeminfo = app.globalData.systemInfo
+
                                 drawBoard.addAction(Action_type.image)
                                 let cgimg = drawBoard.getLastAction().mode
                                 cgimg.owidth = res.width//保存原始大小
                                 cgimg.oheight = res.height
-                                
                                 cgimg.width = res.width//用以拉伸后的大小。
                                 cgimg.height = res.height
+
+                                let beyondWidth = cgimg.owidth - systeminfo.windowWidth
+                                let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
+                                if (beyondWidth > 0 || beyondHeigth > 0) {
+                                    if (beyondWidth > beyondHeigth) {
+                                        cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
+                                        cgimg.height *= (cgimg.width / cgimg.owidth)
+
+                                    } else {
+                                        cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
+                                        cgimg.width *= (cgimg.height / cgimg.oheight)
+                                    }
+                                }
+
                                 cgimg.path = res.path
-                                let systeminfo =app.globalData.systemInfo
-                                console.log(systeminfo.windowWidth,res.width )
-                                cgimg.position = new CGPoint(( systeminfo.windowWidth - res.width) / 2, (systeminfo.windowHeight - res.height) / 2)
+
+
+                                cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
 
                                 console.log(cgimg)
                                 that.reloadDrawBoard()
@@ -1439,13 +1491,14 @@ Page({
 
 
                 let index = this.ergodicEach_Action(thisPoint)
+
                 if (index != -1) {//当前操作为选中一个图层。
-                    let ctx = wx.createCanvasContext(canvas_ID);
+                    ctx = wx.createCanvasContext(canvas_ID);
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.select.touchDown_actionIndex = index
-                    toolsStatus.addSelect(index)
 
+                    toolsStatus.addSelect(index)//必须先执行。
                     this.mouse_selectAction(ctx, action)//绘制选中的边框样式，并设置action的属性selectRect为rect对象。
                     ctx.stroke()
                     ctx.draw(true)
@@ -1611,6 +1664,9 @@ Page({
                                     case Action_type.shape:
                                         break
                                     case Action_type.image:
+                                        const cgimg = iAction.mode
+                                        cgimg.position.x += OffestX
+                                        cgimg.position.y += OffestY
                                         break
                                     case Action_type.text:
                                         const cgText = iAction.mode
@@ -1626,7 +1682,7 @@ Page({
 
                     case Mouse_MoveType.multipleSelecting:
                         //多选的触发条件：按下空白地方、继续移动
-                        let ctx = wx.createCanvasContext(canvas_ID);
+                        ctx = wx.createCanvasContext(canvas_ID);
 
                         this.mouse_selectAction(ctx, [mouseActions[0].startPoint, mouseActions[0].endPoint], true)
 
@@ -1721,9 +1777,9 @@ Page({
 
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.multipleSelecting:
-                        let index = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
-                        if (index.length > 0) {
-                            console.log("选中" + index.length + "个图层 ")
+                        let indexs = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
+                        if (indexs.length > 0) {
+                            console.log("选中" + indexs.length + "个图层 ")
                             // toolsStatus.select.selecting = true
                         }
 
