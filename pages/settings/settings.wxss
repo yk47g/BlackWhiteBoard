@@ -161,7 +161,7 @@
     margin-left: -40vw;
 }
 
-.settingsButtons{
+.settingsButtonsView{
     position: absolute;
     top: 65vh;
     left: 50vw;
@@ -172,3 +172,35 @@
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border:none;
 }
+
+.settingsButtons{
+    position: absolute;
+    left: 45vw;
+    width: 80vw;
+    margin-left: -40vw;
+    top: 50%;
+    margin-top: -154rpx;
+}
+
+.div-line{
+    background: #E0E3DA;
+    width: 80vw;
+    left: 50vw;
+    height: 1rpx;
+}
+
+.list-item {
+    width: 100%;
+    height: 120rpx;
+}
+
+.item-text {
+    font-size: 20pt;
+    position: absolute;
+    left: 10vw;
+  }
+  
+  .item-image {
+    width: 69rpx;
+    height: 69rpx;
+  }
