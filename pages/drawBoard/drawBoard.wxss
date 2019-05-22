@@ -14,7 +14,7 @@
 .settings {
   position: absolute;
   left: 2vw;
-  top: 6vh;
+  top: 5vh;
   height: 80rpx;
   width: 80rpx;
   background-color: white;
