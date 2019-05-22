@@ -1,6 +1,8 @@
 {
   "navigationStyle": "custom",
-  "usingComponents": {},
+  "usingComponents": {
+   
+  },
   "pageOrientation": "auto",
   "navigationBarTitleText": "黑白板",
   "disableSwipeBack":true
