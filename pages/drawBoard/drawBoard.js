@@ -392,7 +392,13 @@ class Action { //绘制事件类
                         maxXY.x = Math.max(cgshape.points[2].x, cgshape.points[0].x)
                         maxXY.y = Math.max(cgshape.points[2].y, cgshape.points[0].y)
                         break;
-
+                    case CGShape_type.roundness:
+                      
+                        let points = cgshape.getRoundnessRectPoints()
+                        console.log(5555,points)
+                        [minXY.x, minXY.y] = [points[0].x, points[0].y]
+                        [maxXY.x, maxXY.y] = [points[1].x, points[1].y]
+                        break;
                     default:
                         break;
                 }
@@ -641,6 +647,13 @@ class CGShape extends CGLine {
         super()
         this.type = -1;
     }
+    getRinRoundness() {
+        return Math.pow(Math.pow(this.points[0].x - this.points[1].x, 2) + Math.pow(this.points[0].y - this.points[1].y, 2), 0.5)
+    }
+    getRoundnessRectPoints() {//两个points的数组
+        let r = this.getRinRoundness()
+        return [new CGPoint(this.points[0].x - r, this.points[0].y - r), new CGPoint(this.points[0].x + r, this.points[0].y + r)]
+    }
 }
 let CGShape_type = {
     none: -1,
@@ -775,6 +788,9 @@ Page({
         ctx.fillText(cgText.text, ...cgText.position.getJsonArr());
         // ctx.draw(true);
     },
+    draw_circle() {
+
+    },
     //draw 方法不会调用draw 显示，需要在外部调用。
     compute_textInput(thisPoint, disFocus = false) { //切换到文字工具-处理函数
         let datas = this.data
@@ -842,9 +858,6 @@ Page({
                 // let height = thisPoint.y - lsAction.points[0].y
 
                 let rect = new CGRect([this.data.toolsStatus.mouseActions[0].startPoint, thisPoint])
-                console.log(rect)
-
-                
                 lsAction.points[1].x = thisPoint.x
                 lsAction.points[1].y = lsAction.points[0].y
                 lsAction.points[2] = thisPoint
@@ -857,11 +870,13 @@ Page({
                 // lsAction.points[2] = rect.getPointByIndex(2)
                 // lsAction.points[3] = rect.getPointByIndex(3)
                 // lsAction.points[4] = rect.getPointByIndex(0)
-
-
+                break;
+            case CGShape_type.roundness:
+                lsAction.points[1] = thisPoint
+                // let r = Math.pow(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2), 0.5)
+                //求出半径。
 
                 break;
-
             default:
                 break;
         }
@@ -1058,18 +1073,32 @@ Page({
                                     console.log("选中矩形")
                                 }
                                 break;
-
+                            case CGShape_type.roundness:
+                                let r = cgshape.getRinRoundness()
+                                if (point.isDistance(cgshape.points[0], r*r)) {
+                                    selectIndex = a
+                                    console.log("选中圆")
+                                }
+                                break;
                             default:
                                 break;
                         }
 
                     } else { //框选
-
-                        if (isRectOverlap(point, [cgshape.points[0], cgshape.points[2]])) {
-                            console.log("矩形相交")
-                            toolsStatus.addSelect(a)
+                        switch (cgshape.type) {
+                            case CGShape_type.rectangle:
+                                if (isRectOverlap(point, [cgshape.points[0], cgshape.points[2]])) {
+                                    toolsStatus.addSelect(a)
+                                }
+                                break
+                            case CGShape_type.roundness:
+                                let r = cgshape.getRinRoundness()
+                                //通过计算圆所处的矩形大小来判断。
+                                if (isRectOverlap(point, cgshape.getRoundnessRectPoints())) {
+                                    toolsStatus.addSelect(a)
+                                }
+                                break;
                         }
-
                     }
 
                     break
@@ -1165,28 +1194,40 @@ Page({
                 case Action_type.shape:
                     //进行临时的图层拉伸展示。
                     ctx.beginPath()
-                    const cgline = iAction.mode
-                    ctx.lineWidth = cgline.lineWidth
-                    ctx.strokeStyle = cgline.color
+                    const cgshape = iAction.mode
+                    ctx.lineWidth = cgshape.lineWidth
+                    ctx.strokeStyle = cgshape.color
+                    var thisPoint, lsPoint
 
-                    if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
-                        for (let i = 1; i < cgline.points.length; i++) {
+                    for (let i = 1; i < cgshape.points.length; i++) {
 
-                            if (toolsStatus.isSelect(a)) {
-
-                                let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
-                                let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
-                                this.draw_line_curve(thisPoint, lsPoint, null)
-                            } else {
-                                this.draw_line_curve(cgline.points[i], cgline.points[i - 1])
-                            }
+                        if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
+                            thisPoint = cgshape.points[i].modelFlexInit(toolsStatus.modelFlexData)
+                            lsPoint = cgshape.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+                        } else {
+                            thisPoint = cgshape.points[i]
+                            lsPoint = cgshape.points[i - 1]
+                            // this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
                         }
-                    } else {
-                        for (let i = 1; i < cgline.points.length; i++) {
 
-                            this.draw_line_curve(cgline.points[i], cgline.points[i - 1])
+                        if (iAction.mode.type == CGShape_type.roundness) {//圆形特殊处理。
+                            let r = Math.pow(Math.pow(cgshape.points[0].x - cgshape.points[1].x, 2) + Math.pow(cgshape.points[0].y - cgshape.points[1].y, 2), 0.5)
+                            ctx.arc(...cgshape.points[0].getJsonArr(), r, 0, 2 * Math.PI, false)
+                        } else {
+                            this.draw_line_curve(thisPoint, lsPoint)
                         }
                     }
+
+
+                    // for (let i = 1; i < cgshape.points.length; i++) {
+                    //     if (iAction.mode.type = CGShape_type.roundness) {//圆形特殊处理。
+                    //         let r = Math.pow(Math.pow(cgshape.points[0].x - cgshape.points[1].x, 2) + Math.pow(cgshape.points[0].y - cgshape.points[1].y, 2), 0.5)
+                    //         ctx.arc(...cgshape.points[0].getJsonArr(), r, 0, 2 * Math.PI, false)
+                    //     } else {
+                    //         this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
+                    //     }
+                    // }
+
                     ctx.closePath()
                     ctx.stroke()
                     break
@@ -1220,7 +1261,7 @@ Page({
         }
 
         //为选中的图层添加选中框（多,单选时。）
-        if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx &&  toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
+        if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx && toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
             ctx.beginPath()
             ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
             ctx.lineWidth = 2
@@ -1620,15 +1661,20 @@ Page({
                 var lsAction = drawBoard.getLastAction().mode; //并且开始记录
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
-                lsAction.type = CGShape_type.rectangle
-                datas.penConfiguration.shape = CGShape_type.rectangle
+
+                datas.penConfiguration.shape = CGShape_type.roundness
+                lsAction.type = datas.penConfiguration.shape
                 switch (datas.penConfiguration.shape) {
                     case CGShape_type.rectangle:
                         for (let i = 0; i < 5; i++) {
                             lsAction.addPoint(...thisPoint.getJsonArr())//依次添加矩形的四个点。
                         }
                         break;
-
+                    case CGShape_type.roundness:
+                        for (let i = 0; i < 2; i++) {
+                            lsAction.addPoint(...thisPoint.getJsonArr())//1.原点，2.圆弧点。
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -1696,7 +1742,7 @@ Page({
                 let index = this.ergodicEach_Action(thisPoint)
 
                 if (index != -1) {//当前操作为选中一个图层。
-                  
+
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.select.touchDown_actionIndex = index
@@ -1708,8 +1754,8 @@ Page({
                     //
                     condition.addValue(Condition_Type.touchDown_select)
                     condition.addValue(Condition_Type.touchDown_center)
-                   
-                 
+
+                    this.reloadDrawBoard()
 
                 } else {
 
@@ -1841,7 +1887,7 @@ Page({
                     this.reloadDrawBoard()
                     //状态：进行多选
                 }
-                if ( toolsStatus.mouseMoveType != Mouse_MoveType.model_move && condition.meet(Condition_Type.touchDown_select,Condition_Type.touchDown_center)) {
+                if (toolsStatus.mouseMoveType != Mouse_MoveType.model_move && condition.meet(Condition_Type.touchDown_select, Condition_Type.touchDown_center)) {
                     toolsStatus.mouseMoveType = Mouse_MoveType.model_move
                     this.reloadDrawBoard()//开启持续刷新图层样式。
                 }
