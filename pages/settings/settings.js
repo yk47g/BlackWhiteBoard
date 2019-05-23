@@ -13,7 +13,7 @@ Page({
         ShowgetUserInfoView: false,
         userName: "未登录",
         userId: 8888888,
-        groupName: "Avengers"
+        groupName: "未加入协作"
     },
 
     onLoad: function (options) {
@@ -24,8 +24,8 @@ Page({
 
         //----------------
         bind_GetUserInfo(e){
-        this.applyPermission()
-    
+            this.applyPermission();
+            
         },
       
         applyPermission() {
@@ -49,8 +49,7 @@ Page({
                     } else {
                         console.log("用户未授权user信息");
                         that.setData({
-                            ShowgetUserInfoView: true,
-                            userId: "首次使用,请先登陆"
+                            ShowgetUserInfoView: true
                         });
                     }
                 }
