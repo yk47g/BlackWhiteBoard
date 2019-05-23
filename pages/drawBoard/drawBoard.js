@@ -10,7 +10,9 @@
 let app = getApp()
 let canvas_ID = "CanvasDisplay"
 let ctx = wx.createCanvasContext(canvas_ID);
-
+ctx.lineJoin = "round"
+ctx.lineCap = "round"
+ctx.save()
 let DevelopConfiguration = {
     SelectCornerDistance: 60,//拉伸时与角点的距离。
     SelectRectPadding: 3,
@@ -712,7 +714,7 @@ Page({
         //终点为：上一个点和当前点的中点
 
 
-        // ctx = wx.createCanvasContext(canvas_ID);
+
         // ctx.beginPath()
 
         // ctx.setLineDash([0, 0]);
@@ -790,10 +792,13 @@ Page({
 
         let datas = this.data
         let lsAction = drawBoard.getLastAction().mode //此处lsAction 类型为CGLine
+
         let lsPoint = lsAction.getLastPoint(); //上一个点
         let lssPoint = lsAction.getLastPoint(1); //上一个点
-
         lsAction.addPoint(...thisPoint.getJsonArr()) //把点加到数据库中。
+        if (lsAction.points.length < 3) {
+            return
+        }
         this.draw_line_curve(thisPoint, lsPoint, lssPoint)
         ctx.stroke()
         ctx.draw(true)
@@ -994,14 +999,16 @@ Page({
 
     reloadDrawBoard() {
 
-        var time = Date.now()
+        // var time = Date.now()
         let actions = drawBoard.actions
         let toolsStatus = this.data.toolsStatus
+        ctx.lineJoin = "round"
+        ctx.lineCap = "round"
         // var ctx, ctxb
         // if (canvas_ID != "CanvasMemory") {
         //     // canvas_ID = "CanvasDisplay"
         //     // ctxb = wx.createCanvasContext("CanvasMemory");
-        ctx = wx.createCanvasContext(canvas_ID); //即将要显示的canvas
+        // ctx = wx.createCanvasContext(canvas_ID); //即将要显示的canvas
         // } else {
         //     //   canvas_ID = "CanvasMemory"
         //     //   ctxb = wx.createCanvasContext("CanvasDisplay");
@@ -1014,13 +1021,13 @@ Page({
 
 
         // 先绘制全部曲线。
-        ctx.save()
-        ctx.save()
-        ctx.save()
-        ctx.save()//保存最开始的样式
+
+        // ctx.save()
+        // ctx.save()
+        // ctx.save()//保存最开始的样式
         // ctx.setLineDash([0, 0]);
-        ctx.lineJoin = "round"
-        ctx.lineCap = "round"
+
+        // ctx.setLineDash([0]);
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
             switch (iAction.type) {
@@ -1030,14 +1037,15 @@ Page({
                     ctx.lineWidth = cgline.lineWidth
                     ctx.strokeStyle = cgline.color
 
-
-
                     //进行临时的图层拉伸展示。
                     if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
                         for (let i = 2; i < cgline.points.length; i++) {
                             if (toolsStatus.isSelect(a)) {
+
                                 let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
+
                                 let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+
                                 let lssPoint = cgline.points[i - 2].modelFlexInit(toolsStatus.modelFlexData)
                                 this.draw_line_curve(thisPoint, lsPoint, lssPoint)
                             } else {
@@ -1056,7 +1064,7 @@ Page({
             }
         }
 
-        
+
 
         // 再绘制形状。
         for (let a = 0; a < actions.length; a++) {
@@ -1066,7 +1074,7 @@ Page({
                     break
             }
         }
-       
+
         // 再绘制文字。
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
@@ -1078,7 +1086,7 @@ Page({
             }
 
         }
-        
+
 
         // 再绘制图片。
         for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
@@ -1092,7 +1100,7 @@ Page({
             }
 
         }
-        
+
         // console.log("遍历所有路径所需时间：", Date.now() - time)
         if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx) {
             ctx.beginPath()
@@ -1104,10 +1112,7 @@ Page({
                 const iAction = actions[a];
 
                 if (toolsStatus.isSelect(a)) {
-
-
                     this.mouse_selectAction(iAction)
-
                     ctx.stroke()
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
                     // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
@@ -1119,14 +1124,26 @@ Page({
                 }
             }
         }
+        if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
+            // ctx.beginPath()
+            let mouseActions = toolsStatus.mouseActions
+            ctx.lineWidth = 2
+            ctx.strokeStyle = "rgb(80,80,80)"
+            ctx.setLineDash([3, 6]);
+            this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
+            ctx.stroke()
 
+        }
         ctx.draw(false, () => {
 
-            if (this.data.toolsStatus.mouseMoveType == Mouse_MoveType.model_move) {
+            if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
+
                 this.reloadDrawBoard()
+
             }
         })
-       
+        ctx.restore()
+        ctx.save()
         //避免错误，在后面再画选框
 
         // if (toolsStatus.select.selecting == true) {
@@ -1201,9 +1218,17 @@ Page({
         }
 
     },
-    reset_status(toolType = 0) {//重置工具状态
-
-
+    cancelSelectStatus() {//重置工具状态
+        let toolsStatus = this.data.toolsStatus
+        let condition = toolsStatus.condition
+        condition.deleteAll()
+     
+        toolsStatus.mouseMoveType = Mouse_MoveType.none
+        toolsStatus.select.actionsIndex = null
+        toolsStatus.select.actionsIndex = []
+        toolsStatus.select.touchDown_actionIndex = -1
+        toolsStatus.select.selecting = false
+        this.reloadDrawBoard()
     },
     //-------以上为画布动作的处理事件-----
 
@@ -1292,7 +1317,7 @@ Page({
 
                 // animation.translate(100, -100);
                 // animation.step()
-                if (this.data.runAM == false) {
+                if (datas.runAM == false && datas.toolsStatus.toolType == ToolsStatus_type.pen) {
                     this.setData({
                         toolBarDetailindex: 0,
                     })
@@ -1305,14 +1330,14 @@ Page({
                 }
 
 
-
+                this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.pen;
                 datas.toolsStatus.nowStatus = 0;
 
                 break;
             case "tools_eraser":
                 console.log("橡皮开启");
-
+                this.cancelSelectStatus();//取消选中状态。
                 // ctx.draw()
                 // this.reloadDrawBoard()
                 datas.toolsStatus.toolType = ToolsStatus_type.eraser;
@@ -1326,19 +1351,20 @@ Page({
                 break;
             case "tools_text":
                 console.log("文字开启");
-
+                this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.text;
                 datas.toolsStatus.nowStatus = 0;
 
                 break;
             case "tools_select":
                 console.log("选区开启");
+                // this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.mouse;
                 datas.toolsStatus.nowStatus = 0;
-                // this.mouse_selectAction(drawBoard.getLastAction())
+               
                 break;
             case "tools_addImage":
-
+                this.cancelSelectStatus()
                 let that = this
                 datas.toolsStatus.toolType = ToolsStatus_type.image;
                 wx.chooseImage({
@@ -1374,9 +1400,11 @@ Page({
 
 
                                 cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
-
-                                console.log(cgimg)
+                                datas.toolsStatus.toolType = ToolsStatus_type.mouse;
+                                datas.toolsStatus.nowStatus = 0;
+                             
                                 that.reloadDrawBoard()
+                                
                             }
                         })
                     }
@@ -1522,19 +1550,11 @@ Page({
                         }
 
                     }
-
-
-
-
-
-
                 }
-
-
                 let index = this.ergodicEach_Action(thisPoint)
 
                 if (index != -1) {//当前操作为选中一个图层。
-                    // ctx = wx.createCanvasContext(canvas_ID);
+
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.select.touchDown_actionIndex = index
@@ -1672,14 +1692,11 @@ Page({
 
 
             case ToolsStatus_type.mouse:
-                if (condition.meet(Condition_Type.touchDown_none)) {
+                if (toolsStatus.mouseMoveType != Mouse_MoveType.multipleSelecting && condition.meet(Condition_Type.touchDown_none)) {
                     toolsStatus.mouseMoveType = Mouse_MoveType.multipleSelecting
                     this.reloadDrawBoard()
                     //状态：进行多选
                 }
-
-
-
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.simpleSelect:
                     case Mouse_MoveType.model_move:
@@ -1724,12 +1741,6 @@ Page({
                     case Mouse_MoveType.multipleSelecting:
                         //多选的触发条件：按下空白地方、继续移动
 
-
-                        this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
-
-
-                        ctx.stroke()
-                        ctx.draw(true)
                         break;
                     case Mouse_MoveType.model_felx:
 
@@ -1818,13 +1829,16 @@ Page({
 
                 switch (toolsStatus.mouseMoveType) {
                     case Mouse_MoveType.multipleSelecting:
+
                         let indexs = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
+                        toolsStatus.mouseMoveType = Mouse_MoveType.none
                         if (indexs.length > 0) {
                             console.log("选中" + indexs.length + "个图层 ")
+                            toolsStatus.select.selecting = true
                             // toolsStatus.select.selecting = true
                         }
 
-                        toolsStatus.select.selecting = true
+
 
                         this.reloadDrawBoard()
                         break;
