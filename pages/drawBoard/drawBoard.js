@@ -702,7 +702,7 @@ Page({
             color: "red",
             shape: -1,
             lineDash: false,
-            lineWidth: 30
+            lineWidth: 3
         }
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint, color = "red", width = 3) {
@@ -760,7 +760,7 @@ Page({
                 lsAction.text = text
                 lsAction.size = size
                 lsAction.position = new CGPoint(toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9)
-                ctx = wx.createCanvasContext(canvas_ID);
+
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
@@ -792,7 +792,7 @@ Page({
         let lsAction = drawBoard.getLastAction().mode //此处lsAction 类型为CGLine
         let lsPoint = lsAction.getLastPoint(); //上一个点
         let lssPoint = lsAction.getLastPoint(1); //上一个点
-        ctx = wx.createCanvasContext(canvas_ID);
+
         lsAction.addPoint(...thisPoint.getJsonArr()) //把点加到数据库中。
         this.draw_line_curve(thisPoint, lsPoint, lssPoint)
         ctx.stroke()
@@ -955,7 +955,7 @@ Page({
 
                     break
                 case Action_type.text:
-                    ctx = wx.createCanvasContext(canvas_ID);
+
                     const cgText = iAction.mode
                     let textWidth = ctx.measureText(cgText.text).width
                     let startPoint = new CGPoint(cgText.position.x, cgText.position.y - cgText.size * 0.7 - 4)
@@ -1014,27 +1014,24 @@ Page({
 
 
         // 先绘制全部曲线。
-
+        ctx.save()
+        ctx.save()
+        ctx.save()
         ctx.save()//保存最开始的样式
         // ctx.setLineDash([0, 0]);
         ctx.lineJoin = "round"
         ctx.lineCap = "round"
-
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
             switch (iAction.type) {
                 case Action_type.line:
-
+                    ctx.beginPath()
                     const cgline = iAction.mode
                     ctx.lineWidth = cgline.lineWidth
                     ctx.strokeStyle = cgline.color
-                    ctx.beginPath()
 
-                    var proportion = 1
-                    if (typeof (iAction.proportion) != "undefined") {
-                        proportion = iAction.proportion
-                        console.log("比例为：", iAction.proportion)
-                    }
+
+
                     //进行临时的图层拉伸展示。
                     if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
                         for (let i = 2; i < cgline.points.length; i++) {
@@ -1058,9 +1055,9 @@ Page({
                     break
             }
         }
-      
-        ctx.restore()//恢复样式
-    
+
+        
+
         // 再绘制形状。
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
@@ -1069,8 +1066,7 @@ Page({
                     break
             }
         }
-
-        ctx.restore()
+       
         // 再绘制文字。
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
@@ -1082,8 +1078,8 @@ Page({
             }
 
         }
+        
 
-       
         // 再绘制图片。
         for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
             const iAction = actions[a];
@@ -1096,14 +1092,14 @@ Page({
             }
 
         }
-        ctx.restore()
+        
         // console.log("遍历所有路径所需时间：", Date.now() - time)
         if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx) {
-            // ctx.save()
-            // ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
-            // ctx.lineWidth = 2
-            // ctx.fillStyle = "pink"//"rgb(32,222,147)"
-            // ctx.setLineDash([3, 6]);
+            ctx.beginPath()
+            ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
+            ctx.lineWidth = 2
+            ctx.fillStyle = "pink"//"rgb(32,222,147)"
+            ctx.setLineDash([3, 6]);
             for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
                 const iAction = actions[a];
 
@@ -1130,6 +1126,7 @@ Page({
                 this.reloadDrawBoard()
             }
         })
+       
         //避免错误，在后面再画选框
 
         // if (toolsStatus.select.selecting == true) {
@@ -1277,7 +1274,7 @@ Page({
     changeStatus(e) { //画布工具栏点击事件
         let buttonId = e.currentTarget.id;
         let datas = this.data
-        ctx = wx.createCanvasContext(canvas_ID);
+
         //让画布失去焦点。
         // this.compute_textInput({},true)
 
@@ -1460,10 +1457,10 @@ Page({
                 ctx.lineJoin = "round"
                 ctx.lineCap = "round"
 
-                let lsAction = drawBoard.getLastAction(); //并且开始记录
+                let lsAction = drawBoard.getLastAction().mode; //并且开始记录
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
-                lsAction.mode.addPoint(...thisPoint.getJsonArr())
+                lsAction.addPoint(...thisPoint.getJsonArr())
 
                 return
 
@@ -1537,7 +1534,7 @@ Page({
                 let index = this.ergodicEach_Action(thisPoint)
 
                 if (index != -1) {//当前操作为选中一个图层。
-                    ctx = wx.createCanvasContext(canvas_ID);
+                    // ctx = wx.createCanvasContext(canvas_ID);
                     let action = drawBoard.getActionByindex(index)
                     toolsStatus.select.selecting = true
                     toolsStatus.select.touchDown_actionIndex = index
@@ -1726,7 +1723,7 @@ Page({
 
                     case Mouse_MoveType.multipleSelecting:
                         //多选的触发条件：按下空白地方、继续移动
-                        ctx = wx.createCanvasContext(canvas_ID);
+
 
                         this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
 
