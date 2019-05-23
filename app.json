@@ -1,12 +1,11 @@
 {
   "pages": [
+
     "pages/drawBoard/drawBoard",
     "pages/index/index",
     "pages/settings/settings"
     
 
-   
-    
   ],
   "window": {
     "backgroundTextStyle": "light",

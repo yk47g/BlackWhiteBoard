@@ -78,34 +78,33 @@
 }
 .toolsBarDeatil{
   position: absolute;
-  bottom: 0;
-
+     bottom: 0;
+  transition: background 0.4s;
   height:100vh;
   width: 100vw;
-  background:rgba(0,0,0,0.3);
+  background:rgba(0,0,0,0);
 /* 背景半黑蒙版 */
 }
+.toolsBarDeatil_show{
+   background:rgba(0,0,0,0.3);
+ 
+}
 
-.toolsBarDeatil cover-view{
+.toolsBarDeatilPane{
   box-sizing: border-box;
+    transition:bottom 0.4s;
   position: absolute;
-  bottom: 0vh;
+  bottom: -30vh;
   width: 100vw;
-  height:40vh;
-  border-radius: 40rpx 40rpx 0 0;
-   
+  height:30vh;
+  border-radius: 40rpx;
+
   background:rgba(255, 255, 255, 0.95);
   padding: 30rpx;
 
 }
-
-
-.animation_background{
-  transition: background 1s
-}
-.animation_toolsBarDeatil{
-
-  transition: bottom,height 0.3s
+.toolsBarDeatilPane_show{
+  bottom: 0;
 
 }
 
