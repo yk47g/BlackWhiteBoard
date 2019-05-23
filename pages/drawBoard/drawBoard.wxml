@@ -34,7 +34,7 @@
                 <cover-image src='/icons/color.png'></cover-image>
             </button>
              <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
-            <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
+            <button plain catchtap='changeStatus' id='tools_shape'>形状</button>
         </cover-view>
    <!-- style="{{>=0 ? '':'display:none;'}}"  -->
       <block wx:if="{{toolBarDetailindex >= 0}}">
@@ -43,10 +43,13 @@
         <!-- 选择 -->
        <!-- 画笔 -->
         <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex == 0 && runAM) ? 'toolsBarDeatilPane_show':''}}" >
-          
-          
-          当前画笔大小 {{penConfiguration.lineWidth}}
-     
+          <cover-view>
+             当前画笔大小  {{penConfiguration.lineWidth}}
+            <cover-view></cover-view>
+          </cover-view>
+           <cover-view>
+             绘制形状 矩形
+          </cover-view>
         </cover-view>
         <!-- 文字 -->
         <!-- 颜色 -->
