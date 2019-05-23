@@ -25,7 +25,6 @@
     height: 200rpx;
     width: 200rpx;
     border-radius: 100rpx;
-    background-color: blue;
 }
 
 .userNameId{
@@ -52,10 +51,9 @@
 
 .getUserInfoView{
     position: absolute;
-    top: 27vh;
-    left: 50vw;
-    margin-left: -45vw;
-    width: 90vw;
+    top: 12vh;
+    left: 42vw;
+    right: 5vw;
     border-radius:30rpx;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border:none;
@@ -91,7 +89,7 @@
     height: 150rpx;
     width: 150rpx;
     border-radius: 100rpx;
-    background-color: blue;
+    background-color: white;
 }
 
 .myGroupUser1 image{
@@ -108,7 +106,7 @@
     height: 150rpx;
     width: 150rpx;
     border-radius: 100rpx;
-    background-color: greenyellow;
+    background-color: white;
 }
 
 .myGroupUser2 image{
@@ -125,7 +123,7 @@
     height: 150rpx;
     width: 150rpx;
     border-radius: 100rpx;
-    background-color: brown;
+    background-color: white;
 }
 
 .myGroupUser3 image{
@@ -139,17 +137,21 @@
     position: absolute;
     top:8vh;
     left: 40vw;
-    height: 150rpx;
-    width: 150rpx;
+    height: 160rpx;
+    width: 160rpx;
     border-radius: 100rpx;
-    background-color: wheat;
+    background-color: white;
     box-shadow: 1px 2px 20px rgba(0, 0, 0, 0.1);
 }
 
 .ADDmyGroupUser image{
-    position: static;
-    height: 150rpx;
-    width: 150rpx;
+    position: absolute;
+    top: 50%;
+    margin-top: -70rpx;
+    left: 50%;
+    margin-left: -70rpx;
+    height: 140rpx;
+    width: 140rpx;
     border-radius: 100rpx;
 }
 
@@ -159,16 +161,50 @@
     left: 45vw;
     width: 80vw;
     margin-left: -40vw;
+    border-radius:30rpx;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+    border:none;
 }
 
-.settingsButtons{
+.settingsButtonsView{
     position: absolute;
     top: 65vh;
     left: 50vw;
     margin-left: -45vw;
     width: 90vw;
-    height: 33vh;
+    height: 32vh;
     border-radius:30rpx;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border:none;
 }
+
+.settingsButtons{
+    position: absolute;
+    left: 45vw;
+    width: 80vw;
+    margin-left: -40vw;
+    top: 50%;
+    margin-top: -140rpx;
+}
+
+.div-line{
+    background: #E0E3DA;
+    width: 80vw;
+    height: 1rpx;
+}
+
+.list-item {
+    width: 100%;
+    height: 110rpx;
+}
+
+.item-text {
+    font-size: 40rpx;
+    position: absolute;
+    left: 11vw;
+  }
+  
+  .item-image {
+    width: 60rpx;
+    height: 60rpx;
+  }

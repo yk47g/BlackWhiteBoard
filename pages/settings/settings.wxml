@@ -9,6 +9,9 @@
         <view class="userId" bindtap="tap_NameId" >
             <text>{{userId}}</text>
         </view>
+        <view class="getUserInfoView" wx:if="{{ShowgetUserInfoView}}">
+            <button open-type='getUserInfo' type="primary" bindgetuserinfo="bind_GetUserInfo" >微信账号登陆</button>
+        </view>
     </view>
     <view class="myGroupClass">
         <view class="myGroupName">
@@ -25,18 +28,38 @@
                 <image src="{{groupUser3iconUrl}}" ></image>
             </view>
             <view class="ADDmyGroupUser">
-                <image src="{{ADDgroupUsericonUrl}}" ></image>
+                <image src="/icons/more.png" ></image>
             </view>
         </view>
         <view class="myGroupButtons">
-            <button type="warn" bindtap="tap_CreateGroup" wx:if="{{false}}">创建协作</button>
+            <button type="warn" bindtap="tap_CreateGroup" wx:if="{{false}}">创建/加入协作</button>
             <button type="warn" bindtap="tap_CreateGroup" wx:else>退出协作</button>
         </view>
     </view>
-    <view class="getUserInfoView" wx:if="{{false}}">
-            <button open-type='getUserInfo' type="primary" bindgetuserinfo="bind_GetUserInfo" >使用微信账号登陆</button>
-    </view>
-    <view class="settingsButtons">
-
+    
+    <view class="settingsButtonsView">
+        <view class="settingsButtons">
+            <navigator url="/page/navigate/navigate" class="list-item">
+                <view class='item'>
+                    <image class="item-image" src='/icons/groupSettings.png'></image>
+                    <text class="item-text">协作设置</text>
+                    <view class="div-line"></view>
+                </view>
+            </navigator>
+            <navigator url="/page/navigate/navigate" class="list-item">
+                <view class='item'>
+                    <image class="item-image" src='/icons/drawSettings.png'></image>
+                    <text class="item-text">画板设置</text>
+                    <view class="div-line"></view>
+                </view>
+            </navigator>
+            <navigator url="/page/navigate/navigate" class="list-item">
+                <view class='item'>
+                    <image class="item-image" src='/icons/help.png'></image>
+                    <text class="item-text">使用手册</text>
+                </view>
+                <view class="div-line"></view>
+            </navigator>
+        </view>
     </view>
 </view>
