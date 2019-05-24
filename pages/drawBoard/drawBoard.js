@@ -404,7 +404,12 @@ class Action { //绘制事件类
                         maxXY.x = points[1].x
                         maxXY.y = points[1].y
                         break;
-                    default:
+                    case CGShape_type.triangle:
+
+                        minXY.x = Math.min(cgshape.points[0].x, cgshape.points[1].x)
+                        minXY.y = Math.min(cgshape.points[0].y, cgshape.points[2].y)
+                        maxXY.x = Math.max(cgshape.points[0].x, cgshape.points[1].x)
+                        maxXY.y = Math.max(cgshape.points[0].y, cgshape.points[2].y)
                         break;
                 }
                 break
@@ -894,7 +899,14 @@ Page({
                 lsAction.points[1] = thisPoint
                 // let r = Math.pow(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2), 0.5)
                 //求出半径。
+                break
+            case CGShape_type.triangle:
 
+                lsAction.points[1] = thisPoint
+                let width = thisPoint.x - lsAction.points[0].x
+                let midHeight = thisPoint.y - lsAction.points[0].y
+                // lsAction.points[2].x = lsAction.points[0].x
+                lsAction.points[2].y = lsAction.points[0].y + 2 * midHeight
                 break;
             default:
                 break;
@@ -1099,6 +1111,14 @@ Page({
                                     console.log("选中圆")
                                 }
                                 break;
+                            case CGShape_type.triangle:
+                                let ULPoint = cgshape.points[0]
+                                let DRPoint = new CGPoint(cgshape.points[1].x, cgshape.points[2].y)
+                                if (point.isInclude(ULPoint, DRPoint, DevelopConfiguration.SimpleSelectDistance)) {
+                                    selectIndex = a
+                                    console.log("选中三角形")
+                                }
+                                break
                             default:
                                 break;
                         }
@@ -1117,6 +1137,14 @@ Page({
                                     toolsStatus.addSelect(a)
                                 }
                                 break;
+                            case CGShape_type.triangle:
+                                let ULPoint = cgshape.points[0]
+                                let DRPoint = new CGPoint(cgshape.points[1].x, cgshape.points[2].y)
+                                if (isRectOverlap(point, [ULPoint, DRPoint])) {
+                                    toolsStatus.addSelect(a)
+                                }
+
+                                break
                         }
                     }
 
@@ -1709,7 +1737,7 @@ Page({
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
 
-                datas.penConfiguration.shape = CGShape_type.roundness
+                datas.penConfiguration.shape = CGShape_type.triangle
                 lsAction.type = datas.penConfiguration.shape
                 switch (datas.penConfiguration.shape) {
                     case CGShape_type.rectangle:
@@ -1720,6 +1748,11 @@ Page({
                     case CGShape_type.roundness:
                         for (let i = 0; i < 2; i++) {
                             lsAction.addPoint(...thisPoint.getJsonArr())//1.原点，2.圆弧点。
+                        }
+                        break;
+                    case CGShape_type.triangle:
+                        for (let i = 0; i < 3; i++) {
+                            lsAction.addPoint(...thisPoint.getJsonArr())//三角形三个点。
                         }
                         break;
                     default:
