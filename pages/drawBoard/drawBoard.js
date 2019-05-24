@@ -14,7 +14,7 @@ ctx.lineJoin = "round"
 ctx.lineCap = "round"
 ctx.save()
 let DevelopConfiguration = {
-    SelectCornerDistance: 60,//拉伸时与角点的距离。
+    SelectCornerDistance: 70,//拉伸时与角点的距离。
     SelectRectPadding: 3,
     SimpleSelectDistance: 5,//进行其他单选时允许的偏差距离
     SelectDistance: 400,//单选曲线时允许的偏差距离
@@ -417,12 +417,12 @@ class Action { //绘制事件类
                 break
             case Action_type.text:
                 const cgText = this.mode
-               
-                maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width -3
-                maxXY.y = cgText.position.y + (cgText.size)/2 
+
+                maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width - 3
+                maxXY.y = cgText.position.y + (cgText.size) / 2
                 minXY.x = cgText.position.x - 3
-                minXY.y = cgText.position.y - (cgText.size)/2 -2
-                console.log(cgText,minXY,maxXY)
+                minXY.y = cgText.position.y - (cgText.size) / 2 - 2
+                console.log(cgText, minXY, maxXY)
                 break
         }
         //以上的maxxy不能直接赋值cgpoint引用，否则会出现问题。
@@ -676,7 +676,7 @@ class CGImage {
         this.owidth = 0;
         this.oheight = 0;
         this.path = "";
-
+        this.position = null;
     }
 }
 class CGText {
@@ -754,7 +754,7 @@ Page({
             lineDash: false,
             lineWidth: 3,
             shape: CGShape_type.none,
-            textSize:100
+            textSize: 30
         }
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
@@ -792,18 +792,18 @@ Page({
     },
     draw_text(cgText, tempflexData = null) {
         ctx.fillStyle = cgText.color
-      
-        var position =  new CGPoint(cgText.position.x,cgText.position.y)
+
+        var position = new CGPoint(cgText.position.x, cgText.position.y)
         if (tempflexData == null) {
             ctx.setFontSize(cgText.size);
         } else {
             ctx.setFontSize(tempflexData.size);
             position = tempflexData.position
         }
-        console.log("字体大小",cgText.size)
+        console.log("字体大小", cgText.size)
         position.x -= 3
-        position.y+=cgText.size*0.34
-     
+        position.y += cgText.size * 0.34
+
         ctx.fillText(cgText.text, ...position.getJsonArr());
         // ctx.draw(true);
     },
@@ -825,7 +825,7 @@ Page({
                 let lsAction = (drawBoard.addAction(Action_type.text)).mode //为CGText
                 lsAction.text = text
                 lsAction.size = size
-                lsAction.position = new CGPoint(toolsStatus.keyBord.x , toolsStatus.keyBord.y)
+                lsAction.position = new CGPoint(toolsStatus.keyBord.x, toolsStatus.keyBord.y)
 
                 this.draw_text(lsAction)
                 ctx.draw(true);
@@ -1264,14 +1264,14 @@ Page({
                     if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
                         tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
                         tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
-                        console.log("临时拉伸数据",tempflexData)
+                        console.log("临时拉伸数据", tempflexData)
                         this.draw_text(cgText, tempflexData)
-                    } else{
-                        console.log("完成",cgText)
+                    } else {
+                        console.log("完成", cgText)
                         this.draw_text(cgText)
                     }
-                 
-                    
+
+
                     break
             }
 
@@ -1284,7 +1284,17 @@ Page({
             switch (iAction.type) {
                 case Action_type.image:
                     const cgimg = iAction.mode
-                    ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+
+                    if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
+                        let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
+                        let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
+                        let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
+                        ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
+
+                    } else {
+                        ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+
+                    }
                     break
 
             }
@@ -1401,12 +1411,16 @@ Page({
 
 
             case Action_type.image:
+                const cgimg = action.mode
+                cgimg.width = cgimg.width * modelFlexData.width
+                cgimg.height = cgimg.height * modelFlexData.height
+                cgimg.position = cgimg.position.modelFlexInit(modelFlexData)
                 break
             case Action_type.text:
                 const cgText = action.mode
-                cgText.size *= (this.data.toolsStatus.modelFlexData.width + this.data.toolsStatus.modelFlexData.height) / 2
-                cgText.position = cgText.position.modelFlexInit(this.data.toolsStatus.modelFlexData)
-        
+                cgText.size *= (modelFlexData.width + modelFlexData.height) / 2
+                cgText.position = cgText.position.modelFlexInit(modelFlexData)
+
                 break
         }
 
@@ -2075,7 +2089,7 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         let actionsIndex = toolsStatus.select.actionsIndex
-                        
+
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(actionsIndex[i]);
                             this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
@@ -2087,7 +2101,7 @@ Page({
                         toolsStatus.mouseMoveType = Mouse_MoveType.none
                         toolsStatus.modelFlexData = null;
 
-                  
+
                         this.reloadDrawBoard()
                         break;
                     default:
