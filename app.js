@@ -12,7 +12,7 @@ App({
     wx.getSystemInfo({
       success: (res)=> {
         this.globalData.systemInfo = res
-          console.log("获取系统信息完成。",this.globalData)
+          console.log("获取系统信息完成。")
       },
     })
   },

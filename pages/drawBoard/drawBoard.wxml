@@ -7,7 +7,7 @@
         </scroll-view>
         
         <!-- 画布不支持单击事件 -->
-        <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}" style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-6}}px;top: {{toolsStatus.keyBord.y - 8}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
+        <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}" style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-3}}px;top: {{toolsStatus.keyBord.y -13}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
 
         <!--设置按钮-->
         <cover-view class='settings'>

@@ -271,7 +271,11 @@ class DrawBoard {
     }
     addAction(type) {
         this.actions.push(new Action(type)); //添加一次绘制事件
-        return this.getLastAction()
+        let action = this.getLastAction()
+        action.time = new Date().toLocaleTimeString()
+        // action.user
+        return action
+
     }
     getLastAction(index = 0) { //支持返回倒数前几个点
         let length = this.actions.length
@@ -413,11 +417,12 @@ class Action { //绘制事件类
                 break
             case Action_type.text:
                 const cgText = this.mode
-                maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width + 3
-                maxXY.y = cgText.position.y + 4
+               
+                maxXY.x = cgText.position.x + ctx.measureText(cgText.text).width -3
+                maxXY.y = cgText.position.y + (cgText.size)/2 
                 minXY.x = cgText.position.x - 3
-                minXY.y = cgText.position.y - cgText.size * 0.7 - 4
-
+                minXY.y = cgText.position.y - (cgText.size)/2 -2
+                console.log(cgText,minXY,maxXY)
                 break
         }
         //以上的maxxy不能直接赋值cgpoint引用，否则会出现问题。
@@ -743,12 +748,13 @@ Page({
             nleft: 0,
         },
 
-        penConfiguration: {//默认的画笔配置。
+        penConfiguration: {//当前工具栏的配置状态。
             color: "red",
             shape: -1,
             lineDash: false,
             lineWidth: 3,
-            shape: CGShape_type.none
+            shape: CGShape_type.none,
+            textSize:100
         }
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
@@ -784,10 +790,21 @@ Page({
         // ctx.draw(true)不直接在此函数默认执行draw 避免出现闪烁的现象。
 
     },
-    draw_text(cgText) {
+    draw_text(cgText, tempflexData = null) {
         ctx.fillStyle = cgText.color
-        ctx.setFontSize(cgText.size);
-        ctx.fillText(cgText.text, ...cgText.position.getJsonArr());
+      
+        var position =  new CGPoint(cgText.position.x,cgText.position.y)
+        if (tempflexData == null) {
+            ctx.setFontSize(cgText.size);
+        } else {
+            ctx.setFontSize(tempflexData.size);
+            position = tempflexData.position
+        }
+        console.log("字体大小",cgText.size)
+        position.x -= 3
+        position.y+=cgText.size*0.34
+     
+        ctx.fillText(cgText.text, ...position.getJsonArr());
         // ctx.draw(true);
     },
     draw_circle() {
@@ -804,11 +821,11 @@ Page({
             let text = toolsStatus.keyBord.value
 
             if (text != "") {
-                let size = 30
+                let size = datas.penConfiguration.textSize
                 let lsAction = (drawBoard.addAction(Action_type.text)).mode //为CGText
                 lsAction.text = text
                 lsAction.size = size
-                lsAction.position = new CGPoint(toolsStatus.keyBord.x - 6, toolsStatus.keyBord.y + 9)
+                lsAction.position = new CGPoint(toolsStatus.keyBord.x , toolsStatus.keyBord.y)
 
                 this.draw_text(lsAction)
                 ctx.draw(true);
@@ -969,7 +986,7 @@ Page({
 
         ctx.moveTo(minXY.x, maxXY.y)
         ctx.lineTo(minXY.x, minXY.y)
-     
+
 
         if (selecting == false) {
             ctx.fillRect(...points[0].getJsonArr(), pointSize, pointSize)
@@ -1243,7 +1260,18 @@ Page({
             switch (iAction.type) {
                 case Action_type.text:
                     const cgText = iAction.mode
-                    this.draw_text(cgText)
+                    var tempflexData = {}
+                    if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
+                        tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
+                        tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
+                        console.log("临时拉伸数据",tempflexData)
+                        this.draw_text(cgText, tempflexData)
+                    } else{
+                        console.log("完成",cgText)
+                        this.draw_text(cgText)
+                    }
+                 
+                    
                     break
             }
 
@@ -1275,7 +1303,7 @@ Page({
 
                 if (toolsStatus.isSelect(a)) {
                     this.mouse_selectAction(iAction)
-             
+
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
                     // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,10,clipPoints[3].y+5)//left
@@ -1293,7 +1321,7 @@ Page({
             ctx.strokeStyle = "rgb(80,80,80)"
             ctx.setLineDash([3, 6]);
             this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
-           
+
 
         }
         ctx.draw(false, () => {
@@ -1376,7 +1404,9 @@ Page({
                 break
             case Action_type.text:
                 const cgText = action.mode
-                cgText.size *= ratioX
+                cgText.size *= (this.data.toolsStatus.modelFlexData.width + this.data.toolsStatus.modelFlexData.height) / 2
+                cgText.position = cgText.position.modelFlexInit(this.data.toolsStatus.modelFlexData)
+        
                 break
         }
 
@@ -1573,7 +1603,7 @@ Page({
                     }
                 })
 
-              
+
                 break;
             case "tools_pigment":
                 console.log("颜料点击");
@@ -1751,7 +1781,7 @@ Page({
                     toolsStatus.select.touchDown_actionIndex = index
 
                     toolsStatus.addSelect(index)//必须先执行。
-             
+
                     condition.addValue(Condition_Type.touchDown_select)
                     condition.addValue(Condition_Type.touchDown_center)
 
@@ -2045,7 +2075,7 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         let actionsIndex = toolsStatus.select.actionsIndex
-
+                        
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(actionsIndex[i]);
                             this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
@@ -2054,16 +2084,15 @@ Page({
                             delete action.oRect
 
                         }
+                        toolsStatus.mouseMoveType = Mouse_MoveType.none
                         toolsStatus.modelFlexData = null;
 
-                        toolsStatus.mouseMoveType = Mouse_MoveType.none
+                  
                         this.reloadDrawBoard()
                         break;
                     default:
                         break;
                 }
-
-
                 break
 
             case ToolsStatus_type.pen:
