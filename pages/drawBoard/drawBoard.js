@@ -1599,7 +1599,7 @@ Page({
                             runAM: true
                         })
                         console.log("开始打开动画", this.data.runAM)
-                    }.bind(this), 30);
+                    }.bind(this), 10);
                 }
 
 
@@ -1718,7 +1718,9 @@ Page({
 
 
     },
-
+    detailPane_onClick(e){
+        console.log()
+    },
     canvas_errOutput(e) {
         console.log("画布发生错误", e)
 

@@ -1,62 +1,70 @@
 <view>
-    <view class='main'>
-
-        <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView.nleft}}" scroll-top="{{scrollView.ntop}}"  >
-            <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
-            <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas>
-        </scroll-view>
-        
-        <!-- 画布不支持单击事件 -->
-        <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}" style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-3}}px;top: {{toolsStatus.keyBord.y -13}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
-
-        <!--设置按钮-->
-        <cover-view class='settings'>
-            <button plain bindtap='button_settings'>
-                <cover-image src='/icons/settings.png'></cover-image>
-            </button>
-        </cover-view>
-
-        <cover-view class='toolsBar'>
-            <button plain catchtap='changeStatus' id='tools_select'>
-                <cover-image src='/icons/select_n.png'></cover-image>
-            </button>
-            <button plain catchtap='changeStatus' id='tools_pen' bindlongpress="button_longpress">
-                <cover-image src='/icons/pen.png' mode='widthFix' style='width:28px; height:28px;'></cover-image>
-            </button>
-            <button plain catchtap='changeStatus' id='tools_eraser' bindlongpress="button_longpress">
-                <cover-image src='/icons/eraser.png' mode='widthFix'></cover-image>
-            </button>
-            
-            <button plain catchtap='changeStatus' id='tools_text' bindlongpress="button_longpress">
-                <cover-image src='/icons/text.png' mode='widthFix'></cover-image>
-            </button>
-            <button plain catchtap='changeStatus' id='tools_pigment'>
-                <cover-image src='/icons/color.png'></cover-image>
-            </button>
-             <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
-            <button plain catchtap='changeStatus' id='tools_shape'>形状</button>
-                 <button plain catchtap='changeStatus' id='tools_debug'>保存  </button>
-        </cover-view>
-   <!-- style="{{>=0 ? '':'display:none;'}}"  -->
-      <block wx:if="{{toolBarDetailindex >= 0}}">
-    
-        <cover-view class="toolsBarDeatil {{runAM ? 'toolsBarDeatil_show':''}}"  bindtap="closeDeatilPane" >
-        <!-- 选择 -->
-       <!-- 画笔 -->
-        <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex == 0 && runAM) ? 'toolsBarDeatilPane_show':''}}" >
-          <cover-view>
-             当前画笔大小  {{penConfiguration.lineWidth}}
-            <cover-view></cover-view>
+  <view class='main'>
+    <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView.nleft}}" scroll-top="{{scrollView.ntop}}">
+      <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
+      <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas>
+    </scroll-view>
+    <!-- 画布不支持单击事件 -->
+    <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}" style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-3}}px;top: {{toolsStatus.keyBord.y -13}}px;" bindinput='textFieldInput' bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
+    <!-- 设置按钮 -->
+    <cover-view class='settings'>
+      <button plain bindtap='button_settings'>
+        <cover-image src='/icons/settings.png'></cover-image>
+      </button>
+    </cover-view>
+    <cover-view class='toolsBar'>
+      <button plain catchtap='changeStatus' id='tools_select'>
+        <cover-image src='/icons/select_n.png'></cover-image>
+      </button>
+      <button plain catchtap='changeStatus' id='tools_pen' bindlongpress="button_longpress">
+        <cover-image src='/icons/pen.png' mode='widthFix' style='width:28px; height:28px;'></cover-image>
+      </button>
+      <button plain catchtap='changeStatus' id='tools_eraser' bindlongpress="button_longpress">
+        <cover-image src='/icons/eraser.png' mode='widthFix'></cover-image>
+      </button>
+      <button plain catchtap='changeStatus' id='tools_text' bindlongpress="button_longpress">
+        <cover-image src='/icons/text.png' mode='widthFix'></cover-image>
+      </button>
+      <button plain catchtap='changeStatus' id='tools_pigment'>
+        <cover-image src='/icons/color.png'></cover-image>
+      </button>
+      <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
+      <button plain catchtap='changeStatus' id='tools_shape'>形状</button>
+      <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
+    </cover-view>
+    <!-- style="{{>=0 ? '':'display:none;'}}" -->
+    <block wx:if="{{toolBarDetailindex >= 0}}">
+      <!--  -->
+      <cover-view class="shadeBackground {{runAM ? 'shadeBackground_show':''}}" bindtap="closeDeatilPane"></cover-view>
+      <!-- 选择 -->
+      <!-- 画笔 -->
+      <!-- 文字 -->
+      <!-- 颜色 -->
+      <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex == 0 && runAM) ? 'toolsBarDeatilPane_show':''}}">
+        <cover-view class="PaneForItem">
+          画笔
+          <!-- {{penConfiguration.lineWidth}} -->
+                  
+          <cover-view class="sonPane">
+          <button plain id="pen_dash"style="background-color:rgb(246,246,246);"> <cover-image src='/icons/dash.png' mode='widthFix'></cover-image> </button>    
+           <button plain id="pen_line0"> <cover-image src='/icons/line_0.png' mode='widthFix'></cover-image> </button>            
+            <button plain id="pen_line1"> <cover-image src='/icons/line_1.png' mode='widthFix'></cover-image> </button>            
+             <button plain id="pen_line2"> <cover-image src='/icons/line_2.png' mode='widthFix'></cover-image> </button>  
+             <button plain id="pen_line3"> <cover-image src='/icons/line_3.png' mode='widthFix'></cover-image> </button>            
           </cover-view>
-           <cover-view>
-             绘制形状 矩形
+            <!--  {{penConfiguration.shape == 0?'矩形':''}}{{ penConfiguration.shape == 1?'三角形':''}} {{penConfiguration.shape == 2?'圆形':''}} -->
+          <cover-view>形状</cover-view>
+
+          <cover-view class="sonPane">
+            <button plain > <cover-image src='/icons/line_4.png' mode='widthFix'></cover-image> </button>    
+           <button plain style="background-color:rgb(246,246,246);"> <cover-image src='/icons/line_5.png' mode='widthFix'></cover-image> </button>            
+            <button plain> <cover-image src='/icons/line_6.png' mode='widthFix'></cover-image> </button>    
           </cover-view>
         </cover-view>
-        <!-- 文字 -->
-        <!-- 颜色 -->
 
-        </cover-view>
-        
-        </block>
-    </view>
+
+
+      </cover-view>
+    </block>
+  </view>
 </view>
