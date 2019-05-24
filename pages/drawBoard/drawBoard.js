@@ -393,11 +393,12 @@ class Action { //绘制事件类
                         maxXY.y = Math.max(cgshape.points[2].y, cgshape.points[0].y)
                         break;
                     case CGShape_type.roundness:
-                      
+
                         let points = cgshape.getRoundnessRectPoints()
-                        console.log(5555,points)
-                        [minXY.x, minXY.y] = [points[0].x, points[0].y]
-                        [maxXY.x, maxXY.y] = [points[1].x, points[1].y]
+                        minXY.x = points[0].x
+                        minXY.y = points[0].y
+                        maxXY.x = points[1].x
+                        maxXY.y = points[1].y
                         break;
                     default:
                         break;
@@ -419,6 +420,7 @@ class Action { //绘制事件类
 
                 break
         }
+        //以上的maxxy不能直接赋值cgpoint引用，否则会出现问题。
 
         maxXY.x += interval
         maxXY.y += interval
@@ -922,7 +924,7 @@ Page({
             x: 10000,
             y: 10000
         }
-        let pointSize = 6//角点的大小
+        let pointSize = 8//角点的大小
         let pointSize_offset = pointSize / 2 //角点位置偏移量。
         if (selecting == false) {
 
@@ -967,7 +969,7 @@ Page({
 
         ctx.moveTo(minXY.x, maxXY.y)
         ctx.lineTo(minXY.x, minXY.y)
-
+     
 
         if (selecting == false) {
             ctx.fillRect(...points[0].getJsonArr(), pointSize, pointSize)
@@ -977,7 +979,7 @@ Page({
             ctx.fill()
 
         }
-
+        ctx.stroke()
 
         // ctx.stroke()
         // 
@@ -1075,7 +1077,7 @@ Page({
                                 break;
                             case CGShape_type.roundness:
                                 let r = cgshape.getRinRoundness()
-                                if (point.isDistance(cgshape.points[0], r*r)) {
+                                if (point.isDistance(cgshape.points[0], r * r)) {
                                     selectIndex = a
                                     console.log("选中圆")
                                 }
@@ -1210,9 +1212,10 @@ Page({
                             // this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
                         }
 
-                        if (iAction.mode.type == CGShape_type.roundness) {//圆形特殊处理。
-                            let r = Math.pow(Math.pow(cgshape.points[0].x - cgshape.points[1].x, 2) + Math.pow(cgshape.points[0].y - cgshape.points[1].y, 2), 0.5)
-                            ctx.arc(...cgshape.points[0].getJsonArr(), r, 0, 2 * Math.PI, false)
+                        if (iAction.mode.type == CGShape_type.roundness) {//圆形特殊处理。这里的for只会进行一次。
+
+                            let r = Math.pow(Math.pow(lsPoint.x - thisPoint.x, 2) + Math.pow(lsPoint.y - thisPoint.y, 2), 0.5)
+                            ctx.arc(...lsPoint.getJsonArr(), r, 0, 2 * Math.PI, false)
                         } else {
                             this.draw_line_curve(thisPoint, lsPoint)
                         }
@@ -1272,7 +1275,7 @@ Page({
 
                 if (toolsStatus.isSelect(a)) {
                     this.mouse_selectAction(iAction)
-                    ctx.stroke()
+             
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,clipPoints[1].x+5,10)//up
                     // ctx.rect(clipPoints[3].x-5,clipPoints[3].y-5 ,clipPoints[2].x+5,10)//bottom
                     // ctx.rect(clipPoints[0].x-5,clipPoints[0].y-5 ,10,clipPoints[3].y+5)//left
@@ -1290,7 +1293,7 @@ Page({
             ctx.strokeStyle = "rgb(80,80,80)"
             ctx.setLineDash([3, 6]);
             this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
-            ctx.stroke()
+           
 
         }
         ctx.draw(false, () => {
@@ -1570,7 +1573,7 @@ Page({
                     }
                 })
 
-                // this.mouse_selectAction(drawBoard.getLastAction())
+              
                 break;
             case "tools_pigment":
                 console.log("颜料点击");
@@ -1748,10 +1751,7 @@ Page({
                     toolsStatus.select.touchDown_actionIndex = index
 
                     toolsStatus.addSelect(index)//必须先执行。
-                    // this.mouse_selectAction(action)//绘制选中的边框样式，并设置action的属性selectRect为rect对象。
-                    // ctx.stroke()
-                    // ctx.draw(true)
-                    //
+             
                     condition.addValue(Condition_Type.touchDown_select)
                     condition.addValue(Condition_Type.touchDown_center)
 
