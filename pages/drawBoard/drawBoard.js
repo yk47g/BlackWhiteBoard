@@ -1065,53 +1065,7 @@ Page({
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
             switch (iAction.type) {
-                case Action_type.line:
-                    const cgline = iAction.mode
-                    for (let i = 0; i < cgline.points.length; i++) {
-                        let ipoint = cgline.points[i]
-
-                        if (typeof (point.x) != "undefined") { //点选
-                            tempValue = Math.pow(point.x - ipoint.x, 2) + Math.pow(point.y - ipoint.y, 2)
-                            if (tempValue < distance) {
-                                distance = tempValue
-                                selectIndex = a
-                            }
-                        } else { //框选
-
-                            if (ipoint.isInclude(point[0], point[1], 0)) {
-                                toolsStatus.addSelect(a)
-                            }
-                        }
-                    }
-
-                    break
-
-                case Action_type.text:
-
-                    const cgText = iAction.mode
-                    let textWidth = ctx.measureText(cgText.text).width
-                    let startPoint = new CGPoint(cgText.position.x, cgText.position.y - cgText.size * 0.7 - 4)
-                    let endPoint = new CGPoint(cgText.position.x + ctx.measureText(cgText.text).width, cgText.position.y + 4)
-                    // console.log(textWidth)
-                    // console.log(cgText.position)
-                    if (typeof (point.x) != "undefined") { //点选
-                        if (point.isInclude(startPoint, endPoint, DevelopConfiguration.SimpleSelectDistance)) {
-                            selectIndex = a
-                            // console.log("选中文字")
-                        }
-                    } else { //框选
-                        //通过判断框的四个角点是否在区域内以实现高效判断
-
-                        // let urPoint = new CGPoint(point[1].x,point[0].y)//右上角的点。
-                        // let dlPoint = new CGPoint(point[0].x,point[1].y)//左下角的点。
-                        if (isRectOverlap(point, [startPoint, endPoint])) {
-                            console.log("矩形相交")
-                            toolsStatus.addSelect(a)
-                        }
-                    }
-
-
-                    break
+               
                 case Action_type.image:
                     const cgimg = iAction.mode
                     let DRPoint = new CGPoint(cgimg.position.x + cgimg.width, cgimg.position.y + cgimg.height)
@@ -1185,6 +1139,53 @@ Page({
                                 break
                         }
                     }
+
+                    break
+                     case Action_type.line:
+                    const cgline = iAction.mode
+                    for (let i = 0; i < cgline.points.length; i++) {
+                        let ipoint = cgline.points[i]
+
+                        if (typeof (point.x) != "undefined") { //点选
+                            tempValue = Math.pow(point.x - ipoint.x, 2) + Math.pow(point.y - ipoint.y, 2)
+                            if (tempValue < distance) {
+                                distance = tempValue
+                                selectIndex = a
+                            }
+                        } else { //框选
+
+                            if (ipoint.isInclude(point[0], point[1], 0)) {
+                                toolsStatus.addSelect(a)
+                            }
+                        }
+                    }
+
+                    break
+
+                case Action_type.text:
+
+                    const cgText = iAction.mode
+                    let textWidth = ctx.measureText(cgText.text).width
+                    let startPoint = new CGPoint(cgText.position.x, cgText.position.y - cgText.size * 0.7 - 4)
+                    let endPoint = new CGPoint(cgText.position.x + ctx.measureText(cgText.text).width, cgText.position.y + 4)
+                    // console.log(textWidth)
+                    // console.log(cgText.position)
+                    if (typeof (point.x) != "undefined") { //点选
+                        if (point.isInclude(startPoint, endPoint, DevelopConfiguration.SimpleSelectDistance)) {
+                            selectIndex = a
+                            // console.log("选中文字")
+                        }
+                    } else { //框选
+                        //通过判断框的四个角点是否在区域内以实现高效判断
+
+                        // let urPoint = new CGPoint(point[1].x,point[0].y)//右上角的点。
+                        // let dlPoint = new CGPoint(point[0].x,point[1].y)//左下角的点。
+                        if (isRectOverlap(point, [startPoint, endPoint])) {
+                            console.log("矩形相交")
+                            toolsStatus.addSelect(a)
+                        }
+                    }
+
 
                     break
             }
@@ -1718,8 +1719,49 @@ Page({
 
 
     },
-    detailPane_onClick(e){
-        console.log()
+    detailPane_onClick(e) {
+
+        let buttonId = e.currentTarget.id;
+        let configuration = this.data.penConfiguration
+        let datas = this.data
+        console.log(buttonId)
+        switch (buttonId) {
+            case "pen_dash":
+                break;
+            case "pen_line0":
+                configuration.lineWidth = 1
+                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                break;
+            case "pen_line1":
+                configuration.lineWidth = 3
+                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                break;
+            case "pen_line2":
+                configuration.lineWidth = 6
+                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                break;
+            case "pen_line3":
+                configuration.lineWidth = 9
+                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                break;
+            case "pen_shapeRoundness":
+                configuration.shape = CGShape_type.roundness
+                datas.toolsStatus.toolType = ToolsStatus_type.shape;
+
+                break;
+            case "pen_shapeTriangle":
+                configuration.shape = CGShape_type.triangle
+                datas.toolsStatus.toolType = ToolsStatus_type.shape;
+
+                break;
+            case "pen_shapeRectangle":
+                configuration.shape = CGShape_type.rectangle
+                datas.toolsStatus.toolType = ToolsStatus_type.shape;
+
+                break;
+            default:
+                break;
+        }
     },
     canvas_errOutput(e) {
         console.log("画布发生错误", e)
@@ -1777,7 +1819,7 @@ Page({
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
 
-                datas.penConfiguration.shape = CGShape_type.triangle
+                // datas.penConfiguration.shape = CGShape_type.triangle
                 lsAction.type = datas.penConfiguration.shape
                 switch (datas.penConfiguration.shape) {
                     case CGShape_type.rectangle:
