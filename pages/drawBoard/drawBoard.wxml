@@ -35,6 +35,7 @@
             </button>
              <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
             <button plain catchtap='changeStatus' id='tools_shape'>形状</button>
+                 <button plain catchtap='changeStatus' id='tools_debug'>保存  </button>
         </cover-view>
    <!-- style="{{>=0 ? '':'display:none;'}}"  -->
       <block wx:if="{{toolBarDetailindex >= 0}}">

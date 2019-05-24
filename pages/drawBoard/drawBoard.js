@@ -666,6 +666,25 @@ class CGShape extends CGLine {
         let r = this.getRinRoundness()
         return [new CGPoint(this.points[0].x - r, this.points[0].y - r), new CGPoint(this.points[0].x + r, this.points[0].y + r)]
     }
+    initByJson(json) {
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "points") {
+                    let pointsJson = json["points"]
+                    for (let i = 0; i < pointsJson.length; i++) {
+                        this.addPoint(0, 0)
+                        this.points[i].initByJson(pointsJson[i])
+                    }
+                } else {
+                    this[key] = json[key]
+                }
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
+    }
 }
 let CGShape_type = {
     none: -1,
@@ -682,6 +701,25 @@ class CGImage {
         this.oheight = 0;
         this.path = "";
         this.position = null;
+    }
+    initByJson(json) {
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "position") {
+                    let pointJson = json["position"]
+
+                    this[key] = new CGPoint().initByJson(pointJson)
+
+                } else {
+                    this[key] = json[key]
+                }
+
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
     }
 }
 class CGText {
