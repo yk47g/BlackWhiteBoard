@@ -46,19 +46,19 @@
           <!-- {{penConfiguration.lineWidth}} -->
                   
           <cover-view class="sonPane">
-          <button plain id="pen_dash" style="background-color:rgb(246,246,246);" catchtap="detailPane_onClick"> <cover-image src='/icons/dash.png' mode='widthFix'></cover-image> </button>    
-           <button plain id="pen_line0" catchtap="detailPane_onClick"> <cover-image src='/icons/line_0.png' mode='widthFix'></cover-image> </button>            
-            <button plain id="pen_line1" catchtap="detailPane_onClick"> <cover-image src='/icons/line_1.png' mode='widthFix'></cover-image> </button>            
-             <button plain id="pen_line2" catchtap="detailPane_onClick"> <cover-image src='/icons/line_2.png' mode='widthFix'></cover-image> </button>  
-             <button plain id="pen_line3" catchtap="detailPane_onClick"> <cover-image src='/icons/line_3.png' mode='widthFix'></cover-image> </button>            
+          <button plain id="pen_dash" class="{{penConfiguration.lineDash? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/dash.png' mode='widthFix'></cover-image> </button>    
+           <button plain id="pen_line0"  class="{{penConfiguration.lineWidth == 1? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/line_0.png' mode='widthFix'></cover-image> </button>            
+            <button plain id="pen_line1" class="{{penConfiguration.lineWidth == 3? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/line_1.png' mode='widthFix'></cover-image> </button>            
+             <button plain id="pen_line2" class="{{penConfiguration.lineWidth == 6? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/line_2.png' mode='widthFix'></cover-image> </button>  
+             <button plain id="pen_line3" class="{{penConfiguration.lineWidth == 9? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/line_3.png' mode='widthFix'></cover-image> </button>            
           </cover-view>
             <!--  {{penConfiguration.shape == 0?'矩形':''}}{{ penConfiguration.shape == 1?'三角形':''}} {{penConfiguration.shape == 2?'圆形':''}} -->
           <cover-view>形状</cover-view>
 
           <cover-view class="sonPane">
-            <button plain id="pen_shapeRoundness" catchtap="detailPane_onClick"> <cover-image src='/icons/line_4.png' mode='widthFix'></cover-image> </button>    
-           <button plain style="background-color:rgb(246,246,246);" id="pen_shapeTriangle" catchtap="detailPane_onClick"> <cover-image src='/icons/line_5.png' mode='widthFix'></cover-image> </button>            
-            <button plain id="pen_shapeRectangle"catchtap="detailPane_onClick"> <cover-image src='/icons/line_6.png' mode='widthFix'></cover-image> </button>    
+            <button plain class="{{penConfiguration.shape == 2? 'button_Select':''}}" id="pen_shapeRoundness" catchtap="detailPane_onClick"> <cover-image src='/icons/line_4.png' mode='widthFix'></cover-image> </button>    
+           <button plain class="{{penConfiguration.shape == 1? 'button_Select':''}}" id="pen_shapeTriangle" catchtap="detailPane_onClick"> <cover-image src='/icons/line_5.png' mode='widthFix'></cover-image> </button>            
+            <button plain class="{{penConfiguration.shape == 0? 'button_Select':''}}" id="pen_shapeRectangle" catchtap="detailPane_onClick"> <cover-image src='/icons/line_6.png' mode='widthFix'></cover-image> </button>    
           </cover-view>
         </cover-view>
 

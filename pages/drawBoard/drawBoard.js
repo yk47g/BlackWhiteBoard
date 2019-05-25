@@ -1728,6 +1728,8 @@ Page({
         console.log(buttonId)
         switch (buttonId) {
             case "pen_dash":
+             
+                configuration.lineDash=  !configuration.lineDash
                 break;
             case "pen_line0":
                 configuration.lineWidth = 1
@@ -1763,6 +1765,9 @@ Page({
             default:
                 break;
         }
+        this.setData({
+            penConfiguration:configuration
+        })
     },
     canvas_errOutput(e) {
         console.log("画布发生错误", e)
@@ -2216,7 +2221,7 @@ Page({
                         }
                         toolsStatus.mouseMoveType = Mouse_MoveType.none
                         toolsStatus.modelFlexData = null;
-                        
+
 
                         this.reloadDrawBoard()
                         break;
