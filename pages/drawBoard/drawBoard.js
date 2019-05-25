@@ -1603,18 +1603,6 @@ Page({
                 console.log("画笔开启");
 
                 this.opeanDetailPane(ToolsStatus_type.pen)
-
-                // let animation = wx.createAnimation({
-                //     duration: 3000,
-                //     timingFunction: "ease-in-out"
-                // }
-                // )
-
-                // animation.translate(100, -100);
-                // animation.step()
-               
-
-
                 this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.pen;
 
@@ -1718,6 +1706,7 @@ Page({
         }
 
 
+        
     },
     detailPane_onClick(e) {
 
@@ -1780,6 +1769,17 @@ Page({
 
     },
     canvas_touchstart(e) {
+        //处理按下后的靠边动画，
+        // let animation = wx.createAnimation({
+                //     duration: 3000,
+                //     timingFunction: "ease-in-out"
+                // }
+                // )
+
+                // animation.translate(100, -100);
+                // animation.step()
+               
+
 
         let datas = this.data
         let toolsStatus = datas.toolsStatus

@@ -12,6 +12,7 @@
         <cover-image src='/icons/settings.png'></cover-image>
       </button>
     </cover-view>
+    
     <cover-view class='toolsBar'>
       <button plain catchtap='changeStatus' id='tools_select'>
         <cover-image src='/icons/select_n.png'></cover-image>
@@ -36,10 +37,7 @@
     <block wx:if="{{toolBarDetailindex >= 0}}">
       <!--  -->
       <cover-view class="shadeBackground {{runAM ? 'shadeBackground_show':''}}" bindtap="closeDeatilPane"></cover-view>
-      <!-- 选择 -->
-     
-      <!-- 文字 -->
-   
+
       <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex >= 0 && runAM) ? 'toolsBarDeatilPane_show':''}}">
          <!-- 画笔 -->
         <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 0}}">

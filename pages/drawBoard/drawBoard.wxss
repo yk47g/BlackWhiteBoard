@@ -1,5 +1,10 @@
 /* pages/drawBoard/drawBoard.wxss */
 
+page{
+  height: 100%;
+   overflow: hidden!important;
+  
+}
 .main scroll-view {
   height: 100vh;
 }
@@ -49,8 +54,8 @@
   /* 修改height 一起改margintop */
   width: 30vw;
   box-sizing: border-box;
-  background-color: rgba(223, 223, 223, 0.8);
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  background-color: rgba(245, 245, 245, 0.8);
+  /* box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);  不支持阴影*/
   padding-top: 5rpx;
   padding-bottom: 5rpx;
   padding-left: 15vw;
