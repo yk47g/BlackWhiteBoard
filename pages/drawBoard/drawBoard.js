@@ -148,6 +148,7 @@ class ToolsStatus {
         this.mouseActions = [] //mouseAction 对象数组。
         this.condition = new Condition()
         this.modelFlexData = null
+        this.runReload = false //是否持续运行reload
     }
     addSelect(indexValue) { //避免重复
         var exist = false
@@ -1065,7 +1066,7 @@ Page({
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
             switch (iAction.type) {
-               
+
                 case Action_type.image:
                     const cgimg = iAction.mode
                     let DRPoint = new CGPoint(cgimg.position.x + cgimg.width, cgimg.position.y + cgimg.height)
@@ -1141,7 +1142,7 @@ Page({
                     }
 
                     break
-                     case Action_type.line:
+                case Action_type.line:
                     const cgline = iAction.mode
                     for (let i = 0; i < cgline.points.length; i++) {
                         let ipoint = cgline.points[i]
@@ -1403,8 +1404,8 @@ Page({
         }
         ctx.draw(false, () => {
 
-            if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) {
-
+            if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting || toolsStatus.runReload == true) {
+                console.log("循环")
                 this.reloadDrawBoard()
 
             }
@@ -1882,6 +1883,7 @@ Page({
                                 action.oRect = action.getSelectRectObject()
                                 console.log(action)
                             }
+
                             return;
                         }
 
@@ -1929,10 +1931,6 @@ Page({
                     toolsStatus.select.touchDown_actionIndex = -1
                     toolsStatus.select.selecting = false
                     this.reloadDrawBoard()
-
-
-
-
 
                 }
 
@@ -2156,7 +2154,10 @@ Page({
                             relativeOriginPoint: controlAction.selectRect.getFourPoints()[orignPointIndex]//按下哪个角点，正对角线另一侧的点。
                         }
                         //以上仅计算出图层缩放比例，并不进行图像处理。
-                        this.reloadDrawBoard()
+                        if (toolsStatus.runReload == false) {
+                            toolsStatus.runReload = true
+                            this.reloadDrawBoard()
+                        }
                         break
 
                 }
@@ -2204,7 +2205,7 @@ Page({
                         break;
                     case Mouse_MoveType.model_felx:
                         let actionsIndex = toolsStatus.select.actionsIndex
-
+                        toolsStatus.runReload = false
                         for (let i = 0; i < actionsIndex.length; i++) {
                             let action = drawBoard.getActionByindex(actionsIndex[i]);
                             this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
@@ -2215,7 +2216,7 @@ Page({
                         }
                         toolsStatus.mouseMoveType = Mouse_MoveType.none
                         toolsStatus.modelFlexData = null;
-
+                        
 
                         this.reloadDrawBoard()
                         break;
