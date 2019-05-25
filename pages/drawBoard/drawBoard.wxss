@@ -119,7 +119,7 @@
 .PaneForItem .sonPane {
   display: flex;
   flex-direction: row;
-
+  flex-wrap: wrap;
   justify-content: space-around;
   margin: 50rpx 50rpx;
 }
@@ -131,12 +131,22 @@
   width: 100rpx;
   line-height: 100rpx;
   border-radius: 20rpx;
+  /* margin-top: 30rpx; */
   /* margin: auto; */
   /* margin-left: 10rpx;
   margin-right: 10rpx; */
   box-sizing: border-box;
 }
 
+.sonPane .ColorButton{
+  margin-bottom: 80rpx;
+
+  margin-left: 15rpx;
+  margin-right: 15rpx;
+  border-radius: 7rpx !important;
+  height: 70rpx;
+  width:90rpx ;
+}
 
 
 .button_Select {

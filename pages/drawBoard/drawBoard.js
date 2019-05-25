@@ -791,9 +791,13 @@ Page({
             ntop: 0,
             nleft: 0,
         },
-
+        colorDatas:["rgb(255,99,105)","rgb(255,171,99)","rgb(255,230,105)",
+        "rgb(214,230,99)","rgb(176,244,99)","rgb(65,63,61)",
+        "rgb(206,206,206)","rgb(194,181,250)","rgb(125,209,240)","rgb(125,230,194)"
+    ],
+        
         penConfiguration: {//当前工具栏的配置状态。
-            color: "red",
+            color:"rgb(255,99,105)",
             shape: -1,
             lineDash: false,
             lineWidth: 3,
@@ -869,6 +873,7 @@ Page({
                 let lsAction = (drawBoard.addAction(Action_type.text)).mode //为CGText
                 lsAction.text = text
                 lsAction.size = size
+                lsAction.color = datas.penConfiguration.color
                 lsAction.position = new CGPoint(toolsStatus.keyBord.x, toolsStatus.keyBord.y)
 
                 this.draw_text(lsAction)
@@ -1571,6 +1576,21 @@ Page({
     },
 
     //------UI响应事件------
+    opeanDetailPane(toolType){
+     
+        let datas = this.data
+        if (datas.runAM == false && datas.toolsStatus.toolType == toolType) {
+            this.setData({
+                toolBarDetailindex: toolType,
+            })
+            setTimeout(function () {
+                this.setData({
+                    runAM: true
+                })
+                console.log("开始打开动画", this.data.runAM)
+            }.bind(this), 10);
+        }
+    },
     changeStatus(e) { //画布工具栏点击事件
         let buttonId = e.currentTarget.id;
         let datas = this.data
@@ -1582,7 +1602,7 @@ Page({
             case "tools_pen":
                 console.log("画笔开启");
 
-
+                this.opeanDetailPane(ToolsStatus_type.pen)
 
                 // let animation = wx.createAnimation({
                 //     duration: 3000,
@@ -1592,17 +1612,7 @@ Page({
 
                 // animation.translate(100, -100);
                 // animation.step()
-                if (datas.runAM == false && datas.toolsStatus.toolType == ToolsStatus_type.pen) {
-                    this.setData({
-                        toolBarDetailindex: 0,
-                    })
-                    setTimeout(function () {
-                        this.setData({
-                            runAM: true
-                        })
-                        console.log("开始打开动画", this.data.runAM)
-                    }.bind(this), 10);
-                }
+               
 
 
                 this.cancelSelectStatus()
@@ -1689,23 +1699,12 @@ Page({
                 break;
             case "tools_pigment":
                 console.log("颜料点击");
-                let time = Date.now()
-                for (let i = 0; i < 1; i++) {
-
-                    this.reloadDrawBoard()
-                }
-                console.log("1 次所需时间", Date.now() - time)
-
-                // ctx.draw(t,function(e){
-                //   console.log(3,e)
-                // })
-                try {
-                    wx.setStorageSync("actions", drawBoard.actions)
-                    // console.log(wx.getStorageSync("actions").getLastAction)
-                } catch (e) {
-
-                }
-
+                let temptype= datas.toolsStatus.toolType
+                datas.toolsStatus.toolType = ToolsStatus_type.color;
+                this.opeanDetailPane(ToolsStatus_type.color)
+               
+             
+                datas.toolsStatus.toolType  = temptype
                 break;
 
             case "tools_debug":
@@ -1763,6 +1762,13 @@ Page({
 
                 break;
             default:
+               
+                if (buttonId.indexOf("color")!=-1) {
+                    let colorIndex = buttonId.replace("color","")
+                  
+                    datas.penConfiguration.color = datas.colorDatas[colorIndex]
+                 
+                }
                 break;
         }
         this.setData({

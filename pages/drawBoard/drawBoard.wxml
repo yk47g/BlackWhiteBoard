@@ -37,14 +37,14 @@
       <!--  -->
       <cover-view class="shadeBackground {{runAM ? 'shadeBackground_show':''}}" bindtap="closeDeatilPane"></cover-view>
       <!-- 选择 -->
-      <!-- 画笔 -->
+     
       <!-- 文字 -->
-      <!-- 颜色 -->
-      <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex == 0 && runAM) ? 'toolsBarDeatilPane_show':''}}">
-        <cover-view class="PaneForItem">
+   
+      <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex >= 0 && runAM) ? 'toolsBarDeatilPane_show':''}}">
+         <!-- 画笔 -->
+        <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 0}}">
           画笔
           <!-- {{penConfiguration.lineWidth}} -->
-                  
           <cover-view class="sonPane">
           <button plain id="pen_dash" class="{{penConfiguration.lineDash? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/dash.png' mode='widthFix'></cover-image> </button>    
            <button plain id="pen_line0"  class="{{penConfiguration.lineWidth == 1? 'button_Select':''}}" catchtap="detailPane_onClick"> <cover-image src='/icons/line_0.png' mode='widthFix'></cover-image> </button>            
@@ -61,7 +61,17 @@
             <button plain class="{{penConfiguration.shape == 0? 'button_Select':''}}" id="pen_shapeRectangle" catchtap="detailPane_onClick"> <cover-image src='/icons/line_6.png' mode='widthFix'></cover-image> </button>    
           </cover-view>
         </cover-view>
-
+        
+        <!-- 颜色 -->
+        <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 5}}">
+          颜色
+          <!-- {{penConfiguration.lineWidth}} -->
+          <cover-view class="sonPane">
+          <button plain wx:for="{{colorDatas}}"  wx:for-index="i" wx:key="{{itemkey}}" id="color{{i}}" class=" ColorButton" catchtap="detailPane_onClick" style="background-color:{{item}}!important;border-bottom:{{penConfiguration.color == item ? 'solid white 10px':''}}!important;"> 　  
+ </button>      
+          </cover-view>
+    
+        </cover-view>
 
 
       </cover-view>
