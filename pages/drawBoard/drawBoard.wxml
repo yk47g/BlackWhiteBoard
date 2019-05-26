@@ -15,23 +15,23 @@
     
     <cover-view class='toolsBar'>
       <button plain catchtap='changeStatus' id='tools_select'>
-        <cover-image src='/icons/select_n.png'></cover-image>
+        <cover-image src="/icons/tools_select{{toolsStatus.toolType == 1?'_on':''}}.png"></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_pen' bindlongpress="button_longpress">
-        <cover-image src='/icons/pen.png' mode='widthFix' style='width:28px; height:28px;'></cover-image>
+        <cover-image src="/icons/tools_pen{{toolsStatus.toolType == 0?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_eraser' bindlongpress="button_longpress">
-        <cover-image src='/icons/eraser.png' mode='widthFix'></cover-image>
+        <cover-image src="/icons/tools_eraser{{toolsStatus.toolType == 2?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_text' bindlongpress="button_longpress">
-        <cover-image src='/icons/text.png' mode='widthFix'></cover-image>
+        <cover-image src="/icons/tools_text{{toolsStatus.toolType == 4?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_pigment'>
-        <cover-image src='/icons/color.png'></cover-image>
+        <cover-image src="/icons/tools_color{{toolsStatus.toolType == 5?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
-      <button plain catchtap='changeStatus' id='tools_addImage'>图片</button>
+      <button plain catchtap='changeStatus' id='tools_addImage'> <cover-image src="/icons/tools_image{{toolsStatus.toolType == 3?'_on':''}}.png" mode='widthFix'></cover-image></button>
     
-      <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
+      <!-- <button plain catchtap='changeStatus' id='tools_debug'>保存</button> -->
     </cover-view>
     <!-- style="{{>=0 ? '':'display:none;'}}" -->
     <block wx:if="{{toolBarDetailindex >= 0}}">

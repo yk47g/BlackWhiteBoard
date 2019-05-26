@@ -791,13 +791,13 @@ Page({
             ntop: 0,
             nleft: 0,
         },
-        colorDatas:["rgb(255,99,105)","rgb(255,171,99)","rgb(255,230,105)",
-        "rgb(214,230,99)","rgb(176,244,99)","rgb(65,63,61)",
-        "rgb(206,206,206)","rgb(194,181,250)","rgb(125,209,240)","rgb(125,230,194)"
-    ],
-        
+        colorDatas: ["rgb(255,99,105)", "rgb(255,171,99)", "rgb(255,230,105)",
+            "rgb(214,230,99)", "rgb(176,244,99)", "rgb(65,63,61)",
+            "rgb(206,206,206)", "rgb(194,181,250)", "rgb(125,209,240)", "rgb(125,230,194)"
+        ],
+
         penConfiguration: {//当前工具栏的配置状态。
-            color:"rgb(255,99,105)",
+            color: "rgb(255,99,105)",
             shape: -1,
             lineDash: false,
             lineWidth: 3,
@@ -1444,7 +1444,8 @@ Page({
         storage.read()
 
         this.setData({
-            'toolsStatus.keyBord.display': 0
+            'toolsStatus.keyBord.display': 0,
+            'toolsStatus.toolType': ToolsStatus_type.pen
         })
 
     },
@@ -1576,8 +1577,8 @@ Page({
     },
 
     //------UI响应事件------
-    opeanDetailPane(toolType){
-     
+    opeanDetailPane(toolType) {
+
         let datas = this.data
         if (datas.runAM == false && datas.toolsStatus.toolType == toolType) {
             this.setData({
@@ -1637,6 +1638,9 @@ Page({
 
                 break;
             case "tools_addImage":
+                this.setData({
+                    "toolsStatus.toolType": datas.toolsStatus.toolType
+                })
                 this.cancelSelectStatus()
                 let that = this
                 datas.toolsStatus.toolType = ToolsStatus_type.image;
@@ -1686,13 +1690,16 @@ Page({
 
                 break;
             case "tools_pigment":
+                this.setData({
+                    "toolsStatus.toolType": datas.toolsStatus.toolType
+                })
                 console.log("颜料点击");
-                let temptype= datas.toolsStatus.toolType
+                let temptype = datas.toolsStatus.toolType
                 datas.toolsStatus.toolType = ToolsStatus_type.color;
                 this.opeanDetailPane(ToolsStatus_type.color)
-               
-             
-                datas.toolsStatus.toolType  = temptype
+
+
+                datas.toolsStatus.toolType = temptype
                 break;
 
             case "tools_debug":
@@ -1706,7 +1713,9 @@ Page({
         }
 
 
-        
+        this.setData({
+            "toolsStatus.toolType": datas.toolsStatus.toolType
+        })
     },
     detailPane_onClick(e) {
 
@@ -1716,8 +1725,8 @@ Page({
         console.log(buttonId)
         switch (buttonId) {
             case "pen_dash":
-             
-                configuration.lineDash=  !configuration.lineDash
+
+                configuration.lineDash = !configuration.lineDash
                 break;
             case "pen_line0":
                 configuration.lineWidth = 1
@@ -1751,17 +1760,17 @@ Page({
 
                 break;
             default:
-               
-                if (buttonId.indexOf("color")!=-1) {
-                    let colorIndex = buttonId.replace("color","")
-                  
+
+                if (buttonId.indexOf("color") != -1) {
+                    let colorIndex = buttonId.replace("color", "")
+
                     datas.penConfiguration.color = datas.colorDatas[colorIndex]
-                 
+
                 }
                 break;
         }
         this.setData({
-            penConfiguration:configuration
+            penConfiguration: configuration
         })
     },
     canvas_errOutput(e) {
@@ -1771,14 +1780,14 @@ Page({
     canvas_touchstart(e) {
         //处理按下后的靠边动画，
         // let animation = wx.createAnimation({
-                //     duration: 3000,
-                //     timingFunction: "ease-in-out"
-                // }
-                // )
+        //     duration: 3000,
+        //     timingFunction: "ease-in-out"
+        // }
+        // )
 
-                // animation.translate(100, -100);
-                // animation.step()
-               
+        // animation.translate(100, -100);
+        // animation.step()
+
 
 
         let datas = this.data
