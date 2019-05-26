@@ -18,7 +18,12 @@ let DevelopConfiguration = {
     SelectRectPadding: 3,
     SimpleSelectDistance: 5,//进行其他单选时允许的偏差距离
     SelectDistance: 400,//单选曲线时允许的偏差距离
-    imgDefaultShrinkProportion: 0.8//上传图片时超出大小，缩放到屏幕大小的比例
+    imgDefaultShrinkProportion: 0.8,//上传图片时超出大小，缩放到屏幕大小的比例
+    SelectRectStyle: {
+        color: "rgb(80,80,80)",
+        lineWidth: 2,
+        cornerPointColor: "pink"
+    }
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
@@ -453,7 +458,7 @@ let Action_type = {
 class CGPoint { //坐标点类
 
     constructor(x = 0, y = 0, toInt = false) {
-
+        toInt= true
         if (toInt == true) {
             this.x = parseInt(x)
             this.y = parseInt(y)
@@ -978,6 +983,57 @@ Page({
     compute_eraser() {
 
     },
+    compute_addImage() {
+        let that = this
+
+        let datas = this.data
+        datas.toolsStatus.toolType = ToolsStatus_type.image;
+        wx.chooseImage({
+            success(res) {
+                const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
+                console.log(imgPath)
+                wx.getImageInfo({
+                    src: imgPath,
+                    success: function (res) {
+                        let systeminfo = app.globalData.systemInfo
+
+                        drawBoard.addAction(Action_type.image)
+                        let cgimg = drawBoard.getLastAction().mode
+                        cgimg.owidth = res.width//保存原始大小
+                        cgimg.oheight = res.height
+                        cgimg.width = res.width//用以拉伸后的大小。
+                        cgimg.height = res.height
+
+                        let beyondWidth = cgimg.owidth - systeminfo.windowWidth
+                        let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
+                        if (beyondWidth > 0 || beyondHeigth > 0) {
+                            if (beyondWidth > beyondHeigth) {
+                                cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
+                                cgimg.height *= (cgimg.width / cgimg.owidth)
+
+                            } else {
+                                cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
+                                cgimg.width *= (cgimg.height / cgimg.oheight)
+                            }
+                        }
+
+                        cgimg.path = res.path
+
+
+                        cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
+                        datas.toolsStatus.toolType = ToolsStatus_type.mouse;
+                        that.setData({
+                            "toolsStatus.toolType": datas.toolsStatus.toolType
+                        })
+
+                        that.reloadDrawBoard()
+
+                    }
+                })
+            }
+        })
+    },
+
     mouse_selectAction(action, selecting = false) { //处理选区 按下事件时显示的选框
         //当selecting时，为多选。传入action为两个point，手指的起点和终点。
 
@@ -1377,9 +1433,9 @@ Page({
         //为选中的图层添加选中框（多,单选时。）
         if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx && toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
             ctx.beginPath()
-            ctx.strokeStyle = "rgb(80,80,80)"//"rgb(190,235,248)"//"rgb(230,249,255)"
-            ctx.lineWidth = 2
-            ctx.fillStyle = "pink"//"rgb(32,222,147)"
+            ctx.strokeStyle = DevelopConfiguration.SelectRectStyle.color//"rgb(190,235,248)"//"rgb(230,249,255)"
+            ctx.lineWidth = DevelopConfiguration.SelectRectStyle.lineWidth
+            ctx.fillStyle = DevelopConfiguration.SelectRectStyle.cornerPointColor//"rgb(32,222,147)"
             ctx.setLineDash([3, 6]);
             for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
                 const iAction = actions[a];
@@ -1400,8 +1456,8 @@ Page({
         if (toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting) { //渲染多选时候的动态选框
             ctx.beginPath()
             let mouseActions = toolsStatus.mouseActions
-            ctx.lineWidth = 2
-            ctx.strokeStyle = "rgb(80,80,80)"
+            ctx.lineWidth = DevelopConfiguration.SelectRectStyle.lineWidth
+            ctx.strokeStyle = DevelopConfiguration.SelectRectStyle.color
             ctx.setLineDash([3, 6]);
             this.mouse_selectAction([mouseActions[0].startPoint, mouseActions[0].endPoint], true)
 
@@ -1410,7 +1466,7 @@ Page({
         ctx.draw(false, () => {
 
             if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting || toolsStatus.runReload == true) {
-                console.log("循环")
+
                 this.reloadDrawBoard()
 
             }
@@ -1449,24 +1505,34 @@ Page({
         })
 
     },
-    compute_scrollGesture(finger1_Offest, finger2_Offest, ismove) {
-        if (ismove) {
+    compute_scrollGesture(toolsStatus) {
+        let mouseActions = toolsStatus.mouseActions
 
-            let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
-            let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
-            nX = parseInt(nX > 0 ? nX : 0)
-            nY = parseInt(nY > 0 ? nY : 0)
-            this.data.scrollView.ntop = nY
-            this.data.scrollView.nleft = nX
-            // console.log("x=",nX," y=",nY)
-            this.setData({
-                "scrollView.ntop": nY,
-                "scrollView.nleft": nX
-            })
+        //移动画布处理-----
+        let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y }
+        let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y }
+        let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
+        let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
+        
 
-        } else {
-            console.log("拉伸画布")
-        }
+        nX = parseInt(nX > 0 ? nX : 0)
+        nY = parseInt(nY > 0 ? nY : 0)
+        this.data.scrollView.ntop = nY
+        this.data.scrollView.nleft = nX
+
+        //以下处理非常重要，移动后画布位置改变，此时按下的点的坐标已经！=原来的点。
+        toolsStatus.mouseActions[0].endPoint.x += -finger1_Offest.x
+        toolsStatus.mouseActions[0].endPoint.y += -finger1_Offest.y
+        toolsStatus.mouseActions[1].endPoint.x += -finger2_Offest.x
+        toolsStatus.mouseActions[1].endPoint.y += -finger2_Offest.y
+
+        //缩放画布处理-----
+        this.setData({
+            "scrollView.ntop": nY,
+            "scrollView.nleft": nX
+        })
+
+
     },
     compute_completeModelFlex(action, modelFlexData) {
         //拖动时的呈现都是临时的，并不会实时修改内存中点的数据。
@@ -1642,50 +1708,7 @@ Page({
                     "toolsStatus.toolType": datas.toolsStatus.toolType
                 })
                 this.cancelSelectStatus()
-                let that = this
-                datas.toolsStatus.toolType = ToolsStatus_type.image;
-                wx.chooseImage({
-                    success(res) {
-                        const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
-                        console.log(imgPath)
-                        wx.getImageInfo({
-                            src: imgPath,
-                            success: function (res) {
-                                let systeminfo = app.globalData.systemInfo
-
-                                drawBoard.addAction(Action_type.image)
-                                let cgimg = drawBoard.getLastAction().mode
-                                cgimg.owidth = res.width//保存原始大小
-                                cgimg.oheight = res.height
-                                cgimg.width = res.width//用以拉伸后的大小。
-                                cgimg.height = res.height
-
-                                let beyondWidth = cgimg.owidth - systeminfo.windowWidth
-                                let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
-                                if (beyondWidth > 0 || beyondHeigth > 0) {
-                                    if (beyondWidth > beyondHeigth) {
-                                        cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
-                                        cgimg.height *= (cgimg.width / cgimg.owidth)
-
-                                    } else {
-                                        cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
-                                        cgimg.width *= (cgimg.height / cgimg.oheight)
-                                    }
-                                }
-
-                                cgimg.path = res.path
-
-
-                                cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
-                                datas.toolsStatus.toolType = ToolsStatus_type.mouse;
-
-
-                                that.reloadDrawBoard()
-
-                            }
-                        })
-                    }
-                })
+                this.compute_addImage()
 
 
                 break;
@@ -1994,34 +2017,28 @@ Page({
         //先进行全局的两指操作判断。
         if (touches.length == 2) {
             //计算两个手指xy偏差，是否趋近于一样
-            let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y }
-            let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y }
+            this.compute_scrollGesture(toolsStatus)
+            return
 
-            console.log("手指1", finger1_Offest, "手指2", finger2_Offest)
             //移动时，手指偏差值 乘积为正数
-
-            this.compute_scrollGesture(finger1_Offest, finger2_Offest, true)
-
-            return
-            if ((Math.abs(finger1_Offest.x) + Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y)) > 0.8) {
-                if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y >= 0) {
+            // if ((Math.abs(finger1_Offest.x) + Math.abs(finger1_Offest.y) + Math.abs(finger2_Offest.x) + Math.abs(finger2_Offest.y)) > 0.8) {
+            //     if (finger1_Offest.x * finger2_Offest.x >= 0 || finger1_Offest.y * finger2_Offest.y >= 0) {
 
 
-                    if ((finger1_Offest.x == 0 && finger1_Offest.x == finger1_Offest.y) || (finger2_Offest.x == 0 && finger2_Offest.x == finger2_Offest.y)) {
-                        //拉伸。
-                        this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
-                    } else {
-                        //移动
+            //         if ((finger1_Offest.x == 0 && finger1_Offest.x == finger1_Offest.y) || (finger2_Offest.x == 0 && finger2_Offest.x == finger2_Offest.y)) {
+            //             //拉伸。
+            //             this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
+            //         } else {
+            //             //移动
 
 
-                    }
-                } else {
-                    //拉伸。
-                    this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
-                }
-            }
+            //         }
+            //     } else {
+            //         //拉伸。
+            //         this.compute_scrollGesture(finger1_Offest, finger2_Offest, false)
+            //     }
+            // }
 
-            return
         }
 
 
