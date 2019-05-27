@@ -88,7 +88,7 @@ Page({
             success(res) {
               console.log(res.userInfo)
               app.globalData.userInfo = res.userInfo;
-
+              console.log(app.globalData.userInfo.avatarUrl)
               that.setData({
                 usericonUrl: app.globalData.userInfo.avatarUrl
               })

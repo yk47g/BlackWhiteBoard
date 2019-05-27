@@ -7,7 +7,7 @@ page {
 
 .main scroll-view {
   height: 80vh;
-    /* 方便手机调试 */
+  /* 方便手机调试 */
 }
 
 .main input {
@@ -83,7 +83,25 @@ page {
   height: 35px;
 }
 
-/* 工具调节窗口---- */
+/* 实时用户数据 */
+
+.userOnlineBar {
+  position: absolute;
+  bottom: 10rpx;
+  right: 10rpx;
+}
+
+.userOnlineBar cover-image {
+  width: 50rpx;
+  height: 50rpx;
+  float: right;
+  margin: 10rpx;
+  border: solid rgb(93, 153, 183) 1px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* 画笔调节窗口---- */
 
 .shadeBackground {
   position: absolute;

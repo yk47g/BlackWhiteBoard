@@ -123,7 +123,7 @@ function isRectOverlap(mousePoints, rectPoints) //高效判断两个矩形是否
 
 class ToolsStatus {
     /**
-     * toolType为选择了什么工具
+     * toolType为当前选择了什么工具
      * ---------------------
      * 0.画笔
      * 1.橡皮
@@ -140,10 +140,10 @@ class ToolsStatus {
      */
     constructor() {
         this.toolType = 0;
+        this.lastTooType = 0;
 
 
-
-        this.keyBord = {
+        this.keyBord = {//临时出现在画板上的文字输入编辑框
             display: 0, //0不显示，1为显示
             x: -100,
             y: -100,
@@ -846,7 +846,8 @@ Page({
             lineWidth: 3,
             shape: CGShape_type.none,
             textSize: 30
-        }
+        },
+        userOnlineArray:[1,1]
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
         //曲线优化
@@ -1075,9 +1076,21 @@ Page({
                         //以上只添加图片进入数据库，不进行渲染。
                         that.reloadDrawBoard()
 
+                    },
+                    fail:function(){
+                        that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType ;
+                        that.setData({
+                            "toolsStatus.toolType":  that.data.toolsStatus.toolType
+                        })
                     }
                 })
-            }
+            },
+           fail:function (){
+            that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType ;
+            that.setData({
+                "toolsStatus.toolType":  that.data.toolsStatus.toolType
+            })
+           }
         })
     },
 
@@ -1758,10 +1771,9 @@ Page({
 
                 break;
             case "tools_addImage":
-                this.setData({
-                    "toolsStatus.toolType": datas.toolsStatus.toolType
-                })
+            
                 this.cancelSelectStatus()
+                datas.toolsStatus.lastTooType =  datas.toolsStatus.toolType
                 this.compute_addImage()
 
 
@@ -1771,12 +1783,16 @@ Page({
                     "toolsStatus.toolType": datas.toolsStatus.toolType
                 })
                 console.log("颜料点击");
-                let temptype = datas.toolsStatus.toolType
+             
+                datas.toolsStatus.lastTooType =  datas.toolsStatus.toolType
                 datas.toolsStatus.toolType = ToolsStatus_type.color;
+                this.setData({
+                    "toolsStatus.toolType": datas.toolsStatus.toolType
+                })
                 this.opeanDetailPane(ToolsStatus_type.color)
 
 
-                datas.toolsStatus.toolType = temptype
+          
                 break;
 
             case "tools_debug":
@@ -2438,7 +2454,10 @@ Page({
 
             }.bind(this), 800);
         }
-
+        this.data.toolsStatus.toolType = this.data.toolsStatus.lastTooType ;
+        this.setData({
+            "toolsStatus.toolType":  this.data.toolsStatus.toolType
+        })
     },
 
     button_settings() {
