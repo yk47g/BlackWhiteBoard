@@ -54,7 +54,7 @@ page {
   /* 修改height 一起改margintop */
   width: 30vw;
   box-sizing: border-box;
-  background-color: rgba(245, 245, 245, 0.8);
+  /* background-color: rgba(245, 245, 245, 0.8); */
   /* box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);  不支持阴影*/
   padding-top: 5rpx;
   padding-bottom: 5rpx;

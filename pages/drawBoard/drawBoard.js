@@ -24,7 +24,7 @@ let DevelopConfiguration = {
         lineWidth: 2,
         cornerPointColor: "pink"
     },
-    sameTimeTouchInterval:40
+    sameTimeTouchInterval: 40
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
@@ -736,7 +736,7 @@ let CGShape_type = {
     triangle: 1,//三角形
     roundness: 2,//圆形
 }
-console.log(new CGShape())
+
 class CGImage {
     constructor() {
         this.width = 0;
@@ -847,7 +847,8 @@ Page({
             shape: CGShape_type.none,
             textSize: 30
         },
-        userOnlineArray:[1,1]
+        userOnlineArray: [1, 1],
+        animation1:{}
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
         //曲线优化
@@ -903,6 +904,46 @@ Page({
 
     },
     //draw 方法不会调用draw 显示，需要在外部调用。
+    compute_exportImage(){
+
+        let systeminfo = app.globalData.systemInfo
+        ctx.draw(true, function () {
+            wx.canvasToTempFilePath({
+                canvasId: canvas_ID,
+                quality: 1,
+
+                x: datas.scrollView.nleft,
+                y: datas.scrollView.ntop,
+                width: systeminfo.windowWidth,//设置导出画布的内容区域。
+                height: systeminfo.windowHeight,
+                success: function (res) {
+
+                    wx.saveImageToPhotosAlbum({
+                        filePath: res.tempFilePath,
+                        success: function () {
+                            wx.showToast({
+                                title: "保存成功"
+                            })
+
+                        },
+                        fail: function (fileres) {
+                            wx.showToast({
+                                title: "导出图片失败，请添加相册授权",
+                                icon: "none"
+                            })
+                            wx.authorize({
+                                scope: 'scope.writePhotosAlbum',
+                                success() {
+                                    console.log("用户点击同意授权。")
+                                }
+                            })
+                            console.log(fileres)
+                        }
+                    })
+                }
+            })
+        })
+    },
     compute_textInput(thisPoint, disFocus = false) { //切换到文字工具-处理函数
         let datas = this.data
         let toolsStatus = datas.toolsStatus
@@ -914,7 +955,7 @@ Page({
 
             if (text != "") {
                 let size = datas.penConfiguration.textSize
-                
+
                 let lsAction = (drawBoard.getLastAction()).mode //为CGText
                 lsAction.text = text
                 lsAction.size = size
@@ -924,7 +965,7 @@ Page({
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
-            }else{
+            } else {
                 console.log("没有文字输入，作废。")
             }
 
@@ -1077,20 +1118,20 @@ Page({
                         that.reloadDrawBoard()
 
                     },
-                    fail:function(){
-                        that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType ;
+                    fail: function () {
+                        that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
                         that.setData({
-                            "toolsStatus.toolType":  that.data.toolsStatus.toolType
+                            "toolsStatus.toolType": that.data.toolsStatus.toolType
                         })
                     }
                 })
             },
-           fail:function (){
-            that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType ;
-            that.setData({
-                "toolsStatus.toolType":  that.data.toolsStatus.toolType
-            })
-           }
+            fail: function () {
+                that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
+                that.setData({
+                    "toolsStatus.toolType": that.data.toolsStatus.toolType
+                })
+            }
         })
     },
 
@@ -1586,7 +1627,7 @@ Page({
         //缩放画布处理-----
 
         let distance = Math.pow(Math.pow(mouseActions[0].endPoint.x - mouseActions[1].endPoint.x, 2) + Math.pow(mouseActions[0].endPoint.y - mouseActions[1].endPoint.y, 2), 0.5)
-        console.log("手指距离：",distance)
+        console.log("手指距离：", distance)
 
         //应用到画布上
         //以下处理非常重要，移动后画布位置改变，此时按下的点的坐标已经！=原来的点。
@@ -1688,25 +1729,41 @@ Page({
 
     },
 
-    /**
-     * 页面相关事件处理函数--监听用户下拉动作
-     */
-    onPullDownRefresh: function () {
+    // /**
+    //  * 页面相关事件处理函数--监听用户下拉动作
+    //  */
+    // onPullDownRefresh: function () {
 
-    },
+    // },
 
-    /**
-     * 页面上拉触底事件的处理函数
-     */
-    onReachBottom: function () {
+    // /**
+    //  * 页面上拉触底事件的处理函数
+    //  */
+    // onReachBottom: function () {
 
-    },
+    // },
 
     /**
      * 用户点击右上角分享
      */
-    onShareAppMessage: function () {
+    onShareAppMessage: function (res) {
+        console.log(res)
 
+        if (res.from == "button") {
+            //邀请用户
+        } else {
+            //分享小程序
+        }
+
+        // let shareData={
+        //     title:"",
+        // path:"",
+        // imageUrlL:"",
+        // }
+        return {} //必须返回一个objec 以定义转发的内容
+    },
+    onResize(res) {
+        console.log("设备旋转", res)
     },
 
     //------UI响应事件------
@@ -1771,9 +1828,9 @@ Page({
 
                 break;
             case "tools_addImage":
-            
+
                 this.cancelSelectStatus()
-                datas.toolsStatus.lastTooType =  datas.toolsStatus.toolType
+                datas.toolsStatus.lastTooType = datas.toolsStatus.toolType
                 this.compute_addImage()
 
 
@@ -1783,8 +1840,8 @@ Page({
                     "toolsStatus.toolType": datas.toolsStatus.toolType
                 })
                 console.log("颜料点击");
-             
-                datas.toolsStatus.lastTooType =  datas.toolsStatus.toolType
+
+                datas.toolsStatus.lastTooType = datas.toolsStatus.toolType
                 datas.toolsStatus.toolType = ToolsStatus_type.color;
                 this.setData({
                     "toolsStatus.toolType": datas.toolsStatus.toolType
@@ -1792,54 +1849,17 @@ Page({
                 this.opeanDetailPane(ToolsStatus_type.color)
 
 
-          
+
                 break;
 
             case "tools_debug":
                 // let storage = new LocalStorage()
                 // storage.save()
                 // storage.read()
-              
-               
-                let systeminfo = app.globalData.systemInfo
-                ctx.draw(true,function (){
-                    wx.canvasToTempFilePath({
-                        canvasId:canvas_ID,
-                        quality:1,
 
-                        x:datas.scrollView.nleft,
-                        y:datas.scrollView.ntop,
-                        width:systeminfo.windowWidth,
-                        height:systeminfo.windowHeight,
-                        success:function(res){
-                            
-                            wx.saveImageToPhotosAlbum({
-                                filePath:res.tempFilePath,
-                                success:function(){
-                                    wx.showToast({
-                                        title:"保存成功"
-                                    })
-                              
-                                },
-                                fail:function(fileres){
-                                    wx.showToast({
-                                        title:"导出图片失败，请添加相册授权",
-                                        icon:"none"
-                                    })
-                                    wx.authorize({
-                                        scope: 'scope.writePhotosAlbum',
-                                        success() {
-                                          console.log("用户点击同意授权。")
-                                        }
-                                    })
-                                    console.log(fileres)
-                                }
-                            })
-                        }
-                    })
-                })
-               
-           
+
+
+
                 break;
         }
 
@@ -1910,17 +1930,18 @@ Page({
     },
     canvas_touchstart(e) {
         //处理按下后的靠边动画，
-        // let animation = wx.createAnimation({
-        //     duration: 3000,
-        //     timingFunction: "ease-in-out"
-        // }
-        // )
-
+        let animation = wx.createAnimation({
+            duration: 400,
+            timingFunction: "ease-in-out"
+        })
+        animation.left(-100)
         // animation.translate(100, -100);
-        // animation.step()
+        animation.step()
+       
 
-
-
+        this.setData({
+            animation1: animation.export()
+        })
         let datas = this.data
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
@@ -2345,15 +2366,26 @@ Page({
     },
 
     canvas_touchend(e) {//手指离开后，如果还存在手指的话，e里面则仍然存在touches数据。
-        //触摸完毕，进行曲线调整。
+   
+
+        let animation = wx.createAnimation({
+            duration: 4000,
+            timingFunction: "ease-in-out"
+        })
+        animation.left(100)
+        // animation.translate(100, -100);
+        animation.step()
+       
+
+        this.setData({
+            animation1: animation.export()
+        })
+
 
         let toolsStatus = this.data.toolsStatus
 
         let condition = toolsStatus.condition
         let touches = e.touches
-
-
-
         if (condition.meet(Condition_Type.twoFinger_gesture) != true) {
             switch (toolsStatus.toolType) {
                 case ToolsStatus_type.mouse:
@@ -2454,12 +2486,15 @@ Page({
 
             }.bind(this), 800);
         }
-        this.data.toolsStatus.toolType = this.data.toolsStatus.lastTooType ;
+        this.data.toolsStatus.toolType = this.data.toolsStatus.lastTooType;
         this.setData({
-            "toolsStatus.toolType":  this.data.toolsStatus.toolType
+            "toolsStatus.toolType": this.data.toolsStatus.toolType
         })
     },
+    inviteUser(e) {//点击右下角的邀请用户。
 
+
+    },
     button_settings() {
         console.log("点击了设置按钮");
         wx.navigateTo(

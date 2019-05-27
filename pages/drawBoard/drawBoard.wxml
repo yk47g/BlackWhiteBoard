@@ -14,7 +14,7 @@
       </button>
     </cover-view>
 
-    <cover-view class='toolsBar'>
+    <cover-view class='toolsBar' animation="{{animation1}}">
       <button plain catchtap='changeStatus' id='tools_select'>
         <cover-image src="/icons/tools_select{{toolsStatus.toolType == 1?'_on':''}}.png"></cover-image>
       </button>
@@ -34,14 +34,14 @@
         <cover-image src="/icons/tools_image{{toolsStatus.toolType == 3?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
 
-      <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
+      <button plain catchtap='changeStatus' id='tools_debug' open-type="share">测试</button>
     </cover-view>
 
 
     <!-- 实时显示在线用户 -->
     <cover-view class='userOnlineBar'>
       <cover-image wx:for="{{userOnlineArray}}" src="/icons/132.jpeg {{item.icon}}" mode='aspectFit' wx:key="index"> </cover-image>
-      <cover-image src="/icons/tools_addUser.png" mode='aspectFit' style='border:0;'>
+      <cover-image src="/icons/tools_addUser.png" mode='aspectFit' style='border:0;0' catchtap="inviteUser">
       </cover-image>
     </cover-view>
 

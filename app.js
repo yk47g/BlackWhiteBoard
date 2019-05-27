@@ -21,7 +21,7 @@ App({
    * 当小程序启动，或从后台进入前台显示，会触发 onShow
    */
   onShow: function (options) {
-    
+    console.log("app_Onshow",options)
   },
 
   /**
