@@ -913,15 +913,18 @@ Page({
 
             if (text != "") {
                 let size = datas.penConfiguration.textSize
-                let lsAction = (drawBoard.addAction(Action_type.text)).mode //为CGText
+                
+                let lsAction = (drawBoard.getLastAction()).mode //为CGText
                 lsAction.text = text
                 lsAction.size = size
                 lsAction.color = datas.penConfiguration.color
-                lsAction.position = new CGPoint(toolsStatus.keyBord.x, toolsStatus.keyBord.y)
+                // lsAction.position = new CGPoint(toolsStatus.keyBord.x, toolsStatus.keyBord.y)
 
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
+            }else{
+                console.log("没有文字输入，作废。")
             }
 
             toolsStatus.keyBord.waitInput = false //清空等待输入状态
@@ -933,15 +936,20 @@ Page({
 
         } else {
 
+
             toolsStatus.keyBord.waitInput = true
             console.log('开始输入文字')
+            console.log(thisPoint)
+            console.log(thisPoint.x - datas.scrollView.nleft, thisPoint.y - datas.scrollView.ntop)
             this.setData({
                 "toolsStatus.keyBord.display": 1,
                 "toolsStatus.keyBord.value": "",
-                "toolsStatus.keyBord.x": thisPoint.x,
-                "toolsStatus.keyBord.y": thisPoint.y,
+                "toolsStatus.keyBord.x": thisPoint.x - datas.scrollView.nleft,
+                "toolsStatus.keyBord.y": thisPoint.y - datas.scrollView.ntop,
                 "toolsStatus.keyBord.focus": true
             })
+            let lsAction = (drawBoard.addAction(Action_type.text)).mode
+            lsAction.position = thisPoint
         }
     },
     compute_line(thisPoint) { //只在手移动绘画时被调用。
@@ -1042,6 +1050,7 @@ Page({
                         cgimg.width = res.width//用以拉伸后的大小。
                         cgimg.height = res.height
 
+                        //开始计算居中后的图片大小。
                         let beyondWidth = cgimg.owidth - systeminfo.windowWidth
                         let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
                         if (beyondWidth > 0 || beyondHeigth > 0) {
@@ -1063,7 +1072,7 @@ Page({
                         that.setData({
                             "toolsStatus.toolType": datas.toolsStatus.toolType
                         })
-
+                        //以上只添加图片进入数据库，不进行渲染。
                         that.reloadDrawBoard()
 
                     }
@@ -1774,22 +1783,46 @@ Page({
                 // let storage = new LocalStorage()
                 // storage.save()
                 // storage.read()
+              
+               
+                let systeminfo = app.globalData.systemInfo
                 ctx.draw(true,function (){
                     wx.canvasToTempFilePath({
                         canvasId:canvas_ID,
                         quality:1,
+
+                        x:datas.scrollView.nleft,
+                        y:datas.scrollView.ntop,
+                        width:systeminfo.windowWidth,
+                        height:systeminfo.windowHeight,
                         success:function(res){
                             
                             wx.saveImageToPhotosAlbum({
                                 filePath:res.tempFilePath,
                                 success:function(){
-                                    console.log("保存成功。")
+                                    wx.showToast({
+                                        title:"保存成功"
+                                    })
+                              
+                                },
+                                fail:function(fileres){
+                                    wx.showToast({
+                                        title:"导出图片失败，请添加相册授权",
+                                        icon:"none"
+                                    })
+                                    wx.authorize({
+                                        scope: 'scope.writePhotosAlbum',
+                                        success() {
+                                          console.log("用户点击同意授权。")
+                                        }
+                                    })
+                                    console.log(fileres)
                                 }
                             })
                         }
                     })
                 })
-                
+               
            
                 break;
         }
