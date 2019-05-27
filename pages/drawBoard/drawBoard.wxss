@@ -1,12 +1,13 @@
 /* pages/drawBoard/drawBoard.wxss */
 
-page{
+page {
   height: 100%;
-   overflow: hidden!important;
-  
+  overflow: hidden !important;
 }
+
 .main scroll-view {
-  height: 100vh;
+  height: 80vh;
+    /* 方便手机调试 */
 }
 
 .main input {
@@ -38,8 +39,7 @@ page{
   width: 2000px;
   height: 2000px;
   background-color: white;
-  /*  rgb(65, 65, 65); */
-  /* 1rpx = 0.5px */
+  /*  rgb(65, 65, 65); *//* 1rpx = 0.5px */
 }
 
 /* 工具栏开始---- */
@@ -109,8 +109,7 @@ page{
   border-radius: 40rpx;
   background: white;
   padding: 30rpx;
-  /* box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1); */
-  /* font-size: 50rpx; */
+  /* box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1); *//* font-size: 50rpx; */
 }
 
 .toolsBarDeatilPane_show {
@@ -131,35 +130,30 @@ page{
 
 .sonPane button {
   border-style: none;
-
   height: 100rpx;
   width: 100rpx;
   line-height: 100rpx;
   border-radius: 20rpx;
-  /* margin-top: 30rpx; */
-  /* margin: auto; */
-  /* margin-left: 10rpx;
+  /* margin-top: 30rpx; *//* margin: auto; *//* margin-left: 10rpx;
   margin-right: 10rpx; */
   box-sizing: border-box;
 }
 
-.sonPane .ColorButton{
+.sonPane .ColorButton {
   margin-bottom: 80rpx;
-
   margin-left: 15rpx;
   margin-right: 15rpx;
   border-radius: 7rpx !important;
   height: 70rpx;
-  width:90rpx ;
+  width: 90rpx;
 }
 
-
 .button_Select {
-  background-color: rgb(244, 244, 244)!important;
+  background-color: rgb(244, 244, 244) !important;
 }
 
 .sonPane button cover-image {
- padding: 20rpx;
+  padding: 20rpx;
   width: 60rpx;
   margin: auto;
 }

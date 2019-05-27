@@ -31,7 +31,7 @@
       </button>
       <button plain catchtap='changeStatus' id='tools_addImage'> <cover-image src="/icons/tools_image{{toolsStatus.toolType == 3?'_on':''}}.png" mode='widthFix'></cover-image></button>
     
-      <!-- <button plain catchtap='changeStatus' id='tools_debug'>保存</button> -->
+      <button plain catchtap='changeStatus' id='tools_debug'>保存</button>
     </cover-view>
     <!-- style="{{>=0 ? '':'display:none;'}}" -->
     <block wx:if="{{toolBarDetailindex >= 0}}">

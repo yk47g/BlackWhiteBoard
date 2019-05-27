@@ -23,7 +23,8 @@ let DevelopConfiguration = {
         color: "rgb(80,80,80)",
         lineWidth: 2,
         cornerPointColor: "pink"
-    }
+    },
+    sameTimeTouchInterval:40
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 
@@ -37,15 +38,15 @@ function release(...list) { //释放内存函数。
 
 // console.log(Object.assign({a:2,c:{point:[10]}},{b:3,c:{point:[20]}}))
 class MouseAction { //用来记录手指移动距离等数据
-    constructor(startPoint, touch) {
-        this.distance = 0; //1️以像素的平方为单位
+    constructor(startPoint, touch, time) {
+
         this.startPoint = startPoint //cgpoint类型
         this.lastPoint = startPoint
         this.endPoint = startPoint
-        this.time = 0
+        this.time = time
         this.identifier = touch.identifier
     }
-    isExist(mouseActions) {
+    isExist(mouseActions) {//判断当前对象的identifier 是否存在于里面。
         for (let i = 0; i < mouseActions.length; i++) {
             const element = mouseActions[i];
             if (element.identifier == this.identifier) {
@@ -54,6 +55,14 @@ class MouseAction { //用来记录手指移动距离等数据
         }
         return -1
 
+    }
+    isSameTimeTouch(mouseAction) {
+        console.log(this, mouseAction)
+        let interval = Math.abs(this.time - mouseAction.time)
+        if (interval < DevelopConfiguration.sameTimeTouchInterval) {//判断是否同时按下的间隔。
+            return true
+        }
+        return false
     }
 }
 
@@ -92,8 +101,9 @@ const Condition_Type = {
     touchDown_corner: "touchDown_Corner", //按下角点地方
     touchDown_center: "touchDown_center", //按下 角点以内的中心区域
     touchDown_towFinger: "touchDown_towFinger", //按下时两个手指
-    twoFinger_farAway: "twoFinger_farAway", //两个手指远离
-    twoFinger_sameDirect: "twoFinger_sameDirect", //两个手指远离
+    twoFinger_gesture: "twoFinger_gesture", //手势移动拉伸画布
+    twoFinger_sameTimeTouchDown: "twoFinger_sameTimeTouchDown",
+    exist_oneFingerTouch: "exist_oneFingerTouch"
 
 }
 
@@ -189,6 +199,34 @@ class ToolsStatus {
             }
         }
         return false
+    }
+    deleteMouseActionby(touches) {//调用一次就会遍历一次，删除
+        var indexString = ""
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            indexString += touch.identifier + ","
+        }
+
+        for (let i = 0; i < this.mouseActions.length; i++) {
+            const element = this.mouseActions[i];
+            if (indexString.indexOf(element.identifier) == -1) {
+                console.log("删除", element.identifier)
+                this.mouseActions.splice(i, 1)
+
+                return
+            }
+
+        }
+
+        //    //只能删除一个。
+        //     for (let i = 0; i < this.mouseActions.length; i++) {
+        //         const element = this.mouseActions[i];
+        //         if (element.identifier == identifier ) {
+        //             this.mouseActions.splice(i,1)
+        //             return
+        //         }
+        //     }
+
     }
 }
 let ToolsStatus_type = { //当做枚举来用。
@@ -458,7 +496,7 @@ let Action_type = {
 class CGPoint { //坐标点类
 
     constructor(x = 0, y = 0, toInt = false) {
-        toInt= true
+        toInt = true
         if (toInt == true) {
             this.x = parseInt(x)
             this.y = parseInt(y)
@@ -1513,20 +1551,27 @@ Page({
         let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y }
         let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
         let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
-        
+
 
         nX = parseInt(nX > 0 ? nX : 0)
         nY = parseInt(nY > 0 ? nY : 0)
         this.data.scrollView.ntop = nY
         this.data.scrollView.nleft = nX
 
+        // console.log("X= ", parseInt(-(finger1_Offest.x + finger2_Offest.x) / 2), "y=", parseInt(-(finger1_Offest.y + finger2_Offest.y) / 2))
+
+
+        //缩放画布处理-----
+
+        let distance = Math.pow(Math.pow(mouseActions[0].endPoint.x - mouseActions[1].endPoint.x, 2) + Math.pow(mouseActions[0].endPoint.y - mouseActions[1].endPoint.y, 2), 0.5)
+        console.log("手指距离：",distance)
+
+        //应用到画布上
         //以下处理非常重要，移动后画布位置改变，此时按下的点的坐标已经！=原来的点。
         toolsStatus.mouseActions[0].endPoint.x += -finger1_Offest.x
         toolsStatus.mouseActions[0].endPoint.y += -finger1_Offest.y
         toolsStatus.mouseActions[1].endPoint.x += -finger2_Offest.x
         toolsStatus.mouseActions[1].endPoint.y += -finger2_Offest.y
-
-        //缩放画布处理-----
         this.setData({
             "scrollView.ntop": nY,
             "scrollView.nleft": nX
@@ -1726,12 +1771,26 @@ Page({
                 break;
 
             case "tools_debug":
-                let storage = new LocalStorage()
-                storage.save()
-                storage.read()
-
-
-
+                // let storage = new LocalStorage()
+                // storage.save()
+                // storage.read()
+                ctx.draw(true,function (){
+                    wx.canvasToTempFilePath({
+                        canvasId:canvas_ID,
+                        quality:1,
+                        success:function(res){
+                            
+                            wx.saveImageToPhotosAlbum({
+                                filePath:res.tempFilePath,
+                                success:function(){
+                                    console.log("保存成功。")
+                                }
+                            })
+                        }
+                    })
+                })
+                
+           
                 break;
         }
 
@@ -1817,23 +1876,47 @@ Page({
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
         let thisPoint = new CGPoint(touches[0].x, touches[0].y)
-        console.log("按下", thisPoint)
+        let condition = toolsStatus.condition
+
+
+
+
+
 
         for (let i = 0; i < touches.length; i++) {
+
             const touch = touches[i];
-            let mouseAction = new MouseAction(new CGPoint(touch.x, touch.y), touch)
+            let mouseAction = new MouseAction(new CGPoint(touch.x, touch.y), touch, e.timeStamp)
             let isExistIndex = mouseAction.isExist(toolsStatus.mouseActions)
 
             if (isExistIndex == -1) {
                 toolsStatus.mouseActions.push(mouseAction)
-            } else {
-                toolsStatus.mouseActions[isExistIndex] = mouseAction
             }
 
-
+            // else {
+            // toolsStatus.mouseActions[isExistIndex] = mouseAction
+            // }/
         }
 
-        // toolsStatus.mouseActions.push()
+        //处理多手指事件情况。
+        if (touches.length == 2) {
+
+            if (toolsStatus.mouseActions[0].isSameTimeTouch(toolsStatus.mouseActions[1]) == true) {
+                console.log("同时按下双指")
+                condition.addValue(Condition_Type.twoFinger_sameTimeTouchDown)
+                condition.addValue(Condition_Type.twoFinger_gesture)
+            } else {
+                console.log("后触发式的双指。")
+                condition.addValue(Condition_Type.exist_oneFingerTouch)//已经有手指处于按下状态。
+            }
+        }
+
+
+
+        if (condition.meet(Condition_Type.twoFinger_gesture)) {
+            return
+        }
+
 
         switch (toolsStatus.toolType) {
 
@@ -1892,7 +1975,7 @@ Page({
 
             case ToolsStatus_type.mouse:
 
-                let condition = toolsStatus.condition
+
                 let select = toolsStatus.select
                 if (select.selecting == true) {//已经有图层被选中。
                     //判断是否为按下角点
@@ -1965,7 +2048,7 @@ Page({
 
 
                     //点击空白地方，取消所有点的选中状态。
-                    condition.deleteAll()
+                    // condition.deleteAll()
                     condition.addValue(Condition_Type.touchDown_none)
 
                     toolsStatus.mouseMoveType = Mouse_MoveType.none
@@ -2017,6 +2100,7 @@ Page({
         //先进行全局的两指操作判断。
         if (touches.length == 2) {
             //计算两个手指xy偏差，是否趋近于一样
+            condition.addValue(Condition_Type.twoFinger_gesture)
             this.compute_scrollGesture(toolsStatus)
             return
 
@@ -2040,7 +2124,10 @@ Page({
             // }
 
         }
-
+        if (condition.meet(Condition_Type.twoFinger_gesture)) {
+            //残余事件。
+            return
+        }
 
         switch (toolsStatus.toolType) {
             case ToolsStatus_type.pen:
@@ -2208,81 +2295,88 @@ Page({
         }
     },
 
-    canvas_touchend(e) {
+    canvas_touchend(e) {//手指离开后，如果还存在手指的话，e里面则仍然存在touches数据。
         //触摸完毕，进行曲线调整。
 
         let toolsStatus = this.data.toolsStatus
 
         let condition = toolsStatus.condition
-
-        // toolsStatus.mouseActions = {}
-
         let touches = e.touches
-        switch (toolsStatus.toolType) {
-            case ToolsStatus_type.mouse:
-
-                switch (toolsStatus.mouseMoveType) {
-                    case Mouse_MoveType.multipleSelecting:
-
-                        let indexs = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
-                        toolsStatus.mouseMoveType = Mouse_MoveType.none
-                        if (indexs.length > 0) {
-                            console.log("选中" + indexs.length + "个图层 ")
-                            toolsStatus.select.selecting = true
-                            // toolsStatus.select.selecting = true
-                        }
 
 
 
-                        this.reloadDrawBoard()
-                        break;
-                    case Mouse_MoveType.model_move:
-                        toolsStatus.mouseMoveType = Mouse_MoveType.none
-                        this.reloadDrawBoard()
-                        break;
-                    case Mouse_MoveType.model_felx:
-                        let actionsIndex = toolsStatus.select.actionsIndex
-                        toolsStatus.runReload = false
-                        for (let i = 0; i < actionsIndex.length; i++) {
-                            let action = drawBoard.getActionByindex(actionsIndex[i]);
-                            this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
+        if (condition.meet(Condition_Type.twoFinger_gesture) != true) {
+            switch (toolsStatus.toolType) {
+                case ToolsStatus_type.mouse:
 
-                            //删除临时添加的orect属性
-                            delete action.oRect
+                    switch (toolsStatus.mouseMoveType) {
+                        case Mouse_MoveType.multipleSelecting:
 
-                        }
-                        toolsStatus.mouseMoveType = Mouse_MoveType.none
-                        toolsStatus.modelFlexData = null;
+                            let indexs = this.ergodicEach_Action([toolsStatus.mouseActions[0].startPoint, toolsStatus.mouseActions[0].endPoint])
+                            toolsStatus.mouseMoveType = Mouse_MoveType.none
+                            if (indexs.length > 0) {
+                                console.log("选中" + indexs.length + "个图层 ")
+                                toolsStatus.select.selecting = true
+                                // toolsStatus.select.selecting = true
+                            }
 
 
-                        this.reloadDrawBoard()
-                        break;
-                    default:
-                        break;
-                }
-                break
 
-            case ToolsStatus_type.pen:
-                let lsAction = drawBoard.getLastAction()
-                if (lsAction.type == Action_type.line) {
-                    if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
-                        console.log("路径过短，删除。", drawBoard)
+                            this.reloadDrawBoard()
+                            break;
+                        case Mouse_MoveType.model_move:
+                            toolsStatus.mouseMoveType = Mouse_MoveType.none
+                            this.reloadDrawBoard()
+                            break;
+                        case Mouse_MoveType.model_felx:
+                            let actionsIndex = toolsStatus.select.actionsIndex
+                            toolsStatus.runReload = false
+                            for (let i = 0; i < actionsIndex.length; i++) {
+                                let action = drawBoard.getActionByindex(actionsIndex[i]);
+                                this.compute_completeModelFlex(action, toolsStatus.modelFlexData)
 
-                        drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
+                                //删除临时添加的orect属性
+                                delete action.oRect
+
+                            }
+                            toolsStatus.mouseMoveType = Mouse_MoveType.none
+                            toolsStatus.modelFlexData = null;
+
+
+                            this.reloadDrawBoard()
+                            break;
+                        default:
+                            break;
                     }
-                }
-                break
+                    break
+
+                case ToolsStatus_type.pen:
+                    let lsAction = drawBoard.getLastAction()
+                    if (lsAction.type == Action_type.line) {
+                        if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
+                            console.log("路径过短，删除。")
+
+                            drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
+                        }
+                    }
+                    break
+            }
         }
+
         //清空鼠标事件和本次条件
-        condition.deleteAll()
+        //处理：删除当前松开的手指的mouseAction。
+        toolsStatus.deleteMouseActionby(touches)
+        if (condition.meet(Condition_Type.twoFinger_sameTimeTouchDown)) {
+            condition.deleteValue(Condition_Type.twoFinger_sameTimeTouchDown)
+            condition.addValue(Condition_Type.exist_oneFingerTouch)
+            console.log("双指后松开了一个手指。")
+            //双指的手势还没完全放开
+        }
 
-        toolsStatus.mouseActions = []
-        // let lsAction = drawBoard.getLastAction()
-        // lsAction.every(function(point){
-
-
-        // })
-
+        if (touches.length == 0) {//所有手指全部松开，完成一次事件。
+            condition.deleteAll()
+            toolsStatus.mouseActions = []
+        }
 
     },
 
