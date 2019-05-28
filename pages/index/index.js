@@ -12,7 +12,7 @@ Page({
 
 
   //页面加载事件----------------
-  
+
   /**
    * 生命周期函数--监听页面加载
    */
@@ -88,7 +88,7 @@ Page({
             success(res) {
               console.log(res.userInfo)
               app.globalData.userInfo = res.userInfo;
-
+              console.log(app.globalData.userInfo.avatarUrl)
               that.setData({
                 usericonUrl: app.globalData.userInfo.avatarUrl
               })

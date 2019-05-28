@@ -5,5 +5,6 @@
   },
   "pageOrientation": "auto",
   "navigationBarTitleText": "黑白板",
-  "disableSwipeBack":true
+  "disableSwipeBack":true,
+  "disableScroll": true
 }
