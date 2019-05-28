@@ -1,7 +1,12 @@
 App({
 
   globalData:{
-    userInfo: {},
+    session: "",
+    userInfo: {
+      iconurl:"",
+      name:"",
+      id:null
+    },
     systemInfo:{}
   },
   /**
@@ -15,6 +20,14 @@ App({
           console.log("获取系统信息完成。",this.globalData)
       },
     })
+    //获取缓存中的session
+    this.globalData.session = wx.getStorageSync("session");
+    console.log(this.globalData.session);
+    if (this.globalData.session === "") {
+      console.log("null");
+    }
+    
+
   },
 
   /**
