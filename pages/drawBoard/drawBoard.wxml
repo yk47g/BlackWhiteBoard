@@ -49,9 +49,9 @@
 
     <!-- 画笔调节面板 -->
     <block wx:if="{{toolBarDetailindex >= 0}}">
-      <cover-view class="shadeBackground {{runAM ? 'shadeBackground_show':''}}" bindtap="closeDeatilPane"></cover-view>
+      <cover-view class="shadeBackground" animation="{{animation.background}}" bindtap="closeDeatilPane"></cover-view>
 
-      <cover-view class="toolsBarDeatilPane {{(toolBarDetailindex >= 0 && runAM) ? 'toolsBarDeatilPane_show':''}}">
+      <cover-view class="toolsBarDeatilPane"  animation="{{animation.opeanPane}}" >
         <!-- 画笔 -->
         <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 0}}">
           画笔

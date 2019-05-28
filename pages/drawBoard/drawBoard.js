@@ -848,7 +848,13 @@ Page({
             textSize: 30
         },
         userOnlineArray: [1, 1],
-        animation1:{}
+        animation1: {},
+        animation: {
+            background: {},
+            opeanPane: {},
+        }
+
+
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
         //曲线优化
@@ -904,7 +910,7 @@ Page({
 
     },
     //draw 方法不会调用draw 显示，需要在外部调用。
-    compute_exportImage(){
+    compute_exportImage() {
 
         let systeminfo = app.globalData.systemInfo
         ctx.draw(true, function () {
@@ -1775,11 +1781,27 @@ Page({
                 toolBarDetailindex: toolType,
             })
             setTimeout(function () {
-                this.setData({
-                    runAM: true
+                let animation_back = wx.createAnimation({
+                    duration: 400,
+                    timingFunction: "ease-in-out"
                 })
-                console.log("开始打开动画", this.data.runAM)
-            }.bind(this), 10);
+                // animation.left(100)
+                animation_back.opacity(0.3)
+                animation_back.step()
+
+                let animation_opean = wx.createAnimation({
+                    duration: 400,
+                    timingFunction: "ease-in-out"
+                })
+                animation_opean.translate(0, -260);
+                animation_opean.step()
+                this.setData({
+                    "animation.background": animation_back.export(),
+                    "animation.opeanPane": animation_opean.export()
+
+                })
+
+            }.bind(this), 5);
         }
     },
     changeStatus(e) { //画布工具栏点击事件
@@ -1934,14 +1956,14 @@ Page({
             duration: 400,
             timingFunction: "ease-in-out"
         })
-        animation.left(-100)
-        // animation.translate(100, -100);
+        // animation.left(100)
+        animation.translate(-100);
         animation.step()
-       
-
         this.setData({
             animation1: animation.export()
         })
+
+
         let datas = this.data
         let toolsStatus = datas.toolsStatus
         let touches = e.touches
@@ -2366,16 +2388,16 @@ Page({
     },
 
     canvas_touchend(e) {//手指离开后，如果还存在手指的话，e里面则仍然存在touches数据。
-   
+
 
         let animation = wx.createAnimation({
-            duration: 4000,
-            timingFunction: "ease-in-out"
+            duration: 400,
+            // timingFunction: "ease-in-out"
         })
-        animation.left(100)
-        // animation.translate(100, -100);
+        // animation.left(100)
+        animation.translate(0);
         animation.step()
-       
+
 
         this.setData({
             animation1: animation.export()
@@ -2473,23 +2495,45 @@ Page({
         console.log(e)
     },
     closeDeatilPane(e) {
-        if (this.data.runAM == true) {
+        // if (this.data.runAM == true) {
 
-            this.setData({
-                runAM: false
+        console.log("正在关闭动画", this.data.runAM)
+        setTimeout(function () {
+         
+            let animation_back = wx.createAnimation({
+                duration: 400,
+                timingFunction: "ease-in-out"
             })
-            console.log("正在关闭动画", this.data.runAM)
-            setTimeout(function () {
-                this.setData({
-                    toolBarDetailindex: -1
-                })
+            // animation.left(100)
+            animation_back.opacity(0)
+            animation_back.step()
 
-            }.bind(this), 800);
-        }
-        this.data.toolsStatus.toolType = this.data.toolsStatus.lastTooType;
-        this.setData({
-            "toolsStatus.toolType": this.data.toolsStatus.toolType
-        })
+            let animation_opean = wx.createAnimation({
+                duration: 400,
+                timingFunction: "ease-in-out"
+            })
+            animation_opean.translate(0, 0);
+            animation_opean.step()
+            this.setData({
+                "animation.background": animation_back.export(),
+                "animation.opeanPane": animation_opean.export()
+
+            })
+        }.bind(this), 5);
+        // }
+        setTimeout(function () {
+            this.setData({
+                toolBarDetailindex: -1
+            })
+            if (this.data.toolsStatus.toolType == ToolsStatus_type.color) {
+                this.data.toolsStatus.toolType = this.data.toolsStatus.lastTooType;
+                this.setData({
+                    "toolsStatus.toolType": this.data.toolsStatus.toolType
+                })
+            }
+        }.bind(this),500);
+        
+
     },
     inviteUser(e) {//点击右下角的邀请用户。
 

@@ -54,7 +54,7 @@ page {
   /* 修改height 一起改margintop */
   width: 30vw;
   box-sizing: border-box;
-  /* background-color: rgba(245, 245, 245, 0.8); */
+  background-color: rgba(245, 245, 245, 0.8);
   /* box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);  不支持阴影*/
   padding-top: 5rpx;
   padding-bottom: 5rpx;
@@ -108,14 +108,17 @@ page {
   bottom: 0;
   transition: background 0.4s;
   height: 100vh;
+  opacity:0;
+
   width: 100vw;
-  background: rgba(0, 0, 0, 0);
+  background: rgb(0, 0, 0);
+  /* background: rgba(0, 0, 0, 0.3); */
   /* 背景半黑蒙版 */
 }
 
-.shadeBackground_show {
-  background: rgba(0, 0, 0, 0.3);
-}
+/* .shadeBackground_show {
+  
+} */
 
 .toolsBarDeatilPane {
   box-sizing: border-box;
@@ -130,9 +133,9 @@ page {
   /* box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1); *//* font-size: 50rpx; */
 }
 
-.toolsBarDeatilPane_show {
+/* .toolsBarDeatilPane_show {
   bottom: 0;
-}
+} */
 
 .PaneForItem {
   font-size: 50rpx;
