@@ -27,6 +27,16 @@ let DevelopConfiguration = {
     sameTimeTouchInterval: 40
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
+var websocket = require('../..//utils/websocket.js');//加载通信库
+var utils = require('../..//utils/util.js');//加载插件库
+var url = "https://pykky.com/wechatbwb/BlackWhiteBoard.php";//请求地址
+
+//发送数据函数 传入一个data数据参数即可，将发送给服务器data，data时间，用户id，房间id
+function send(data) {
+    //websocket.send('{ "content": "' + this.data.drawBoardData + '", "date": "' + utils.formatTime(new Date()) + '","type":"text", "nickName": "' + this.data.userInfo.nickName + '", "avatarUrl": "' + this.data.userInfo.avatarUrl + '" }')
+    websocket.send('{ "data": "' + data + '", "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
+
+}
 
 
 function release(...list) { //释放内存函数。
@@ -852,7 +862,8 @@ Page({
         animation: {
             background: {},
             opeanPane: {},
-        }
+        },
+        drawBoardList:[]
 
 
     },
@@ -1703,7 +1714,92 @@ Page({
 
 
         this.loadDrawBoard();
+        let that = this;
 
+        //登陆
+        //检测缓存中是否有session和roomid并存入全局变量中
+        if (!(app.globalData.session === "")) {
+            //根据已有的session从服务器获取所有个人信息存入全局变量
+            wx.request({
+                url:url,
+                data:{
+                    "session" : app.globalData.session,
+                },
+                success: function(res){
+                    if (res.statusCode == 200) {
+                        console.log("服务器request回来的data：");
+                        console.log(res.data);
+                        if (res.data.statusCode == 0) {
+                            app.globalData.userInfo.id=res.data.id;
+                            app.globalData.userInfo.name=res.data.name;
+                            app.globalData.userInfo.iconurl=res.data.iconurl;
+                            app.globalData.userInfo.groupName=res.data.groupName;
+                            var currentRoomID = res.data.roomID;
+                            //console.log(app.globalData.userInfo.roomID);
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID===0) {//用户还没加入队伍，访问数据库加入队伍
+                                
+                                
+                                
+                                console.log("未加入队伍");
+                                //加入队伍
+
+
+
+                            }
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID!=0) {//用户已加入某队伍，需要提示先退出队伍
+                                
+                                
+                                
+                                
+                                //提示先进入设置页面退出队伍
+                                console.log("已加入队伍"+currentRoomID+"需要先退出当前队伍。");
+                                wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
+
+
+                            }
+                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID!=0) {//和数据库roomid一致，开始连接socket
+                                
+                                //下载数据库中roomid对应已有的整个画板数据
+                                that.data.drawBoardList.push(res.data.drawBoardData);
+                                console.log("从数据库下载的整个画板数据：");
+                                console.log(that.data.drawBoardList);
+
+                                //连接socket
+                                websocket.connect(app.globalData.userInfo, function (sockres) {
+                                    // console.log(JSON.parse(sockres.data))
+
+                                    //接受socket通道中新的画板数据，插入到本机画板数据中
+                                    var list = [];
+                                    list = that.data.drawBoardList;
+                                    list.push(JSON.parse(sockres.data));
+                                    that.setData({
+                                        drawBoardList: list
+                                    });
+                                    console.log("收到实时数据，当前画布数组：");
+                                    console.log(that.data.drawBoardList);
+
+                                });
+
+
+                            }
+                            
+                        }
+                        else{
+                            console.log(res.data.errMsg);
+                        }
+                    }
+                    else{
+                        console.log(res.errMsg);
+                    }
+                },//request.success
+                
+                fail: function(e){
+                    console.log(e);
+                }//request.fail
+
+            });//request
+
+        }//if
 
 
     },
@@ -1732,7 +1828,8 @@ Page({
      * 生命周期函数--监听页面卸载
      */
     onUnload: function () {
-
+        wx.closeSocket();
+        console.log("socket通道连接已断开");
     },
 
     // /**
@@ -1844,9 +1941,9 @@ Page({
                 break;
             case "tools_select":
                 console.log("选区开启");
+                //send("选取开启");
                 // this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.mouse;
-
 
                 break;
             case "tools_addImage":

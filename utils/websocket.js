@@ -6,11 +6,11 @@ function connect(user,func) {
         url: url,
         header:{'content-type': 'application/json'},
         success: function () {
-            console.log('wesocket信道连接成功~');
+            console.log('wesocket信道开始连接');
         },
 
         fail: function () {
-            console.log('wesocket信道连接失败~')
+            console.log('wesocket信道开始连接失败')
         }
     })
  
@@ -20,13 +20,14 @@ function connect(user,func) {
             icon: "success",
             duration: 2000
         })
-        console.log('连接成功且已开通websocket信道，状态码：'+res.header);
+        console.log('连接成功且已开通websocket信道');
 
         //接受服务器消息
         wx.onSocketMessage(func);//func回调可以拿到服务器返回的数据
     });
  
     wx.onSocketError(function (res) {
+        console.log('websocket信道连接失败，请检查！');
         wx.showToast({
             title: 'websocket信道连接失败，请检查！',
             icon: "none",

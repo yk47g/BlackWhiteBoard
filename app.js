@@ -24,9 +24,15 @@ App({
     })
     //获取缓存中的session
     this.globalData.session = wx.getStorageSync("session");
-    console.log(this.globalData.session);
+    this.globalData.userInfo.roomID = wx.getStorageSync("roomID");//检测缓存中是否有session和roomid并存入全局变量中
+    
+    //读取二维码进来后保存roomid到缓存中
+        //。。。
+        //
+
+    //console.log(this.globalData.session);
     if (this.globalData.session === "") {
-      console.log("null");
+      console.log("no seesion");
     }
     
 
