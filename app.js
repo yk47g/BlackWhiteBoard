@@ -5,7 +5,9 @@ App({
     userInfo: {
       iconurl:"",
       name:"",
-      id:null
+      id:null,
+      groupName:"未加入协作",
+      roomID:0
     },
     systemInfo:{}
   },

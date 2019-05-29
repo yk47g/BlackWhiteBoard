@@ -18,7 +18,7 @@ Page({
     },
 
     onLoad: function (options) {
-        // 查看是否授权
+        // 查看是否已获取信息
         let that = this ;
         if (app.globalData.userInfo.id === null) {
             ShowgetUserInfoView: true;
@@ -27,7 +27,8 @@ Page({
             that.setData({
                 usericonUrl: app.globalData.userInfo.iconurl,
                 userName: app.globalData.userInfo.name,
-                userId: app.globalData.userInfo.id
+                userId: app.globalData.userInfo.id,
+                groupName: app.globalData.userInfo.groupName
             });
         }
         
@@ -54,10 +55,14 @@ Page({
                             app.globalData.userInfo.id=res.data.id;
                             app.globalData.userInfo.name=res.data.name;
                             app.globalData.userInfo.iconurl=res.data.iconurl;
+                            app.globalData.userInfo.groupName=res.data.groupName;
+                            app.globalData.userInfo.roomID=res.data.roomID;
+                            
                             that.setData({
                                 usericonUrl: app.globalData.userInfo.iconurl,
                                 userName: app.globalData.userInfo.name,
-                                userId: app.globalData.userInfo.id
+                                userId: app.globalData.userInfo.id,
+                                groupName: app.globalData.userInfo.groupName
                             });
                         }
                         else{
@@ -117,10 +122,13 @@ Page({
                                                         app.globalData.userInfo.id=res.data.id;
                                                         app.globalData.userInfo.name=res.data.name;
                                                         app.globalData.userInfo.iconurl=res.data.iconurl;
+                                                        app.globalData.userInfo.groupName=res.data.groupName;
+                                                        app.globalData.userInfo.roomID=res.data.roomID;
                                                         that.setData({
                                                             usericonUrl: app.globalData.userInfo.iconurl,
                                                             userName: app.globalData.userInfo.name,
-                                                            userId: app.globalData.userInfo.id
+                                                            userId: app.globalData.userInfo.id,
+                                                            groupName: app.globalData.userInfo.groupName
                                                         });
                                                     }else{
                                                         console.log(res.data.errMsg);
