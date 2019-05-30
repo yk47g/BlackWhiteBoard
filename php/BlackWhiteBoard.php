@@ -159,6 +159,12 @@ else{
     
 }
 
+
+//加入队伍
+$newRoomID = $_GET["newRoomID"];
+if(!empty($newRoomID)){
+    
+}
 mysqli_close($conn);
 
 
