@@ -25,7 +25,7 @@ let DevelopConfiguration = {
         lineWidth: 2,
         cornerPointColor: "pink"
     },
-    lineDashData:[3,5],
+    lineDashData: [3, 5],
     sameTimeTouchInterval: 40
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
@@ -318,7 +318,7 @@ let ToolsStatus_type = { //当做枚举来用。
     image: 3,
     text: 4,
     color: 5,
-    shape:6//不直接显示在工具栏上。
+    shape: 6//不直接显示在工具栏上。
 }
 let Mouse_MoveType = { //移动的操作类型。
     none: 0,
@@ -943,11 +943,13 @@ class LocalStorage {//本地存储类
             thisRoom.initByJson(json)
             console.log(thisRoom)
 
-            if (typeof (app.globalData.userInfo.id) == null) {//判断是否属于未登录的房间。
+            if (app.globalData.userInfo.id == null) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
+                
             } else {
                 delete thisRoom.drawBoardAll.temp
-                console.log("删除原有的temp未登录画板数据")
+                console.log("账号已登录，删除原有temp画板数据")
+                this.saveLocalStorage()
             }
         } else {
             console.log("本地缓存为空")
@@ -1536,7 +1538,7 @@ Page({
         let toolsStatus = this.data.toolsStatus
         ctx.lineJoin = "round"
         ctx.lineCap = "round"
-      
+
         // let nowPageIndex = thisRoom.nowPageIndex
         let mydrawBoard = drawBoard //保存原来的我的drawboard
         let myActions = drawBoard.actions //默认actions为当前用户的
@@ -1563,7 +1565,7 @@ Page({
                 isMyDrawboard = false
             }
 
-            
+
             //绘制路径
             for (let a = 0; a < actions.length; a++) {
                 const iAction = actions[a];
@@ -1576,7 +1578,7 @@ Page({
                         ctx.strokeStyle = cgline.color
                         if (cgline.lineDash) {
                             ctx.setLineDash(DevelopConfiguration.lineDashData);
-                        }else{
+                        } else {
                             ctx.setLineDash(0);
                         }
 
@@ -1621,7 +1623,7 @@ Page({
                         ctx.strokeStyle = cgshape.color
                         if (cgshape.lineDash) {
                             ctx.setLineDash(DevelopConfiguration.lineDashData);
-                        }else{
+                        } else {
                             ctx.setLineDash(0);
                         }
                         var thisPoint, lsPoint
@@ -1780,11 +1782,6 @@ Page({
             drawBoard.height = res[0].height
         })
 
-        new Dom().getElementByString(".sonPane", (res) => {
-            console.log("toolsBarDeatilPane读取", res)
-            // drawBoard.width = res[0].width
-            // drawBoard.height = res[0].height
-        })
         drawBoard = new DrawBoard();
         this.data.toolsStatus = new ToolsStatus();
         this.setData({
@@ -2043,7 +2040,7 @@ Page({
                                                 for (var i = 0; i < res.data.data.length; i++) {
                                                     app.globalData.roomAllUserInfo[String(res.data.data[i].id)] = res.data.data[i];
                                                 }//key为用户id，传入每个用户详细信息对象
-                                                console.log("房间所有用户的信息:",app.globalData.roomAllUserInfo);
+                                                console.log("房间所有用户的信息:", app.globalData.roomAllUserInfo);
                                             } else {
                                                 console.log(res.data.errMsg);
                                             }
@@ -2092,7 +2089,11 @@ Page({
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
         wx.closeSocket();
-        console.log("连接已断开");
+        console.log("页面隐藏，断开连接并保存。",thisRoom);
+        // if (app.globalData.userInfo.id == null) {
+        //     let storage = new LocalStorage()
+        //     storage.saveLocalStorage()
+        // }
     },
 
     /**
@@ -2178,22 +2179,22 @@ Page({
         //让画布失去焦点。
         // this.compute_textInput({},true)
 
-      
+
         switch (buttonId) {
             case "tools_pen":
                 console.log("画笔开启");
 
-                if (this.data.penConfiguration.shape !=  CGShape_type.none) {
-                 
+                if (this.data.penConfiguration.shape != CGShape_type.none) {
+
                     this.opeanDetailPane(ToolsStatus_type.shape)
                     datas.toolsStatus.toolType = ToolsStatus_type.shape;
-                }else{
+                } else {
                     this.opeanDetailPane(ToolsStatus_type.pen)
                     datas.toolsStatus.toolType = ToolsStatus_type.pen;
                 }
-                
+
                 this.cancelSelectStatus()
-                
+
 
 
                 break;
@@ -2307,10 +2308,11 @@ Page({
                 if (this._onlyChangeLineWidth != true) {
 
                     configuration.shape = CGShape_type.none
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen;
                 } else {
                     this._onlyChangeLineWidth = false
                 }
-                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+
                 break;
             case "pen_line3":
                 configuration.lineWidth = 9
@@ -2322,22 +2324,37 @@ Page({
                 }
                 break;
             case "pen_shapeRoundness":
-                configuration.shape = CGShape_type.roundness
-                datas.toolsStatus.toolType = ToolsStatus_type.shape;
-                this._onlyChangeLineWidth = true
+
+                if (configuration.shape != CGShape_type.roundness) {
+                    configuration.shape = CGShape_type.roundness
+                    datas.toolsStatus.toolType = ToolsStatus_type.shape;
+                    this._onlyChangeLineWidth = true
+                } else {
+                    configuration.shape = CGShape_type.none
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen
+                }
+
                 break;
             case "pen_shapeTriangle":
-                configuration.shape = CGShape_type.triangle
-                datas.toolsStatus.toolType = ToolsStatus_type.shape;
-                this._onlyChangeLineWidth = true
-
+                if (configuration.shape != CGShape_type.triangle) {
+                    configuration.shape = CGShape_type.triangle
+                    datas.toolsStatus.toolType = ToolsStatus_type.shape;
+                    this._onlyChangeLineWidth = true
+                } else {
+                    configuration.shape = CGShape_type.none
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen
+                }
                 break;
             case "pen_shapeRectangle":
-                configuration.shape = CGShape_type.rectangle
-                datas.toolsStatus.toolType = ToolsStatus_type.shape;
-           
-                this._onlyChangeLineWidth = true
+                if (configuration.shape != CGShape_type.rectangle) {
+                    configuration.shape = CGShape_type.rectangle
+                    datas.toolsStatus.toolType = ToolsStatus_type.shape;
 
+                    this._onlyChangeLineWidth = true
+                } else {
+                    configuration.shape = CGShape_type.none
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen
+                }
                 break;
             default:
 
