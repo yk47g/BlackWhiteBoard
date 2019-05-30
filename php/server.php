@@ -30,8 +30,10 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
             $row = mysqli_fetch_array($res);
             $oldDrawBoardData = $row['drawBoardData'];
             $oldDrawBoardData = json_decode($oldDrawBoardData,true);
-            for($i=0;$i<count($oldDrawBoardData);$i++){
+            $have = 0;
+            for($i=0;$i<=count($oldDrawBoardData);$i++){
                 if($oldDrawBoardData[$i]['id'] == $id){//存在这个id，更新这个id的数据
+                    $have = 1;
                     $oldDrawBoardData[$i]['data'] = $newDrawBoardData;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
@@ -43,7 +45,9 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
                         echo "更新该用户画布数据失败\n";
                         break;
                     }
-                }else{//数据库里没有这个id的数据，直接插入一个
+                }
+                if($have = 0)
+                {//数据库里没有这个id的数据，直接插入一个
                     $oldDrawBoardData[$i+1] = $jsData;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
