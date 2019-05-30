@@ -273,8 +273,8 @@ function estimateForMouse(points) { //用以判断按下角点拉伸时的类型
 }
 class Room { //用作本地与数据库互联起来的类
     constructor(){
-        this.roomID = 0 
-        this.page = 0//当前用户所阅览的是第几页。
+        this.roomID = -1
+        this.nowPageIndex = 0//当前用户所阅览的是第几页。
         this.onlineUsersSession = []
         this.name = ""
         this.drawPagesData = [] //数组，里面的项保存的是下载下来的drawboardData
@@ -1397,11 +1397,13 @@ Page({
 
     reloadDrawBoard() {
 
-        let actions = drawBoard.actions
+       
         let toolsStatus = this.data.toolsStatus
-        ctx.lineJoin = "round"
-        ctx.lineCap = "round"
-   
+        // ctx.lineJoin = "round"
+        // ctx.lineCap = "round"
+
+        let nowPageIndex = thisRoom.nowPageIndex
+        let actions = thisRoom.drawPagesData.actions
          
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
@@ -1615,8 +1617,18 @@ Page({
         })
 
     },
-    firstInitRomm(){//用户第一次使用，且未登录授权本地没有数据。
+    prepareForInter(){//用户第一次使用，且未登录授权本地没有数据。
         thisRoom.drawPagesData.push(drawBoard)
+        
+        //读取网络数据并设置
+        // thisRoom.roomID = 
+        // thisRoom.onlineUsersSession = 
+        thisRoom.name = "房间"
+        
+
+        //网络数据加载完毕，执行一次重载渲染新数据。
+        this.reloadDrawBoard()
+
     },
     compute_scrollGesture(toolsStatus) {
         let mouseActions = toolsStatus.mouseActions
@@ -1703,12 +1715,14 @@ Page({
 
     //--------页面加载事件------
     /**
-     * 生命周期函数--监听页面加载
+     * 生命周期函数--监听页面加载，一个页面只会调用一次
      */
     onLoad: function (options) {
 
-
+        // 无论什么情况，先创建一个本地使用的drawboard
         this.loadDrawBoard();
+        this.prepareForInter();//执行一些为互联准备的数据。
+
         let that = this;
 
         //登陆
