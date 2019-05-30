@@ -6,7 +6,7 @@ page {
 }
 
 .main scroll-view {
-  height: 90vh;
+  height: 100vh;
   /* 方便手机调试 */
 }
 

@@ -2072,7 +2072,7 @@ Page({
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
         wx.closeSocket();
-        console.log("socket通道连接已断开");
+        console.log("连接已断开");
     },
 
     /**
@@ -2158,12 +2158,15 @@ Page({
         //让画布失去焦点。
         // this.compute_textInput({},true)
 
+      
         switch (buttonId) {
             case "tools_pen":
                 console.log("画笔开启");
 
-                if ( datas.toolsStatus.toolType ==  ToolsStatus_type.shape) {
+                if (this.data.penConfiguration.shape !=  CGShape_type.none) {
+                 
                     this.opeanDetailPane(ToolsStatus_type.shape)
+                    datas.toolsStatus.toolType = ToolsStatus_type.shape;
                 }else{
                     this.opeanDetailPane(ToolsStatus_type.pen)
                     datas.toolsStatus.toolType = ToolsStatus_type.pen;
