@@ -32,7 +32,7 @@ App({
 
     //console.log(this.globalData.session);
     if (this.globalData.session === "") {
-      console.log("no seesion");
+      console.log("缓存中无seesion,用户未登录");
     }
     
 

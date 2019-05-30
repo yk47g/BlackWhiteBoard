@@ -46,7 +46,7 @@ Page({
         wx.getSetting({
             success(res) {
                 if (res.authSetting['scope.userInfo']) {
-                    console.log("用户已授权基本信息。");
+                    console.log("用户已授权");
                     // 已经授权，可以直接调用 getUserInfo
                     wx.login({
                         success: function(data){
@@ -58,7 +58,7 @@ Page({
                                     var signature = res.signature;
                                     var encryptedData = res.encryptedData; 
                                     var iv = res.iv;
-                                    console.log("getuserinfo_res:"+res);
+                                    console.log("getuserinfo_res:",res);
                                     app.globalData.userInfo = res.userInfo;
                                     
                                     wx.request({
@@ -72,15 +72,17 @@ Page({
                                         },
                                         success: function(res){
                                             if (res.statusCode == 200) {
-                                                console.log("request_Data:"+res.data);
+                                                console.log("request_Data:",res.data);
                                                 if (res.data.statusCode == 0) {//新用户
                                                     wx.setStorageSync('session', res.data.data);
                                                     wx.setStorageSync('roomID', res.data.roomID);
                                                     app.globalData.session=res.data.data;
                                                     that.setData({
                                                         usericonUrl: app.globalData.userInfo.avatarUrl,
-                                                        userName: app.globalData.userInfo.nickName
+                                                        userName: app.globalData.userInfo.nickName,
+                                                        ShowgetUserInfoView: false
                                                     });
+                                                    console.log("数据库不存在此用户，创建用户完成");
                                                 }else if (res.data.statusCode == 100) {//数据库中已存在此用户，不同设备
                                                     wx.setStorageSync('session', res.data.session);
                                                     wx.setStorageSync('roomID', res.data.roomID);
@@ -94,8 +96,10 @@ Page({
                                                         usericonUrl: app.globalData.userInfo.iconurl,
                                                         userName: app.globalData.userInfo.name,
                                                         userId: app.globalData.userInfo.id,
-                                                        groupName: app.globalData.userInfo.groupName
+                                                        groupName: app.globalData.userInfo.groupName,
+                                                        ShowgetUserInfoView: false
                                                     });
+                                                    console.log("数据库存在此用户，下载用户数据完成");
                                                 }else{
                                                     console.log(res.data.errMsg);
                                                 }
