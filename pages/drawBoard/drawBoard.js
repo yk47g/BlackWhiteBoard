@@ -25,6 +25,7 @@ let DevelopConfiguration = {
         lineWidth: 2,
         cornerPointColor: "pink"
     },
+    lineDashData:[3,5],
     sameTimeTouchInterval: 40
 }
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
@@ -758,6 +759,7 @@ class CGLine {
         this.points = []; //CGPoint类型
         this.lineWidth = lineWidth;
         this.color = color;
+        this.lineDash = true;
     }
     initByJson(json) {//cgpoint 对象的json
         for (const key in this) {
@@ -1514,9 +1516,7 @@ Page({
         let toolsStatus = this.data.toolsStatus
         ctx.lineJoin = "round"
         ctx.lineCap = "round"
-        if (this.data.penConfiguration.lineDash) {
-            ctx.setLineDash([3, 5]);
-        }
+      
         // let nowPageIndex = thisRoom.nowPageIndex
         let mydrawBoard = drawBoard //保存原来的我的drawboard
         let myActions = drawBoard.actions //默认actions为当前用户的
@@ -1543,6 +1543,7 @@ Page({
                 isMyDrawboard = false
             }
 
+            
             //绘制路径
             for (let a = 0; a < actions.length; a++) {
                 const iAction = actions[a];
@@ -1553,7 +1554,11 @@ Page({
                         const cgline = iAction.mode
                         ctx.lineWidth = cgline.lineWidth
                         ctx.strokeStyle = cgline.color
-
+                        if (cgline.lineDash) {
+                            ctx.setLineDash(DevelopConfiguration.lineDashData);
+                        }else{
+                            ctx.setLineDash(0);
+                        }
 
 
                         //进行临时的图层拉伸展示。
@@ -1594,6 +1599,11 @@ Page({
                         const cgshape = iAction.mode
                         ctx.lineWidth = cgshape.lineWidth
                         ctx.strokeStyle = cgshape.color
+                        if (cgshape.lineDash) {
+                            ctx.setLineDash(DevelopConfiguration.lineDashData);
+                        }else{
+                            ctx.setLineDash(0);
+                        }
                         var thisPoint, lsPoint
 
                         for (let i = 1; i < cgshape.points.length; i++) {
@@ -2399,7 +2409,7 @@ Page({
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
                 lsAction.addPoint(...thisPoint.getJsonArr())
-
+                lsAction.lineDash = datas.penConfiguration.lineDash
                 return
             case ToolsStatus_type.shape:
                 drawBoard.addAction(Action_type.shape); //开始添加一次绘制事件
@@ -2411,7 +2421,7 @@ Page({
                 var lsAction = drawBoard.getLastAction().mode; //并且开始记录
                 lsAction.lineWidth = datas.penConfiguration.lineWidth
                 lsAction.color = datas.penConfiguration.color
-
+                lsAction.lineDash = datas.penConfiguration.lineDash
                 // datas.penConfiguration.shape = CGShape_type.triangle
                 lsAction.type = datas.penConfiguration.shape
                 switch (datas.penConfiguration.shape) {
