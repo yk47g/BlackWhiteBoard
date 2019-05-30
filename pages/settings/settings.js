@@ -27,23 +27,50 @@ Page({
             ShowgetUserInfoView: true;
             this.applyPermission();
         }else{
-            var newStatus = "";
-            var newNoGroup = true;
-            if (app.globalData.userInfo.groupName === "未加入协作") {
-                newStatus = "已登陆";
-                newNoGroup = true;
+            if (app.globalData.userInfo.roomID === "未加入协作") {
+                that.setData({
+                    usericonUrl: app.globalData.userInfo.iconurl,
+                    userName: app.globalData.userInfo.name,
+                    userId: app.globalData.userInfo.id,
+                    groupName: app.globalData.userInfo.groupName,
+                    status: "已登陆",
+                    noGroup: true
+                });
             }else{
-                newStatus = "协作中"
-                newNoGroup = false;
+                //遍历房间所有用户信息的头像
+                $j=0;
+                var new1iconUrl = "";
+                var new2iconUrl = "";
+                var new3iconUrl = "";
+                for(var i in app.globalData.roomAllUserInfo){
+                    if($j==0){
+                        new1iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+                    }
+                    if ($j==1) {
+                        new2iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+                    }
+                    if ($j==2) {
+                        new3iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+                        
+                    }
+                    $j = $j+1;
+                }
+                if (new3iconUrl === "") {//没有第三个人
+                    new3iconUrl = "/icons/user.png";
+                }
+                that.setData({
+                    usericonUrl: app.globalData.userInfo.iconurl,
+                    groupUser1iconUrl: new1iconUrl,
+                    groupUser2iconUrl: new2iconUrl,
+                    groupUser3iconUrl: new3iconUrl,
+                    userName: app.globalData.userInfo.name,
+                    userId: app.globalData.userInfo.id,
+                    groupName: app.globalData.userInfo.groupName,
+                    status: "协作中",
+                    noGroup: false
+                });
             }
-            that.setData({
-                usericonUrl: app.globalData.userInfo.iconurl,
-                userName: app.globalData.userInfo.name,
-                userId: app.globalData.userInfo.id,
-                groupName: app.globalData.userInfo.groupName,
-                status: newStatus,
-                noGroup: newNoGroup
-            });
+            
         }
         
     },
@@ -105,25 +132,78 @@ Page({
                                                     app.globalData.userInfo.iconurl=res.data.iconurl;
                                                     app.globalData.userInfo.groupName=res.data.groupName;
                                                     app.globalData.userInfo.roomID=res.data.roomID;
-                                                    var newStatus = "";
-                                                    var newNoGroup = true;
-                                                    if (app.globalData.userInfo.groupName === "未加入协作") {
-                                                        newStatus = "已登陆";
-                                                        newNoGroup = true;
+                                                    if (app.globalData.userInfo.roomID === "未加入协作") {
+                                                        that.setData({
+                                                            usericonUrl: app.globalData.userInfo.iconurl,
+                                                            userName: app.globalData.userInfo.name,
+                                                            userId: app.globalData.userInfo.id,
+                                                            groupName: app.globalData.userInfo.groupName,
+                                                            status: "已登陆",
+                                                            noGroup: true,
+                                                            ShowgetUserInfoView: false
+                                                        });
                                                     }else{
-                                                        newStatus = "协作中"
-                                                        newNoGroup = false;
+                                                        //获取当前队伍里所有人的信息
+                                                        wx.request({
+                                                            url: url,
+                                                            data: {
+                                                                "roomid": app.globalData.userInfo.roomID,
+                                                            },
+                                                            success: function (res) {
+                                                                if (res.statusCode == 200) {
+                                                                    if (res.data.statusCode == 0) {
+                                                                        //console.log("所有用户信息:", res.data.data);//传回来一个数组
+                                                                        for (var i = 0; i < res.data.data.length; i++) {
+                                                                            app.globalData.roomAllUserInfo[String(res.data.data[i].id)] = res.data.data[i];
+                                                                        }//key为用户id，传入每个用户详细信息对象
+                                                                        console.log("房间所有用户的信息:",app.globalData.roomAllUserInfo);
+                                                                        //遍历房间所有用户信息的头像
+                                                                        $j=0;
+                                                                        var new1iconUrl = "";
+                                                                        var new2iconUrl = "";
+                                                                        var new3iconUrl = "";
+                                                                        for(var i in app.globalData.roomAllUserInfo){
+                                                                            if($j==0){
+                                                                                new1iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+                                                                            }
+                                                                            if ($j==1) {
+                                                                                new2iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+                                                                            }
+                                                                            if ($j==2) {
+                                                                                new3iconUrl = app.globalData.roomAllUserInfo[i].avatarUrl;
+
+                                                                            }
+                                                                            $j = $j+1;
+                                                                        }
+                                                                        if (new3iconUrl === "") {//没有第三个人
+                                                                            new3iconUrl = "/icons/user.png";
+                                                                        }
+                                                                        that.setData({
+                                                                            usericonUrl: app.globalData.userInfo.iconurl,
+                                                                            groupUser1iconUrl: new1iconUrl,
+                                                                            groupUser2iconUrl: new2iconUrl,
+                                                                            groupUser3iconUrl: new3iconUrl,
+                                                                            userName: app.globalData.userInfo.name,
+                                                                            userId: app.globalData.userInfo.id,
+                                                                            groupName: app.globalData.userInfo.groupName,
+                                                                            status: "协作中",
+                                                                            noGroup: false,
+                                                                            ShowgetUserInfoView: false
+                                                                        });
+                                                                        console.log("数据库存在此用户，下载用户数据完成");
+                                                                    } else {
+                                                                        console.log(res.data.errMsg);
+                                                                    }
+                                                                }
+                                                                else {
+                                                                    console.log(res.errMsg);
+                                                                }
+                                                            },//request.success
+                                                            fail: function (e) {
+                                                                console.log("request.fail:", e);
+                                                            }//request.fail
+                                                        });//request
                                                     }
-                                                    that.setData({
-                                                        usericonUrl: app.globalData.userInfo.iconurl,
-                                                        userName: app.globalData.userInfo.name,
-                                                        userId: app.globalData.userInfo.id,
-                                                        groupName: app.globalData.userInfo.groupName,
-                                                        ShowgetUserInfoView: false,
-                                                        status: newStatus,
-                                                        noGroup: newNoGroup
-                                                    });
-                                                    console.log("数据库存在此用户，下载用户数据完成");
                                                 }else{
                                                     console.log(res.data.errMsg);
                                                 }

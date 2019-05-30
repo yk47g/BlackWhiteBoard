@@ -2000,7 +2000,32 @@ Page({
                                     that.reloadDrawBoard()
                                 });
 
-
+                                //获取当前队伍里所有人的信息
+                                wx.request({
+                                    url: url,
+                                    data: {
+                                        "roomid": currentRoomID,
+                                    },
+                                    success: function (res) {
+                                        if (res.statusCode == 200) {
+                                            if (res.data.statusCode == 0) {
+                                                //console.log("所有用户信息:", res.data.data);//传回来一个数组
+                                                for (var i = 0; i < res.data.data.length; i++) {
+                                                    app.globalData.roomAllUserInfo[String(res.data.data[i].id)] = res.data.data[i];
+                                                }//key为用户id，传入每个用户详细信息对象
+                                                console.log("房间所有用户的信息:",app.globalData.roomAllUserInfo);
+                                            } else {
+                                                console.log(res.data.errMsg);
+                                            }
+                                        }
+                                        else {
+                                            console.log(res.errMsg);
+                                        }
+                                    },//request.success
+                                    fail: function (e) {
+                                        console.log("request.fail:", e);
+                                    }//request.fail
+                                });//request
                             }
 
                         }

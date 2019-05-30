@@ -22,12 +22,38 @@ if (mysqli_connect_errno($conn)) {
 
 $id = $_GET["id"];
 
+//拿当前房间所有用户信息
+$roomid = $_GET["roomid"];
+if(!empty($roomid)){
+    $sql = "SELECT *  FROM `bwb_users` WHERE `roomID` = $roomid";
+    $res = mysqli_query($conn,$sql);
+    if($res && mysqli_num_rows($res)){
+        //二维数组遍历
+        $i = 0;
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC))//当前行
+        {
+            $array[$i]['id'] = $row['id'];
+            $array[$i]['name'] = $row['name'];
+            $array[$i]['avatarUrl'] = $row['avatarUrl'];
+            $i = $i+1;
+        }
+        //$row = mysqli_fetch_all($res,MYSQLI_ASSOC);
+        echo json_encode(array("statusCode"=>0 ,"data"=>$array));
+        mysqli_close($conn);
+        exit;
+    }else{
+        echo json_encode(array("statusCode"=>6 ,"errMsg"=>"error:不存在此房间"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
 //拿用户头像函数
 if(!empty($id)){
     $sql = "SELECT * FROM `bwb_users` WHERE `id` = $id";
     $res = mysqli_query($conn,$sql);
     if($res && mysqli_num_rows($res)){
-        $row = mysqli_fetch_array($res);
+        $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
         $iconurl = $row['avatarUrl'];
         echo json_encode(array("statusCode"=>0 ,"data"=>$iconurl));
         mysqli_close($conn);
@@ -62,7 +88,7 @@ if(!empty($session)){
     $sql = "SELECT * FROM `bwb_users` WHERE `session3rd` = '$session'";
     $res = mysqli_query($conn,$sql);
     if($res && mysqli_num_rows($res)){
-        $row = mysqli_fetch_array($res);
+        $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
         $id = $row['id'];
         $name = $row['name'];
         $iconurl = $row['avatarUrl'];
@@ -73,7 +99,7 @@ if(!empty($session)){
             $sql = "SELECT *  FROM `bwb_room` WHERE `roomID` = $roomID";
             $res = mysqli_query($conn,$sql);
             if($res && mysqli_num_rows($res)){
-                $row = mysqli_fetch_array($res);
+                $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
                 $groupName = $row['roomName'];
                 $drawBoardData = $row['drawBoardData'];
             }else{
@@ -132,7 +158,7 @@ else{
         $sql = "SELECT * FROM `bwb_users` WHERE `openid` = '$openid'";//改为openid验证
         $res = mysqli_query($conn,$sql);
         if($res && mysqli_num_rows($res)){
-            $row = mysqli_fetch_array($res);
+            $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
             $id = $row['id'];
             $name = $row['name'];
             $iconurl = $row['avatarUrl'];
@@ -144,7 +170,7 @@ else{
                 $sql = "SELECT *  FROM `bwb_room` WHERE `roomID` = $roomID";
                 $res = mysqli_query($conn,$sql);
                 if($res){
-                    $row = mysqli_fetch_array($res);
+                    $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
                     $groupName = $row['roomName'];
                     $drawBoardData = $row['drawBoardData'];
                 }else{
