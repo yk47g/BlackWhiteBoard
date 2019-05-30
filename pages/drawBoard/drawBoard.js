@@ -50,8 +50,8 @@ function getPeopleIconByID(id) {
         success: function(res){
             if (res.statusCode == 200) {
                 if (res.data.statusCode == 0) {
-                    console.log("用户头像地址:",res.data);
-                    return res.data;
+                    console.log("用户头像地址:",res.data.data);
+                    return res.data.data;
                 }else{
                     console.log(res.data.errMsg);
                 }
@@ -1970,14 +1970,15 @@ Page({
     onHide: function () {
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
+        wx.closeSocket();
+        console.log("socket通道连接已断开");
     },
 
     /**
      * 生命周期函数--监听页面卸载
      */
     onUnload: function () {
-        wx.closeSocket();
-        console.log("socket通道连接已断开");
+        
     },
 
     // /**
