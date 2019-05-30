@@ -95,8 +95,9 @@
           颜色
           <!-- {{penConfiguration.lineWidth}} -->
           <cover-view class="sonPane">
-            <button plain wx:for="{{colorDatas}}" wx:for-index="i" wx:key="{{itemkey}}" id="color{{i}}" class=" ColorButton" catchtap="detailPane_onClick" style="background-color:{{item}}!important;border-bottom:{{penConfiguration.color == item ? 'solid white 10px':''}}!important;">
-            </button>
+             <cover-view  wx:for="{{colorDatas}}" wx:for-index="i" wx:key="{{itemkey}}" id="color{{i}}" class=" ColorButton" catchtap="detailPane_onClick" style="background-color:{{item}}!important;height:{{penConfiguration.color == item ? '80rpx':''}}!important;">
+             <!-- -->
+            </cover-view>
           </cover-view>
 
         </cover-view>

@@ -267,7 +267,7 @@ class ToolsStatus {
         for (let i = 0; i < this.mouseActions.length; i++) {
             const element = this.mouseActions[i];
             if (indexString.indexOf(element.identifier) == -1) {
-                console.log("删除", element.identifier)
+             
                 this.mouseActions.splice(i, 1)
 
                 return
@@ -915,8 +915,12 @@ class LocalStorage {//本地存储类
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
-            if (true) {//判断是否属于未登录的房间。
+           
+            if ( typeof (app.globalData.userInfo.id) == null) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
+            }else{
+                delete thisRoom.drawBoardAll.temp
+                console.log("删除原有的temp未登录画板数据")
             }
         } else {
             console.log("本地缓存为空")
@@ -1510,7 +1514,7 @@ Page({
 
         var isMyDrawboard = false
 
-        console.log("所有人的drawboard", thisRoom.drawBoardAll)
+       
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
             var actions = {}
@@ -2086,7 +2090,7 @@ Page({
                     duration: 400,
                     timingFunction: "ease-in-out"
                 })
-                animation_opean.translate(0, -260);
+                animation_opean.translate(0, -265);
                 animation_opean.step()
                 this.setData({
                     "animation.background": animation_back.export(),
