@@ -27,7 +27,7 @@ if(!empty($session)){
     //有session，直接通过session查询返回用户信息
     $sql = "SELECT * FROM `bwb_users` WHERE `session3rd` = '$session'";
     $res = mysqli_query($conn,$sql);
-    if($res){
+    if($res && mysqli_num_rows($res)){
         $row = mysqli_fetch_array($res);
         $id = $row['id'];
         $name = $row['name'];
@@ -38,7 +38,7 @@ if(!empty($session)){
         }else{
             $sql = "SELECT *  FROM `bwb_room` WHERE `roomID` = $roomID";
             $res = mysqli_query($conn,$sql);
-            if($res){
+            if($res && mysqli_num_rows($res)){
                 $row = mysqli_fetch_array($res);
                 $groupName = $row['roomName'];
                 $drawBoardData = $row['drawBoardData'];

@@ -922,7 +922,11 @@ Page({
             background: {},
             opeanPane: {},
         },
+<<<<<<< HEAD
         drawBoardList: []
+=======
+        drawBoardList:{}
+>>>>>>> b8fcd1ea70a77fac69f484f6038e2dc0ce06b1b1
 
 
     },
@@ -1815,6 +1819,7 @@ Page({
                 },
                 success: function (res) {
                     if (res.statusCode == 200) {
+<<<<<<< HEAD
                         console.log("服务器request回来的data：", res.data);
                         if (res.data.statusCode == 0 || res.data.statusCode == 100) {
                             app.globalData.userInfo.id = res.data.id;
@@ -1826,7 +1831,36 @@ Page({
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID === 0) {//用户还没加入队伍，访问数据库加入队伍
 
                                 console.log("未加入队伍");
+=======
+                        console.log("服务器request回来的data：",res.data);
+                        if (res.data.statusCode == 100 || res.data.statusCode == 0) {
+                            app.globalData.userInfo.id=res.data.id;
+                            app.globalData.userInfo.name=res.data.name;
+                            app.globalData.userInfo.iconurl=res.data.iconurl;
+                            app.globalData.userInfo.groupName=res.data.groupName;
+                            var currentRoomID = res.data.roomID;
+                            //console.log(app.globalData.userInfo.roomID);
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID===0) {//用户还没加入队伍，访问数据库加入队伍
+                                
+                                console.log("用户当前未加入队伍,开始加入缓存里的队伍:",app.globalData.userInfo.roomID);
+                                
+>>>>>>> b8fcd1ea70a77fac69f484f6038e2dc0ce06b1b1
                                 //加入队伍
+                                wx.request({
+                                    url:url,
+                                    data:{
+                                        "session" : app.globalData.session,
+                                        "newRoomID" : app.globalData.userInfo.roomID
+                                    },
+                                    success: function(res){
+                                        //
+                                        //
+                                        //
+                                    },
+                                    fail: function(e){
+                                        console.log("request.fail:",e);
+                                    }
+                                });
 
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
@@ -1840,16 +1874,28 @@ Page({
 
 
                             }
+<<<<<<< HEAD
                             if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
 
                                 //下载数据库中roomid对应已有的整个画板数据
                                 that.data.drawBoardList.push(res.data.drawBoardData);
                                 console.log("从数据库下载的整个画板数据：", that.data.drawBoardList);
+=======
+                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID!=0) {//和数据库roomid一致，开始连接socket
+                                
+                                //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
+                                var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
+                                for(var i=0;i<jsDownLoadDrawBoardData.length;i++){
+                                    　　　　that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data;
+                                    }
+                                console.log("从数据库下载的整个画板数据：",that.data.drawBoardList);
+>>>>>>> b8fcd1ea70a77fac69f484f6038e2dc0ce06b1b1
 
                                 //连接socket
                                 websocket.connect(app.globalData.userInfo, function (sockres) {
                                     // console.log(JSON.parse(sockres.data))
 
+<<<<<<< HEAD
                                     //接受socket通道中新的画板数据，插入到本机画板数据中
                                     var list = [];
                                     list = that.data.drawBoardList;
@@ -1859,6 +1905,18 @@ Page({
                                         drawBoardList: list
                                     });
                                     console.log("收到实时数据，当前画布数组：", that.data.drawBoardList);
+=======
+                                    //接受socket通道中新的画板数据，更新到本机特定用户的画板数据中
+                                    //var list = [];
+                                    //list = that.data.drawBoardList;
+                                    var jsListData = JSON.parse(sockres.data);
+                                    that.data.drawBoardList[jsListData.id] = jsListData.data;
+                                    //list.push(JSON.parse(sockres.data));
+                                    //that.setData({
+                                    //    drawBoardList: list
+                                    //});
+                                    console.log("收到实时数据，当前画布数组：",that.data.drawBoardList);
+>>>>>>> b8fcd1ea70a77fac69f484f6038e2dc0ce06b1b1
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
 
                                 });
@@ -1875,9 +1933,15 @@ Page({
                         console.log(res.errMsg);
                     }
                 },//request.success
+<<<<<<< HEAD
 
                 fail: function (e) {
                     console.log(e);
+=======
+                
+                fail: function(e){
+                    console.log("request.fail:",e);
+>>>>>>> b8fcd1ea70a77fac69f484f6038e2dc0ce06b1b1
                 }//request.fail
 
             });//request

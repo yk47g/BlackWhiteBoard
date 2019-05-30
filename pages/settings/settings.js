@@ -109,8 +109,8 @@ Page({
                                             }
                                         },//request.success
                                         fail: function(e){
-                                            console.log(e);
-                                        }
+                                            console.log("request.fail:",e);
+                                        }//request.fail
                                     });//request
                                 }//getUserInfo.success
                             })//getUserInfo
