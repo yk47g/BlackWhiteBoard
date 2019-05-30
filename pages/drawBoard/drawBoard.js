@@ -1740,7 +1740,7 @@ Page({
                 success: function(res){
                     if (res.statusCode == 200) {
                         console.log("服务器request回来的data：",res.data);
-                        if (res.data.statusCode == 100) {
+                        if (res.data.statusCode == 100 || res.data.statusCode == 0) {
                             app.globalData.userInfo.id=res.data.id;
                             app.globalData.userInfo.name=res.data.name;
                             app.globalData.userInfo.iconurl=res.data.iconurl;
