@@ -1722,8 +1722,7 @@ Page({
                 },
                 success: function(res){
                     if (res.statusCode == 200) {
-                        console.log("服务器request回来的data：");
-                        console.log(res.data);
+                        console.log("服务器request回来的data：",res.data);
                         if (res.data.statusCode == 0) {
                             app.globalData.userInfo.id=res.data.id;
                             app.globalData.userInfo.name=res.data.name;
@@ -1752,8 +1751,7 @@ Page({
                                 
                                 //下载数据库中roomid对应已有的整个画板数据
                                 that.data.drawBoardList.push(res.data.drawBoardData);
-                                console.log("从数据库下载的整个画板数据：");
-                                console.log(that.data.drawBoardList);
+                                console.log("从数据库下载的整个画板数据：",that.data.drawBoardList);
 
                                 //连接socket
                                 websocket.connect(app.globalData.userInfo, function (sockres) {
@@ -1767,9 +1765,8 @@ Page({
                                     that.setData({
                                         drawBoardList: list
                                     });
-                                    console.log("收到实时数据，当前画布数组：");
-                                    console.log(that.data.drawBoardList);
-                                    console.log(4444,that.data.drawBoardList[1].data);
+                                    console.log("收到实时数据，当前画布数组：",that.data.drawBoardList);
+                                    //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
 
                                 });
 
