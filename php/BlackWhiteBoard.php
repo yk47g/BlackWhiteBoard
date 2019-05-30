@@ -22,6 +22,39 @@ if (mysqli_connect_errno($conn)) {
 
 $id = $_GET["id"];
 
+//上传图片
+$file = $_FILES['image'];
+$session = $_POST['session'];
+if(!empty($session)){
+    //有session，直接通过session查询用户信息
+    $sql = "SELECT * FROM `bwb_users` WHERE `session3rd` = '$session'";
+    $res = mysqli_query($conn,$sql);
+    if($res && mysqli_num_rows($res)){
+        if(!empty($file)){
+            //获取拓展名
+            $exename = pathinfo($file['name']);
+            $exename = strtolower($pathinfo['extension']);
+            if($exename != 'png' && $exename != 'jpg' && $exename != 'gif'){
+                echo json_encode(array("statusCode"=>7 , "data"=>null , "errMsg"=>"error:上传文件后缀格式不是图片"));
+                mysqli_close($conn);
+                exit;
+            }
+            $imageSavePath = $_SERVER['DOCUMENT_ROOT']."/wechatFile/".uniqid().'.'.$exename;
+            if(move_uploaded_file($file['tmp_name'], $imageSavePath)){
+                echo json_encode(array("statusCode"=>0 , "data"=>$imageSavePath));
+                mysqli_close($conn);
+                exit;
+            }
+        }
+    }else{
+        echo json_encode(array("statusCode"=>7 , "data"=>null , "errMsg"=>"error:传入session在数据库中不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
+
+
 //拿当前房间所有用户信息
 $roomid = $_GET["roomid"];
 if(!empty($roomid)){
