@@ -16,7 +16,7 @@ function connect(user,func) {
  
     wx.onSocketOpen(function (res) {
         wx.showToast({
-            title: 'wesocket信道已开通~',
+            title: '连接成功',
             icon: "success",
             duration: 2000
         })
@@ -29,7 +29,7 @@ function connect(user,func) {
     wx.onSocketError(function (res) {
         console.log('websocket信道连接失败，请检查！');
         wx.showToast({
-            title: 'websocket信道连接失败，请检查！',
+            title: '连接失败,请重试！',
             icon: "none",
             duration: 2000
         })
