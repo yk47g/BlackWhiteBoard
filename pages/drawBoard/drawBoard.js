@@ -2130,7 +2130,7 @@ Page({
             setTimeout(function () {
                 let animation_back = wx.createAnimation({
                     duration: 400,
-                    timingFunction: "ease-in-out"
+                    timingFunction: "ease"
                 })
                 // animation.left(100)
                 animation_back.opacity(0.3)
@@ -2138,7 +2138,7 @@ Page({
 
                 let animation_opean = wx.createAnimation({
                     duration: 400,
-                    timingFunction: "ease-in-out"
+                    timingFunction: "ease"
                 })
                 animation_opean.translate(0, -rpx(500));
                 animation_opean.step()
@@ -2338,7 +2338,7 @@ Page({
         //处理按下后的靠边动画，
         let animation = wx.createAnimation({
             duration: 400,
-            timingFunction: "ease-in-out"
+            timingFunction: "ease"
         })
         // animation.left(100)
         animation.translate(-100);
@@ -2776,7 +2776,7 @@ Page({
 
         let animation = wx.createAnimation({
             duration: 400,
-            // timingFunction: "ease-in-out"
+            timingFunction: "ease"
         })
         // animation.left(100)
         animation.translate(0);
@@ -2887,7 +2887,7 @@ Page({
 
             let animation_back = wx.createAnimation({
                 duration: 400,
-                timingFunction: "ease-in-out"
+                timingFunction: "ease"
             })
             // animation.left(100)
             animation_back.opacity(0)
@@ -2895,7 +2895,7 @@ Page({
 
             let animation_opean = wx.createAnimation({
                 duration: 400,
-                timingFunction: "ease-in-out"
+                timingFunction: "ease"
             })
             animation_opean.translate(0, 0);
             animation_opean.step()
