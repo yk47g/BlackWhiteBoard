@@ -34,7 +34,7 @@ var url = "https://pykky.com/wechatbwb/BlackWhiteBoard.php";//请求地址
 //发送数据函数 传入一个data数据参数即可，将发送给服务器data，data时间，用户id，房间id
 function send(data) {
     //websocket.send('{ "content": "' + this.data.drawBoardData + '", "date": "' + utils.formatTime(new Date()) + '","type":"text", "nickName": "' + this.data.userInfo.nickName + '", "avatarUrl": "' + this.data.userInfo.avatarUrl + '" }')
-    websocket.send('{ "data": "' + data + '", "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
+    websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
 
@@ -813,9 +813,6 @@ class LocalStorage {//本地存储类
     read() {//读取函数
         let json = wx.getStorageSync("drawBoard")
         var result = JSON.stringify(json);
-        //console.log(result);
-        //var aaa = JSON.parse(result);
-        //console.log(aaa);
         send(result);
         let page = getCurrentPages()[0]
         drawBoard = null;
@@ -1776,16 +1773,14 @@ Page({
                                     //接受socket通道中新的画板数据，插入到本机画板数据中
                                     var list = [];
                                     list = that.data.drawBoardList;
-                                    var aaa = sockres.data;
-                                    console.log(aaa);
-                                    //list.push(JSON.parse(sockres.data));
+                                    list.push(JSON.parse(sockres.data));
                                     //list.push(sockres.data);
                                     that.setData({
                                         drawBoardList: list
                                     });
                                     console.log("收到实时数据，当前画布数组：");
                                     console.log(that.data.drawBoardList);
-                                    //console.log(4444,that.data.drawBoardList[1].data);
+                                    console.log(4444,that.data.drawBoardList[1].data);
 
                                 });
 
