@@ -52,9 +52,7 @@ function joinUserIconByID(id) {
         success: function (res) {
             if (res.statusCode == 200) {
                 if (res.data.statusCode == 0) {
-                    console.log("用户头像地址:", res.data.data);
-                    //  
-                    //
+                   
                     
                     if (typeof (data.userOnlineInfo[id]) == "undefined") {
                         let user = new UserInfo()
@@ -1104,6 +1102,7 @@ Page({
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
+            send(drawBoard)
             } else {
                 console.log("没有文字输入，作废。")
             }
@@ -1637,7 +1636,7 @@ Page({
                             console.log("临时拉伸数据", tempflexData)
                             this.draw_text(cgText, tempflexData)
                         } else {
-                            console.log("完成", cgText)
+                          
                             this.draw_text(cgText)
                         }
 
