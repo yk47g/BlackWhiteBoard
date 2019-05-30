@@ -13,8 +13,9 @@ Page({
         groupUser3iconUrl: "/icons/user.png",
         ShowgetUserInfoView: false,
         userName: "未登录",
-        userId: 8888888,
-        groupName: "未加入协作"
+        status: "",
+        groupName: "未加入协作",
+        noGroup: true
     },
 
     onLoad: function (options) {
@@ -26,11 +27,22 @@ Page({
             ShowgetUserInfoView: true;
             this.applyPermission();
         }else{
+            var newStatus = "";
+            var newNoGroup = true;
+            if (app.globalData.userInfo.groupName === "未加入协作") {
+                newStatus = "已登陆";
+                newNoGroup = true;
+            }else{
+                newStatus = "协作中"
+                newNoGroup = false;
+            }
             that.setData({
                 usericonUrl: app.globalData.userInfo.iconurl,
                 userName: app.globalData.userInfo.name,
                 userId: app.globalData.userInfo.id,
-                groupName: app.globalData.userInfo.groupName
+                groupName: app.globalData.userInfo.groupName,
+                status: newStatus,
+                noGroup: newNoGroup
             });
         }
         
@@ -80,7 +92,8 @@ Page({
                                                     that.setData({
                                                         usericonUrl: app.globalData.userInfo.avatarUrl,
                                                         userName: app.globalData.userInfo.nickName,
-                                                        ShowgetUserInfoView: false
+                                                        ShowgetUserInfoView: false,
+                                                        status: "已登陆"
                                                     });
                                                     console.log("数据库不存在此用户，创建用户完成");
                                                 }else if (res.data.statusCode == 100) {//数据库中已存在此用户，不同设备
@@ -92,12 +105,23 @@ Page({
                                                     app.globalData.userInfo.iconurl=res.data.iconurl;
                                                     app.globalData.userInfo.groupName=res.data.groupName;
                                                     app.globalData.userInfo.roomID=res.data.roomID;
+                                                    var newStatus = "";
+                                                    var newNoGroup = true;
+                                                    if (app.globalData.userInfo.groupName === "未加入协作") {
+                                                        newStatus = "已登陆";
+                                                        newNoGroup = true;
+                                                    }else{
+                                                        newStatus = "协作中"
+                                                        newNoGroup = false;
+                                                    }
                                                     that.setData({
                                                         usericonUrl: app.globalData.userInfo.iconurl,
                                                         userName: app.globalData.userInfo.name,
                                                         userId: app.globalData.userInfo.id,
                                                         groupName: app.globalData.userInfo.groupName,
-                                                        ShowgetUserInfoView: false
+                                                        ShowgetUserInfoView: false,
+                                                        status: newStatus,
+                                                        noGroup: newNoGroup
                                                     });
                                                     console.log("数据库存在此用户，下载用户数据完成");
                                                 }else{

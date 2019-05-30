@@ -49,7 +49,7 @@ if(!empty($newRoomID)){
         mysqli_close($conn);
         exit;
     }else{
-        echo json_encode(array("statusCode"=>6 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
+        echo json_encode(array("statusCode"=>6 ,"errMsg"=>"error:传入用户id在数据库中不存在"));
         mysqli_close($conn);
         exit;
     }
@@ -192,10 +192,6 @@ else{
     }
     
 }
-
-
-
-
 
 mysqli_close($conn);
 

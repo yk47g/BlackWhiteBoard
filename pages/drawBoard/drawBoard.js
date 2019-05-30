@@ -1829,6 +1829,21 @@ Page({
         //开始执行一些为互联准备的数据。
         this.prepareForInter();
 
+        
+
+
+    },
+    /**
+     * 生命周期函数--监听页面初次渲染完成
+     */
+    onReady: function () {
+
+    },
+
+    /**
+     * 生命周期函数--监听页面显示
+     */
+    onShow: function () {
         let that = this;
 
         //登陆
@@ -1862,24 +1877,34 @@ Page({
                                 wx.request({
                                     url:url,
                                     data:{
-                                        "session" : app.globalData.session,
+                                        "session" : app.globalData.id,
                                         "newRoomID" : app.globalData.userInfo.roomID
                                     },
                                     success: function(res){
-                                        
-                                    },
+                                        if (res.statusCode == 200) {
+                                            if (res.data.statusCode == 0) {
+                                                console.log("成功加入队伍");
+                                            }else{
+                                                console.log(res.data.errMsg);
+                                            }
+                                        }
+                                        else{
+                                            console.log(res.errMsg);
+                                        }
+                                    },//request.success
                                     fail: function(e){
                                         console.log("request.fail:",e);
-                                    }
-                                });
+                                    }//request.fail
+                                });//request
 
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
 
 
 
-
+                                //
                                 //提示先进入设置页面退出队伍
+                                //
                                 console.log("已加入队伍" + currentRoomID + "需要先退出当前队伍。");
                                 wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
 
@@ -1947,21 +1972,6 @@ Page({
 
             }
         }//if&else
-
-
-    },
-    /**
-     * 生命周期函数--监听页面初次渲染完成
-     */
-    onReady: function () {
-
-    },
-
-    /**
-     * 生命周期函数--监听页面显示
-     */
-    onShow: function () {
-
     },
 
     /**
