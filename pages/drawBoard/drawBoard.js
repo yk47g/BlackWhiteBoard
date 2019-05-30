@@ -34,6 +34,7 @@ var url = "https://pykky.com/wechatbwb/BlackWhiteBoard.php";//请求地址
 //发送数据函数 传入一个data数据参数即可，将发送给服务器data，data时间，用户id，房间id
 function send(data) {
     //websocket.send('{ "content": "' + this.data.drawBoardData + '", "date": "' + utils.formatTime(new Date()) + '","type":"text", "nickName": "' + this.data.userInfo.nickName + '", "avatarUrl": "' + this.data.userInfo.avatarUrl + '" }')
+    data = JSON.stringify(data);
     websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
@@ -822,8 +823,7 @@ class LocalStorage {//本地存储类
 
     read() {//读取函数
         let json = wx.getStorageSync("drawBoard")
-        var result = JSON.stringify(json);
-        send(result);
+        send(json);
         let page = getCurrentPages()[0]
         drawBoard = null;
         drawBoard = new DrawBoard();
@@ -1751,6 +1751,10 @@ Page({
                                 
                                 console.log("用户当前未加入队伍,开始加入缓存里的队伍:",app.globalData.userInfo.roomID);
                                 
+                                //
+                                //弹框询问是否确认加入房间：，当前画板内容会被清空
+                                //
+
                                 //加入队伍
                                 wx.request({
                                     url:url,
@@ -1759,9 +1763,7 @@ Page({
                                         "newRoomID" : app.globalData.userInfo.roomID
                                     },
                                     success: function(res){
-                                        //
-                                        //
-                                        //
+                                        
                                     },
                                     fail: function(e){
                                         console.log("request.fail:",e);
@@ -1785,8 +1787,8 @@ Page({
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
                                 for(var i=0;i<jsDownLoadDrawBoardData.length;i++){
-                                    　　　　that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data;
-                                    }
+                                    that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
+                                }
                                 console.log("从数据库下载的整个画板数据：",that.data.drawBoardList);
 
                                 //连接socket
@@ -1797,7 +1799,7 @@ Page({
                                     //var list = [];
                                     //list = that.data.drawBoardList;
                                     var jsListData = JSON.parse(sockres.data);
-                                    that.data.drawBoardList[jsListData.id] = jsListData.data;
+                                    that.data.drawBoardList[jsListData.id] = jsListData;
                                     //list.push(JSON.parse(sockres.data));
                                     //that.setData({
                                     //    drawBoardList: list
@@ -1826,7 +1828,15 @@ Page({
 
             });//request
 
-        }//if
+        }else{
+            if (!(app.globalData.userInfo.roomID === "")) {//如果没有session(没有登陆)但是有房间id
+
+                //
+                //提示用户需要先去设置里登陆
+                //
+
+            }
+        }//if&else
 
 
     },
