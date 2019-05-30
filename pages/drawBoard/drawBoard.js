@@ -1875,9 +1875,9 @@ Page({
                                     //接受socket通道中新的画板数据，更新到本机特定用户的画板数据中
                                     //var list = [];
                                     //list = that.data.drawBoardList;
-                                    console.log(sockres.data)
+                                    
                                     var jsListData = JSON.parse(sockres.data);
-                                    that.data.drawBoardList[jsListData.id] = jsListData;
+                                    that.data.drawBoardList[jsListData.id] = jsListData.data[0];
                                     //list.push(JSON.parse(sockres.data));
                                     //that.setData({
                                     //    drawBoardList: list

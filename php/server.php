@@ -44,11 +44,10 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
                         break;
                     }
                 }else{//数据库里没有这个id的数据，直接插入一个
-                    $oldDrawBoardData[$i+1] = jsData;
+                    $oldDrawBoardData[$i+1] = $jsData;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
                     $res = mysqli_query($conn,$sql);
-                    $num = mysqli_num_rows($res);
                     if($res){
                         echo "数据库里没有该用户画布数据，已成功新建\n";
                         break;
