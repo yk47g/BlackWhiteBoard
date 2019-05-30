@@ -40,6 +40,26 @@ function send(data) {
     websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
+
+//上传文件函数 传入本地文件路径参数即可，成功回调返回网络地址
+function saveToFIle(Path){
+    wx.uploadFile({
+        url: url,
+        filePath: Path,
+        name: 'image',
+        formData:{
+            'session': app.globalData.session
+        },
+        success:function (res) {
+            if (res.data.statusCode === 0) {//上传成功
+                var address = res.data.data;//拿到的地址
+            }else{
+                console.log("上传失败：",res.data.errMsg);
+            }
+        }
+    });
+}
+
 function rpx(number) {//传入rpx值，转化为px
     // 规定任意屏幕的大小均为750rpx
     let systeminfo = app.globalData.systemInfo

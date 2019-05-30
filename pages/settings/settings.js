@@ -31,7 +31,6 @@ Page({
                 that.setData({
                     usericonUrl: app.globalData.userInfo.iconurl,
                     userName: app.globalData.userInfo.name,
-                    userId: app.globalData.userInfo.id,
                     groupName: app.globalData.userInfo.groupName,
                     status: "已登陆",
                     noGroup: true
@@ -64,7 +63,6 @@ Page({
                     groupUser2iconUrl: new2iconUrl,
                     groupUser3iconUrl: new3iconUrl,
                     userName: app.globalData.userInfo.name,
-                    userId: app.globalData.userInfo.id,
                     groupName: app.globalData.userInfo.groupName,
                     status: "协作中",
                     noGroup: false
@@ -172,7 +170,6 @@ Page({
                                                         that.setData({
                                                             usericonUrl: app.globalData.userInfo.iconurl,
                                                             userName: app.globalData.userInfo.name,
-                                                            userId: app.globalData.userInfo.id,
                                                             groupName: app.globalData.userInfo.groupName,
                                                             status: "已登陆",
                                                             noGroup: true,
@@ -220,7 +217,6 @@ Page({
                                                                             groupUser2iconUrl: new2iconUrl,
                                                                             groupUser3iconUrl: new3iconUrl,
                                                                             userName: app.globalData.userInfo.name,
-                                                                            userId: app.globalData.userInfo.id,
                                                                             groupName: app.globalData.userInfo.groupName,
                                                                             status: "协作中",
                                                                             noGroup: false,
