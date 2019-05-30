@@ -53,7 +53,7 @@
                     <view class="div-line"></view>
                 </view>
             </navigator>
-            <navigator url="/page/navigate/navigate" class="list-item" hover-class="none">
+            <navigator url="/pages/drawBoard/drawBoard" class="list-item" hover-class="none">
                 <view class='item'>
                     <image class="item-image" src='/icons/help.png'></image>
                     <text class="item-text">使用手册</text>

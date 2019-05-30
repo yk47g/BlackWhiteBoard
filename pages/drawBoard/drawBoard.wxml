@@ -2,13 +2,13 @@
   <view class='main' wx:if="{{pageVisable}}">
     <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView.nleft}}" scroll-top="{{scrollView.ntop}}">
       <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
-      <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas>
+      <!-- <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas> -->
     </scroll-view>
     <!-- 画布不支持单击事件 -->
     <input type='text' value='{{toolsStatus.keyBord.value}}' focus="{{toolsStatus.keyBord.focus}}" style="display:{{toolsStatus.keyBord.display != 1 ? 'none':''}};left:{{toolsStatus.keyBord.x-3}}px;top: {{toolsStatus.keyBord.y -13}}px;" bindinput='textFieldInput'
       bindblur="textFieldInput_lostFocus" bindconfirm='textFieldInput_lostFocus'></input>
     <!-- 设置按钮 -->
-    <cover-view class='settings'>
+    <cover-view class='settings' animation="{{animation.dodgeTools}}">
       <button plain bindtap='button_settings'>
         <cover-image src='/icons/settings.png'></cover-image>
       </button>
@@ -19,7 +19,7 @@
         <cover-image src="/icons/tools_select{{toolsStatus.toolType == 1?'_on':''}}.png"></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_pen' bindlongpress="button_longpress">
-        <cover-image src="/icons/tools_pen{{toolsStatus.toolType == 0?'_on':''}}.png" mode='widthFix'></cover-image>
+        <cover-image src="/icons/tools_pen{{toolsStatus.toolType == 0 || toolsStatus.toolType == 6?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
       <button plain catchtap='changeStatus' id='tools_eraser' bindlongpress="button_longpress">
         <cover-image src="/icons/tools_eraser{{toolsStatus.toolType == 2?'_on':''}}.png" mode='widthFix'></cover-image>
@@ -34,7 +34,7 @@
         <cover-image src="/icons/tools_image{{toolsStatus.toolType == 3?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
 
-      <button plain catchtap='changeStatus' id='tools_debug' >测试</button>
+      <!-- <button plain catchtap='changeStatus' id='tools_debug' >测试</button> -->
       <!-- open-type="share" -->
     </cover-view>
 
@@ -49,12 +49,12 @@
 
 
     <!-- 画笔调节面板 -->
-    <block wx:if="{{toolBarDetailindex >= 0}}">
+    <block wx:if="{{toolBarDetailindex >= 0}}"  >
       <cover-view class="shadeBackground" animation="{{animation.background}}" bindtap="closeDeatilPane"></cover-view>
 
-      <cover-view class="toolsBarDeatilPane"  animation="{{animation.opeanPane}}" >
+      <cover-view class="toolsBarDeatilPane" id='toolsBarDeatilPane' animation="{{animation.opeanPane}}" >
         <!-- 画笔 -->
-        <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 0}}">
+        <cover-view class="PaneForItem" wx:if="{{toolBarDetailindex == 0 || toolBarDetailindex == 6}}">
           画笔
           <!-- {{penConfiguration.lineWidth}} -->
           <cover-view class="sonPane">

@@ -6,7 +6,7 @@ page {
 }
 
 .main scroll-view {
-  height: 80vh;
+  height: 90vh;
   /* 方便手机调试 */
 }
 
@@ -21,10 +21,10 @@ page {
   position: absolute;
   left: 2vw;
   top: 5vh;
-  height: 80rpx;
-  width: 80rpx;
+  height: 60rpx;
+  width: 60rpx;
   background-color: white;
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); */
   border-radius: 40rpx;
 }
 
@@ -120,11 +120,11 @@ page {
 
 .toolsBarDeatilPane {
   box-sizing: border-box;
-  transition: bottom 0.02s;
+  
   position: absolute;
-  bottom: -40vh;
+  bottom: -500rpx;
   width: 100vw;
-  height: 40vh;
+  height: 500rpx;
   border-radius: 40rpx;
   background: white;
   padding: 30rpx;
@@ -144,7 +144,7 @@ page {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-around;
-  margin: 50rpx 50rpx;
+  margin: 20rpx 40rpx;
 }
 
 .sonPane button {
@@ -156,6 +156,7 @@ page {
   /* margin-top: 30rpx; *//* margin: auto; *//* margin-left: 10rpx;
   margin-right: 10rpx; */
   box-sizing: border-box;
+  margin-bottom: 30rpx;
 }
 
 .sonPane .ColorButton {

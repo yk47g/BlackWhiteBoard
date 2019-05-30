@@ -39,11 +39,16 @@ function send(data) {
     websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
+function rpx(number) {//传入rpx值，转化为px
+    // 规定任意屏幕的大小均为750rpx
+    let systeminfo = app.globalData.systemInfo
+    return (systeminfo.windowWidth / 750) * number
+}
 
 //拿用户头像函数  传入用户id参数，返回用户头像地址
 function joinUserIconByID(id) {
     let that = getCurrentPages()[0]
-    let data =  that.data
+    let data = that.data
     wx.request({
         url: url,
         data: {
@@ -52,8 +57,8 @@ function joinUserIconByID(id) {
         success: function (res) {
             if (res.statusCode == 200) {
                 if (res.data.statusCode == 0) {
-                   
-                    
+
+
                     if (typeof (data.userOnlineInfo[id]) == "undefined") {
                         let user = new UserInfo()
                         user.iconUrl = res.data.data;
@@ -63,12 +68,12 @@ function joinUserIconByID(id) {
 
                         // let key = 'userOnlineInfo[' + String(id) +'][iconUrl]'
                         that.setData({
-                            
-                            userOnlineIdArray:data.userOnlineIdArray,
-                            userOnlineIcon:data.userOnlineIcon
-                            
+
+                            userOnlineIdArray: data.userOnlineIdArray,
+                            userOnlineIcon: data.userOnlineIcon
+
                         })
-                    } 
+                    }
 
                 } else {
                     console.log(res.data.errMsg);
@@ -90,6 +95,7 @@ function release(...list) { //释放内存函数。
         list[i] = null
     }
 }
+
 
 // console.log(Object.assign({a:2,c:{point:[10]}},{b:3,c:{point:[20]}}))
 class MouseAction { //用来记录手指移动距离等数据
@@ -265,7 +271,7 @@ class ToolsStatus {
         for (let i = 0; i < this.mouseActions.length; i++) {
             const element = this.mouseActions[i];
             if (indexString.indexOf(element.identifier) == -1) {
-             
+
                 this.mouseActions.splice(i, 1)
 
                 return
@@ -290,7 +296,8 @@ let ToolsStatus_type = { //当做枚举来用。
     eraser: 2,
     image: 3,
     text: 4,
-    color: 5
+    color: 5,
+    shape:6//不直接显示在工具栏上。
 }
 let Mouse_MoveType = { //移动的操作类型。
     none: 0,
@@ -367,15 +374,15 @@ class Dom { //模拟dom操作取元素属性类
     }
     getElementByString(str, callback) { //可以通过该属性获取元素当前的宽高等信息。str 值为css选择器名 ,注意为回调函数！
         const query = wx.createSelectorQuery()
-        var temp
-        query.select(".drawCanvas").boundingClientRect();
+
+        query.select(str).boundingClientRect();
         query.exec(function (res) {
 
             callback(res);
 
         })
 
-        return temp
+
     }
     getElementContext(str, callback) {
         wx.createSelectorQuery().select('.drawCanvas').context(function (res) {
@@ -913,10 +920,10 @@ class LocalStorage {//本地存储类
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
-           
-            if ( typeof (app.globalData.userInfo.id) == null) {//判断是否属于未登录的房间。
+
+            if (typeof (app.globalData.userInfo.id) == null) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
-            }else{
+            } else {
                 delete thisRoom.drawBoardAll.temp
                 console.log("删除原有的temp未登录画板数据")
             }
@@ -976,12 +983,12 @@ Page({
         userOnlineInfo: {//通过上面的id 来读取这里的info。
 
         },
-        userOnlineIcon:[],
-       
+        userOnlineIcon: [],
+
         animation: {
             background: {},
             opeanPane: {},
-            dodgeTools:{}
+            dodgeTools: {}
         },
         drawBoardList: {}
 
@@ -1102,7 +1109,7 @@ Page({
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
-            send(drawBoard)
+                send(drawBoard)
             } else {
                 console.log("没有文字输入，作废。")
             }
@@ -1505,16 +1512,18 @@ Page({
 
 
         let toolsStatus = this.data.toolsStatus
-        // ctx.lineJoin = "round"
-        // ctx.lineCap = "round"
-
+        ctx.lineJoin = "round"
+        ctx.lineCap = "round"
+        if (this.data.penConfiguration.lineDash) {
+            ctx.setLineDash([3, 5]);
+        }
         // let nowPageIndex = thisRoom.nowPageIndex
         let mydrawBoard = drawBoard //保存原来的我的drawboard
         let myActions = drawBoard.actions //默认actions为当前用户的
 
         var isMyDrawboard = false
 
-       
+
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
             var actions = {}
@@ -1636,7 +1645,7 @@ Page({
                             console.log("临时拉伸数据", tempflexData)
                             this.draw_text(cgText, tempflexData)
                         } else {
-                          
+
                             this.draw_text(cgText)
                         }
 
@@ -1735,18 +1744,24 @@ Page({
         // console.log("reload结束",Date.now())
     },
     initDrawBoard() { //进行最基础的变量初始化。
-        (new Dom()).getElementByString(".drawCanvas", (res) => {
+        new Dom().getElementByString(".drawCanvas", (res) => {
+
             drawBoard.width = res[0].width
             drawBoard.height = res[0].height
         })
 
+        new Dom().getElementByString(".sonPane", (res) => {
+            console.log("toolsBarDeatilPane读取", res)
+            // drawBoard.width = res[0].width
+            // drawBoard.height = res[0].height
+        })
         drawBoard = new DrawBoard();
         this.data.toolsStatus = new ToolsStatus();
         this.setData({
             'toolsStatus.keyBord.display': 0,
             'toolsStatus.toolType': ToolsStatus_type.pen
         })
-
+        this._onlyChangeLineWidth = false //允许点击形状后，下一步只更改路径大小。
 
     },
     prepareForInter() {
@@ -1870,7 +1885,7 @@ Page({
         //开始执行一些为互联准备的数据。
         this.prepareForInter();
 
-        
+
 
 
     },
@@ -1916,25 +1931,25 @@ Page({
 
                                 //加入队伍
                                 wx.request({
-                                    url:url,
-                                    data:{
-                                        "session" : app.globalData.id,
-                                        "newRoomID" : app.globalData.userInfo.roomID
+                                    url: url,
+                                    data: {
+                                        "session": app.globalData.id,
+                                        "newRoomID": app.globalData.userInfo.roomID
                                     },
-                                    success: function(res){
+                                    success: function (res) {
                                         if (res.statusCode == 200) {
                                             if (res.data.statusCode == 0) {
                                                 console.log("成功加入队伍");
-                                            }else{
+                                            } else {
                                                 console.log(res.data.errMsg);
                                             }
                                         }
-                                        else{
+                                        else {
                                             console.log(res.errMsg);
                                         }
                                     },//request.success
-                                    fail: function(e){
-                                        console.log("request.fail:",e);
+                                    fail: function (e) {
+                                        console.log("request.fail:", e);
                                     }//request.fail
                                 });//request
 
@@ -2029,7 +2044,7 @@ Page({
      * 生命周期函数--监听页面卸载
      */
     onUnload: function () {
-        
+
     },
 
     // /**
@@ -2090,7 +2105,7 @@ Page({
                     duration: 400,
                     timingFunction: "ease-in-out"
                 })
-                animation_opean.translate(0, -265);
+                animation_opean.translate(0, -rpx(500));
                 animation_opean.step()
                 this.setData({
                     "animation.background": animation_back.export(),
@@ -2112,9 +2127,15 @@ Page({
             case "tools_pen":
                 console.log("画笔开启");
 
-                this.opeanDetailPane(ToolsStatus_type.pen)
+                if ( datas.toolsStatus.toolType ==  ToolsStatus_type.shape) {
+                    this.opeanDetailPane(ToolsStatus_type.shape)
+                }else{
+                    this.opeanDetailPane(ToolsStatus_type.pen)
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                }
+                
                 this.cancelSelectStatus()
-                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                
 
 
                 break;
@@ -2127,11 +2148,12 @@ Page({
 
 
                 break;
-            case "tools_shape":
-                console.log("矩形开启");
-                datas.toolsStatus.toolType = ToolsStatus_type.shape;
+            // case "tools_shape":
+            //     console.log("矩形开启");
+            //     this.opeanDetailPane(ToolsStatus_type.shape)
+            //     datas.toolsStatus.toolType = ToolsStatus_type.shape;
 
-                break;
+            //     break;
             case "tools_text":
                 console.log("文字开启");
                 this.cancelSelectStatus()
@@ -2191,6 +2213,7 @@ Page({
         let configuration = this.data.penConfiguration
         let datas = this.data
         console.log(buttonId)
+
         switch (buttonId) {
             case "pen_dash":
 
@@ -2198,33 +2221,64 @@ Page({
                 break;
             case "pen_line0":
                 configuration.lineWidth = 1
-                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                if (this._onlyChangeLineWidth != true) {
+
+                    configuration.shape = CGShape_type.none
+                    console.log(configuration.shape)
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen;
+
+                } else {
+                    this._onlyChangeLineWidth = false
+                }
+
                 break;
             case "pen_line1":
                 configuration.lineWidth = 3
-                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                if (this._onlyChangeLineWidth != true) {
+
+                    configuration.shape = CGShape_type.none
+
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                } else {
+                    this._onlyChangeLineWidth = false
+                }
                 break;
             case "pen_line2":
+
                 configuration.lineWidth = 6
+                if (this._onlyChangeLineWidth != true) {
+
+                    configuration.shape = CGShape_type.none
+                } else {
+                    this._onlyChangeLineWidth = false
+                }
                 datas.toolsStatus.toolType = ToolsStatus_type.pen;
                 break;
             case "pen_line3":
                 configuration.lineWidth = 9
-                datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                if (this._onlyChangeLineWidth != true) {
+                    configuration.shape = CGShape_type.none
+                    datas.toolsStatus.toolType = ToolsStatus_type.pen;
+                } else {
+                    this._onlyChangeLineWidth = false
+                }
                 break;
             case "pen_shapeRoundness":
                 configuration.shape = CGShape_type.roundness
                 datas.toolsStatus.toolType = ToolsStatus_type.shape;
-
+                this._onlyChangeLineWidth = true
                 break;
             case "pen_shapeTriangle":
                 configuration.shape = CGShape_type.triangle
                 datas.toolsStatus.toolType = ToolsStatus_type.shape;
+                this._onlyChangeLineWidth = true
 
                 break;
             case "pen_shapeRectangle":
                 configuration.shape = CGShape_type.rectangle
                 datas.toolsStatus.toolType = ToolsStatus_type.shape;
+           
+                this._onlyChangeLineWidth = true
 
                 break;
             default:
@@ -2791,7 +2845,7 @@ Page({
         console.log(e)
     },
     closeDeatilPane(e) {
-  
+
 
         console.log("正在关闭动画")
         setTimeout(function () {
@@ -2816,7 +2870,7 @@ Page({
 
             })
         }.bind(this), 5);
-    
+
         setTimeout(function () {
             this.setData({
                 toolBarDetailindex: -1
@@ -2839,21 +2893,21 @@ Page({
         console.log("点击了设置按钮");
         let that = this
         this.setData({
-            pageVisable:false
+            pageVisable: false
         })
         wx.navigateTo(
             {
                 url: '/pages/settings/settings',
-                complete:function(){
-                    setTimeout(function(){
+                complete: function () {
+                    setTimeout(function () {
                         that.setData({
-                            pageVisable:true
+                            pageVisable: true
                         })
-                    },1000)
-                    
+                    }, 1000)
+
                 }
             }
-            
+
         )
     }
     //-------响应事件写上面------
