@@ -41,31 +41,50 @@ function send(data) {
 }
 
 //拿用户头像函数  传入用户id参数，返回用户头像地址
-function getPeopleIconByID(id) {
+function joinUserIconByID(id) {
+    let that = getCurrentPages()[0]
+    let data =  that.data
     wx.request({
-        url:url,
-        data:{
-            "id" : id,
+        url: url,
+        data: {
+            "id": id,
         },
-        success: function(res){
+        success: function (res) {
             if (res.statusCode == 200) {
                 if (res.data.statusCode == 0) {
-                    console.log("用户头像地址:",res.data);
-                    return res.data;
-                }else{
+                    console.log("用户头像地址:", res.data.data);
+                    //  
+                    //
+                    
+                    if (typeof (data.userOnlineInfo[id]) == "undefined") {
+                        let user = new UserInfo()
+                        user.iconUrl = res.data.data;
+                        data.userOnlineInfo[id] = user
+                        data.userOnlineIdArray.unshift(id)
+                        data.userOnlineIcon.unshift(res.data.data)
+
+                        // let key = 'userOnlineInfo[' + String(id) +'][iconUrl]'
+                        that.setData({
+                            
+                            userOnlineIdArray:data.userOnlineIdArray,
+                            userOnlineIcon:data.userOnlineIcon
+                            
+                        })
+                    } 
+
+                } else {
                     console.log(res.data.errMsg);
                 }
             }
-            else{
+            else {
                 console.log(res.errMsg);
             }
         },//request.success
-        fail: function(e){
-            console.log("request.fail:",e);
+        fail: function (e) {
+            console.log("request.fail:", e);
         }//request.fail
     });//request
 }
-
 
 function release(...list) { //释放内存函数。
     for (let i = 0; i < list.length; i++) {
@@ -303,7 +322,7 @@ class Room { //用作本地与数据库互联起来的类
     constructor() {
         this.roomID = -1
         // this.nowPageIndex = 0//当前用户所阅览的是第几页。
-        this.onlineUsersSession = []
+
         this.name = ""
         this.drawBoardAll = {} //存放所有用户的drawboard 数据
     }
@@ -312,16 +331,16 @@ class Room { //用作本地与数据库互联起来的类
             if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
                 if (key == "drawBoardAll") {
                     let drawBoardAllJson = json["drawBoardAll"]
-                    for (const key2 in  drawBoardAllJson) {
+                    for (const key2 in drawBoardAllJson) {
                         if (drawBoardAllJson.hasOwnProperty(key2)) {
                             const drawBoardJson = drawBoardAllJson[key2];
                             let temp = new DrawBoard()
                             temp.initByJson(drawBoardJson)
                             this.drawBoardAll[key2] = temp
-                          
+
                         }
                     }
-                    
+
                 } else {
                     this[key] = json[key]
                 }
@@ -335,6 +354,14 @@ class Room { //用作本地与数据库互联起来的类
     }
 }
 let thisRoom = new Room()
+class UserInfo {
+    constructor() {
+        this.iconUrl = ""
+        this.name = ""
+        this.id = ""
+    }
+}
+
 
 class Dom { //模拟dom操作取元素属性类
     constructor() {
@@ -878,20 +905,20 @@ class LocalStorage {//本地存储类
 
     readLocalStorage() {//读取函数进行读取完整的drawboardAll，不进行重绘
         let json = wx.getStorageSync("Room")
-        
+
 
         // var result = JSON.stringify(json);
         // send(result);
         // let page = getCurrentPages()[0]
         if (json != "") {
-            
+
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
             if (true) {//判断是否属于未登录的房间。
-                drawBoard =  thisRoom.drawBoardAll.temp
+                drawBoard = thisRoom.drawBoardAll.temp
             }
-        }else{
+        } else {
             console.log("本地缓存为空")
             //缓存为空，创建临时的画板数据。
             thisRoom.drawBoardAll.temp = drawBoard //默认为本地我的数据。
@@ -899,10 +926,10 @@ class LocalStorage {//本地存储类
 
         //把读取到的缓存加载入drawboardALl
     }
-    readDatabase(){//读取数据库内容、
+    readDatabase() {//读取数据库内容、
 
     }
-    uploadDate(){
+    uploadDate() {
 
     }
 
@@ -943,13 +970,17 @@ Page({
             shape: CGShape_type.none,
             textSize: 30
         },
-        userOnlineArray: [1, 1],
+        userOnlineIdArray: [],//这里控制显示的在线人，值为id
+        userOnlineInfo: {//通过上面的id 来读取这里的info。
+
+        },
+        userOnlineIcon:[],
         animation1: {},
         animation: {
             background: {},
             opeanPane: {},
         },
-        drawBoardList:{}
+        drawBoardList: {}
 
 
     },
@@ -1476,18 +1507,18 @@ Page({
         // let nowPageIndex = thisRoom.nowPageIndex
         let mydrawBoard = drawBoard //保存原来的我的drawboard
         let myActions = drawBoard.actions //默认actions为当前用户的
-        
+
         var isMyDrawboard = false
-   
-        console.log("所有人的drawboard",thisRoom.drawBoardAll)
+
+        console.log("所有人的drawboard", thisRoom.drawBoardAll)
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
             var actions = {}
-            if ( thisRoom.drawBoardAll.hasOwnProperty(key)) {
-                 drawBoard = thisRoom.drawBoardAll[key];
-                 
-                 actions = drawBoard.actions
-            }else{
+            if (thisRoom.drawBoardAll.hasOwnProperty(key)) {
+                drawBoard = thisRoom.drawBoardAll[key];
+
+                actions = drawBoard.actions
+            } else {
                 continue
             }
 
@@ -1711,26 +1742,26 @@ Page({
             'toolsStatus.keyBord.display': 0,
             'toolsStatus.toolType': ToolsStatus_type.pen
         })
-      
+
 
     },
-    prepareForInter() { 
-    
+    prepareForInter() {
+
         //进行本地缓存读取。初始化 drawboardAll
         let storage = new LocalStorage()
-        storage.readLocalStorage() 
-   
-      
-       
+        storage.readLocalStorage()
+
+
+
         //读取网络数据并设置
         // thisRoom.roomID = 
         // thisRoom.onlineUsersSession = 
 
         thisRoom.name = "房间"
 
-       
 
-        console.log("初始化完成的：", thisRoom,drawBoard)
+
+        console.log("初始化完成的：", thisRoom, drawBoard)
         //drawboardAll数据加载完毕，执行一次重载渲染新数据。
         this.reloadDrawBoard()
 
@@ -1814,14 +1845,20 @@ Page({
         toolsStatus.select.selecting = false
         this.reloadDrawBoard()
     },
-    //-------以上为画布动作的处理事件-----
 
+    //-------以上为画布动作的处理事件-----
+    status_userJoinOnline(userId) {//有用户加入上线状态。
+        joinUserIconByID(userId)
+    },
+
+    //通信互联事件。
 
 
     //--------页面加载事件------
     /**
      * 生命周期函数--监听页面加载，一个页面只会调用一次
      */
+
     onLoad: function (options) {
 
         // 无论什么情况，先初始化创建一个本地使用的drawboard
@@ -1842,42 +1879,39 @@ Page({
                 },
                 success: function (res) {
                     if (res.statusCode == 200) {
-                        console.log("服务器request回来的data：",res.data);
+                        console.log("服务器request回来的data：", res.data);
                         if (res.data.statusCode == 100 || res.data.statusCode == 0) {
-                            app.globalData.userInfo.id=res.data.id;
-                            app.globalData.userInfo.name=res.data.name;
-                            app.globalData.userInfo.iconurl=res.data.iconurl;
-                            app.globalData.userInfo.groupName=res.data.groupName;
+                            app.globalData.userInfo.id = res.data.id;
+                            app.globalData.userInfo.name = res.data.name;
+                            app.globalData.userInfo.iconurl = res.data.iconurl;
+                            app.globalData.userInfo.groupName = res.data.groupName;
                             var currentRoomID = res.data.roomID;
                             //console.log(app.globalData.userInfo.roomID);
-                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID===0) {//用户还没加入队伍，访问数据库加入队伍
-                                
-                                console.log("用户当前未加入队伍,开始加入缓存里的队伍:",app.globalData.userInfo.roomID);
-                                
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID === 0) {//用户还没加入队伍，访问数据库加入队伍
+
+                                console.log("用户当前未加入队伍,开始加入缓存里的队伍:", app.globalData.userInfo.roomID);
+
                                 //
                                 //弹框询问是否确认加入房间：，当前画板内容会被清空
                                 //
 
                                 //加入队伍
                                 wx.request({
-                                    url:url,
-                                    data:{
-                                        "session" : app.globalData.session,
-                                        "newRoomID" : app.globalData.userInfo.roomID
+                                    url: url,
+                                    data: {
+                                        "session": app.globalData.session,
+                                        "newRoomID": app.globalData.userInfo.roomID
                                     },
-                                    success: function(res){
-                                        
+                                    success: function (res) {
+
                                     },
-                                    fail: function(e){
-                                        console.log("request.fail:",e);
+                                    fail: function (e) {
+                                        console.log("request.fail:", e);
                                     }
                                 });
 
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
-
-
-
 
                                 //提示先进入设置页面退出队伍
                                 console.log("已加入队伍" + currentRoomID + "需要先退出当前队伍。");
@@ -1885,16 +1919,16 @@ Page({
 
 
                             }
-                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID!=0) {//和数据库roomid一致，开始连接socket
-                                
+                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
+
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
-                                for(var i=0;i<jsDownLoadDrawBoardData.length;i++){
+                                for (var i = 0; i < jsDownLoadDrawBoardData.length; i++) {
                                     thisRoom.drawBoardAll[String(jsDownLoadDrawBoardData[i].id)] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
-                                    
+
                                     // that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
                                 }
-                                console.log("从数据库下载的整个画板数据：",thisRoom.drawBoardAll);
+                                console.log("从数据库下载的整个画板数据：", thisRoom.drawBoardAll);
                                 that.reloadDrawBoard()
 
                                 //连接socket
@@ -1904,7 +1938,7 @@ Page({
                                     //接受socket通道中新的画板数据，更新到本机特定用户的画板数据中
                                     //var list = [];
                                     //list = that.data.drawBoardList;
-                                    
+
                                     var jsListData = JSON.parse(sockres.data);
                                     // that.data.drawBoardList[jsListData.id] = ;
 
@@ -1914,7 +1948,10 @@ Page({
                                     //that.setData({
                                     //    drawBoardList: list
                                     //});
-                                    console.log("收到实时数据，当前画布所有：",thisRoom.drawBoardAll);
+                                    that.status_userJoinOnline(jsListData.id)
+
+
+                                    console.log("收到实时数据，当前画布所有：", thisRoom.drawBoardAll);
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
                                     that.reloadDrawBoard()
                                 });
@@ -1931,14 +1968,14 @@ Page({
                         console.log(res.errMsg);
                     }
                 },//request.success
-                
-                fail: function(e){
-                    console.log("request.fail:",e);
+
+                fail: function (e) {
+                    console.log("request.fail:", e);
                 }//request.fail
 
             });//request
 
-        }else{
+        } else {
             if (!(app.globalData.userInfo.roomID === "")) {//如果没有session(没有登陆)但是有房间id
 
                 //
@@ -2123,7 +2160,7 @@ Page({
                 storage.saveLocalStorage()
                 storage.readLocalStorage()
                 console.log("保存")
-                
+
 
                 break;
         }
@@ -2491,7 +2528,7 @@ Page({
                     drawBoard.actions.splice(selectindex, 1)
                     // ctx.clip()
                     this.reloadDrawBoard()
-                    console.log("删除")
+
 
                 }
                 return
@@ -2723,8 +2760,8 @@ Page({
             condition.deleteAll()
             toolsStatus.mouseActions = []
         }
-      
-        send( drawBoard)
+
+        send(drawBoard)
     },
 
     textFieldInput(e) {
