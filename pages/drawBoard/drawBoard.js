@@ -40,6 +40,32 @@ function send(data) {
 
 }
 
+//拿用户头像函数  传入用户id参数，返回用户头像地址
+function getPeopleIconByID(id) {
+    wx.request({
+        url:url,
+        data:{
+            "id" : id,
+        },
+        success: function(res){
+            if (res.statusCode == 200) {
+                if (res.data.statusCode == 0) {
+                    console.log("用户头像地址:",res.data);
+                    return res.data;
+                }else{
+                    console.log(res.data.errMsg);
+                }
+            }
+            else{
+                console.log(res.errMsg);
+            }
+        },//request.success
+        fail: function(e){
+            console.log("request.fail:",e);
+        }//request.fail
+    });//request
+}
+
 
 function release(...list) { //释放内存函数。
     for (let i = 0; i < list.length; i++) {

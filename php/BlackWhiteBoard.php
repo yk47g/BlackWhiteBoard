@@ -160,6 +160,22 @@ else{
 }
 
 
+//拿用户头像函数
+$id = $_GET["id"];
+if(!empty($id)){
+    $sql = "SELECT * FROM `bwb_users` WHERE `id` = '$id'";
+    $res = mysqli_query($conn,$sql);
+    if($res && mysqli_num_rows($res)){
+        $row = mysqli_fetch_array($res);
+        $iconurl = $row['avatarUrl'];
+        echo json_encode(array("statusCode"=>0 ,"data"=>$iconurl));
+    }else{
+        echo json_encode(array("statusCode"=>5 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
 //加入队伍
 $newRoomID = $_GET["newRoomID"];
 if(!empty($newRoomID)){
