@@ -956,7 +956,7 @@ Page({
         toolsStatus: {}, //工具选择状态
         exchange: 0,
         toolBarDetailindex: -1,//弹出的画笔调节窗口。
-        runAM: false,
+        pageVisable: true,
         scrollView: {
             ntop: 0,
             nleft: 0,
@@ -979,10 +979,11 @@ Page({
 
         },
         userOnlineIcon:[],
-        animation1: {},
+       
         animation: {
             background: {},
             opeanPane: {},
+            dodgeTools:{}
         },
         drawBoardList: {}
 
@@ -2073,7 +2074,7 @@ Page({
     opeanDetailPane(toolType) {
 
         let datas = this.data
-        if (datas.runAM == false && datas.toolsStatus.toolType == toolType) {
+        if (datas.toolsStatus.toolType == toolType) {
             this.setData({
                 toolBarDetailindex: toolType,
             })
@@ -2255,7 +2256,7 @@ Page({
         animation.translate(-100);
         animation.step()
         this.setData({
-            animation1: animation.export()
+            "animation.dodgeTools": animation.export()
         })
 
 
@@ -2695,7 +2696,7 @@ Page({
 
 
         this.setData({
-            animation1: animation.export()
+            "animation.dodgeTools": animation.export()
         })
 
 
@@ -2791,9 +2792,9 @@ Page({
         console.log(e)
     },
     closeDeatilPane(e) {
-        // if (this.data.runAM == true) {
+  
 
-        console.log("正在关闭动画", this.data.runAM)
+        console.log("正在关闭动画")
         setTimeout(function () {
 
             let animation_back = wx.createAnimation({
@@ -2816,7 +2817,7 @@ Page({
 
             })
         }.bind(this), 5);
-        // }
+    
         setTimeout(function () {
             this.setData({
                 toolBarDetailindex: -1
@@ -2837,10 +2838,23 @@ Page({
     },
     button_settings() {
         console.log("点击了设置按钮");
+        let that = this
+        this.setData({
+            pageVisable:false
+        })
         wx.navigateTo(
             {
-                url: '/pages/settings/settings'
+                url: '/pages/settings/settings',
+                complete:function(){
+                    setTimeout(function(){
+                        that.setData({
+                            pageVisable:true
+                        })
+                    },1000)
+                    
+                }
             }
+            
         )
     }
     //-------响应事件写上面------
