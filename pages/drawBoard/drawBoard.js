@@ -52,9 +52,7 @@ function joinUserIconByID(id) {
         success: function (res) {
             if (res.statusCode == 200) {
                 if (res.data.statusCode == 0) {
-                    console.log("用户头像地址:", res.data.data);
-                    //  
-                    //
+                   
                     
                     if (typeof (data.userOnlineInfo[id]) == "undefined") {
                         let user = new UserInfo()
@@ -267,7 +265,7 @@ class ToolsStatus {
         for (let i = 0; i < this.mouseActions.length; i++) {
             const element = this.mouseActions[i];
             if (indexString.indexOf(element.identifier) == -1) {
-                console.log("删除", element.identifier)
+             
                 this.mouseActions.splice(i, 1)
 
                 return
@@ -915,8 +913,12 @@ class LocalStorage {//本地存储类
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
-            if (true) {//判断是否属于未登录的房间。
+           
+            if ( typeof (app.globalData.userInfo.id) == null) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
+            }else{
+                delete thisRoom.drawBoardAll.temp
+                console.log("删除原有的temp未登录画板数据")
             }
         } else {
             console.log("本地缓存为空")
@@ -952,7 +954,7 @@ Page({
         toolsStatus: {}, //工具选择状态
         exchange: 0,
         toolBarDetailindex: -1,//弹出的画笔调节窗口。
-        runAM: false,
+        pageVisable: true,
         scrollView: {
             ntop: 0,
             nleft: 0,
@@ -975,10 +977,11 @@ Page({
 
         },
         userOnlineIcon:[],
-        animation1: {},
+       
         animation: {
             background: {},
             opeanPane: {},
+            dodgeTools:{}
         },
         drawBoardList: {}
 
@@ -1099,6 +1102,7 @@ Page({
                 this.draw_text(lsAction)
                 ctx.draw(true);
 
+            send(drawBoard)
             } else {
                 console.log("没有文字输入，作废。")
             }
@@ -1510,7 +1514,7 @@ Page({
 
         var isMyDrawboard = false
 
-        console.log("所有人的drawboard", thisRoom.drawBoardAll)
+       
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
             var actions = {}
@@ -1632,7 +1636,7 @@ Page({
                             console.log("临时拉伸数据", tempflexData)
                             this.draw_text(cgText, tempflexData)
                         } else {
-                            console.log("完成", cgText)
+                          
                             this.draw_text(cgText)
                         }
 
@@ -2094,7 +2098,7 @@ Page({
     opeanDetailPane(toolType) {
 
         let datas = this.data
-        if (datas.runAM == false && datas.toolsStatus.toolType == toolType) {
+        if (datas.toolsStatus.toolType == toolType) {
             this.setData({
                 toolBarDetailindex: toolType,
             })
@@ -2111,7 +2115,7 @@ Page({
                     duration: 400,
                     timingFunction: "ease-in-out"
                 })
-                animation_opean.translate(0, -260);
+                animation_opean.translate(0, -265);
                 animation_opean.step()
                 this.setData({
                     "animation.background": animation_back.export(),
@@ -2276,7 +2280,7 @@ Page({
         animation.translate(-100);
         animation.step()
         this.setData({
-            animation1: animation.export()
+            "animation.dodgeTools": animation.export()
         })
 
 
@@ -2716,7 +2720,7 @@ Page({
 
 
         this.setData({
-            animation1: animation.export()
+            "animation.dodgeTools": animation.export()
         })
 
 
@@ -2812,9 +2816,9 @@ Page({
         console.log(e)
     },
     closeDeatilPane(e) {
-        // if (this.data.runAM == true) {
+  
 
-        console.log("正在关闭动画", this.data.runAM)
+        console.log("正在关闭动画")
         setTimeout(function () {
 
             let animation_back = wx.createAnimation({
@@ -2837,7 +2841,7 @@ Page({
 
             })
         }.bind(this), 5);
-        // }
+    
         setTimeout(function () {
             this.setData({
                 toolBarDetailindex: -1
@@ -2858,10 +2862,23 @@ Page({
     },
     button_settings() {
         console.log("点击了设置按钮");
+        let that = this
+        this.setData({
+            pageVisable:false
+        })
         wx.navigateTo(
             {
-                url: '/pages/settings/settings'
+                url: '/pages/settings/settings',
+                complete:function(){
+                    setTimeout(function(){
+                        that.setData({
+                            pageVisable:true
+                        })
+                    },1000)
+                    
+                }
             }
+            
         )
     }
     //-------响应事件写上面------

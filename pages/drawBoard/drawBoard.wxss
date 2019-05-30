@@ -1,4 +1,4 @@
-  /* pages/drawBoard/drawBoard.wxss */
+/* pages/drawBoard/drawBoard.wxss */
 
 page {
   height: 100%;
@@ -108,12 +108,10 @@ page {
   bottom: 0;
   transition: background 0.4s;
   height: 100vh;
-  opacity:0;
-
+  opacity: 0;
   width: 100vw;
   background: rgb(0, 0, 0);
-  /* background: rgba(0, 0, 0, 0.3); */
-  /* 背景半黑蒙版 */
+  /* background: rgba(0, 0, 0, 0.3); *//* 背景半黑蒙版 */
 }
 
 /* .shadeBackground_show {
@@ -161,6 +159,9 @@ page {
 }
 
 .sonPane .ColorButton {
+  border-style: none;
+  box-sizing: border-box !important;
+  /* line-height: 100rpx; */
   margin-bottom: 80rpx;
   margin-left: 15rpx;
   margin-right: 15rpx;

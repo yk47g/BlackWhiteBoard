@@ -1,5 +1,5 @@
 <view>
-  <view class='main'>
+  <view class='main' wx:if="{{pageVisable}}">
     <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView.nleft}}" scroll-top="{{scrollView.ntop}}">
       <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
       <canvas class="drawCanvas" canvas-id="CanvasMemory" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' disable-scroll="true" style="{{exchange  ? '':'display:none;'}}"></canvas>
@@ -14,7 +14,7 @@
       </button>
     </cover-view>
 
-    <cover-view class='toolsBar' animation="{{animation1}}">
+    <cover-view class='toolsBar' animation="{{animation.dodgeTools}}">
       <button plain catchtap='changeStatus' id='tools_select'>
         <cover-image src="/icons/tools_select{{toolsStatus.toolType == 1?'_on':''}}.png"></cover-image>
       </button>
@@ -95,8 +95,9 @@
           颜色
           <!-- {{penConfiguration.lineWidth}} -->
           <cover-view class="sonPane">
-            <button plain wx:for="{{colorDatas}}" wx:for-index="i" wx:key="{{itemkey}}" id="color{{i}}" class=" ColorButton" catchtap="detailPane_onClick" style="background-color:{{item}}!important;border-bottom:{{penConfiguration.color == item ? 'solid white 10px':''}}!important;">
-            </button>
+             <cover-view  wx:for="{{colorDatas}}" wx:for-index="i" wx:key="{{itemkey}}" id="color{{i}}" class=" ColorButton" catchtap="detailPane_onClick" style="background-color:{{item}}!important;height:{{penConfiguration.color == item ? '80rpx':''}}!important;">
+             <!-- -->
+            </cover-view>
           </cover-view>
 
         </cover-view>
