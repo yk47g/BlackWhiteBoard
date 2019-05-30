@@ -1465,7 +1465,7 @@ Page({
                 continue
             }
 
-            if (drawBoard.session == app.globalData.session) {
+            if (key == app.globalData.userInfo.id) {
                 //判断是我的画布
                 actions = myActions
                 isMyDrawboard = true
@@ -1864,9 +1864,12 @@ Page({
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
                                 for(var i=0;i<jsDownLoadDrawBoardData.length;i++){
-                                    that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
+                                    thisRoom.drawBoardAll[String(jsDownLoadDrawBoardData[i].id)] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
+                                    
+                                    // that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
                                 }
-                                console.log("从数据库下载的整个画板数据：",that.data.drawBoardList);
+                                console.log("从数据库下载的整个画板数据：",thisRoom.drawBoardAll);
+                                that.reloadDrawBoard()
 
                                 //连接socket
                                 websocket.connect(app.globalData.userInfo, function (sockres) {
@@ -1877,14 +1880,17 @@ Page({
                                     //list = that.data.drawBoardList;
                                     
                                     var jsListData = JSON.parse(sockres.data);
-                                    that.data.drawBoardList[jsListData.id] = jsListData.data[0];
+                                    // that.data.drawBoardList[jsListData.id] = ;
+
+                                    thisRoom.drawBoardAll[jsListData.id] = new DrawBoard().initByJson(jsListData.data[0])
+
                                     //list.push(JSON.parse(sockres.data));
                                     //that.setData({
                                     //    drawBoardList: list
                                     //});
-                                    console.log("收到实时数据，当前画布数组：",that.data.drawBoardList);
+                                    console.log("收到实时数据，当前画布所有：",thisRoom.drawBoardAll);
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
-
+                                    that.reloadDrawBoard()
                                 });
 
 
