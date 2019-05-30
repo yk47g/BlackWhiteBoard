@@ -20,8 +20,9 @@ if (mysqli_connect_errno($conn)) {
     die("连接服务器失败: " . mysqli_connect_error());  
 }
 
-//拿用户头像函数
 $id = $_GET["id"];
+
+//拿用户头像函数
 if(!empty($id)){
     $sql = "SELECT * FROM `bwb_users` WHERE `id` = $id";
     $res = mysqli_query($conn,$sql);
@@ -33,6 +34,22 @@ if(!empty($id)){
         exit;
     }else{
         echo json_encode(array("statusCode"=>5 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
+//加入队伍
+$newRoomID = $_GET["newRoomID"];
+if(!empty($newRoomID)){
+    $sql = "UPDATE `bwb_users` SET `roomID` = '$newRoomID' WHERE `bwb_users`.`id` = $id";
+    $res = mysqli_query($conn,$sql);
+    if($res){
+        echo json_encode(array("statusCode"=>0));
+        mysqli_close($conn);
+        exit;
+    }else{
+        echo json_encode(array("statusCode"=>6 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
         mysqli_close($conn);
         exit;
     }
@@ -179,11 +196,7 @@ else{
 
 
 
-//加入队伍
-$newRoomID = $_GET["newRoomID"];
-if(!empty($newRoomID)){
-    
-}
+
 mysqli_close($conn);
 
 

@@ -2007,14 +2007,15 @@ Page({
     onHide: function () {
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
+        wx.closeSocket();
+        console.log("socket通道连接已断开");
     },
 
     /**
      * 生命周期函数--监听页面卸载
      */
     onUnload: function () {
-        wx.closeSocket();
-        console.log("socket通道连接已断开");
+        
     },
 
     // /**
