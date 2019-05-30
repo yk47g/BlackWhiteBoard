@@ -812,6 +812,11 @@ class LocalStorage {//本地存储类
 
     read() {//读取函数
         let json = wx.getStorageSync("drawBoard")
+        var result = JSON.stringify(json);
+        //console.log(result);
+        //var aaa = JSON.parse(result);
+        //console.log(aaa);
+        send(result);
         let page = getCurrentPages()[0]
         drawBoard = null;
         drawBoard = new DrawBoard();
@@ -1771,12 +1776,16 @@ Page({
                                     //接受socket通道中新的画板数据，插入到本机画板数据中
                                     var list = [];
                                     list = that.data.drawBoardList;
-                                    list.push(JSON.parse(sockres.data));
+                                    var aaa = sockres.data;
+                                    console.log(aaa);
+                                    //list.push(JSON.parse(sockres.data));
+                                    //list.push(sockres.data);
                                     that.setData({
                                         drawBoardList: list
                                     });
                                     console.log("收到实时数据，当前画布数组：");
                                     console.log(that.data.drawBoardList);
+                                    //console.log(4444,that.data.drawBoardList[1].data);
 
                                 });
 
@@ -1941,7 +1950,6 @@ Page({
                 break;
             case "tools_select":
                 console.log("选区开启");
-                //send("选取开启");
                 // this.cancelSelectStatus()
                 datas.toolsStatus.toolType = ToolsStatus_type.mouse;
 
@@ -1972,11 +1980,10 @@ Page({
                 break;
 
             case "tools_debug":
-                // let storage = new LocalStorage()
-                // storage.save()
-                // storage.read()
-
-
+                let storage = new LocalStorage()
+                storage.save()
+                storage.read()
+                
 
 
                 break;
