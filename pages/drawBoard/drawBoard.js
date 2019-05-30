@@ -275,11 +275,36 @@ function estimateForMouse(points) { //用以判断按下角点拉伸时的类型
 class Room { //用作本地与数据库互联起来的类
     constructor() {
         this.roomID = -1
-        this.nowPageIndex = 0//当前用户所阅览的是第几页。
+        // this.nowPageIndex = 0//当前用户所阅览的是第几页。
         this.onlineUsersSession = []
         this.name = ""
-        this.drawPageArray = [] //数组，某项为一个drawboard数组，包含不同人的drawboard数据
+        this.drawBoardAll = {} //存放所有用户的drawboard 数据
+    }
+    initByJson(json) {
+        for (const key in this) {
+            if (this.hasOwnProperty(key) && json.hasOwnProperty(key)) {
+                if (key == "drawBoardAll") {
+                    let drawBoardAllJson = json["drawBoardAll"]
+                    for (const key2 in  drawBoardAllJson) {
+                        if (drawBoardAllJson.hasOwnProperty(key2)) {
+                            const drawBoardJson = drawBoardAllJson[key2];
+                            let temp = new DrawBoard()
+                            temp.initByJson(drawBoardJson)
+                            this.drawBoardAll[key2] = temp
+                          
+                        }
+                    }
+                    
+                } else {
+                    this[key] = json[key]
+                }
 
+
+            } else {
+                console.log("属性不存在。")
+            }
+        }
+        return this
     }
 }
 let thisRoom = new Room()
@@ -312,7 +337,7 @@ class Dom { //模拟dom操作取元素属性类
 class DrawBoard {
     constructor(backgroundColor = "", width = 0, height = 0) {
         this.actions = []; //画布的所有绘制路径事件  
-        this.userSession = 0
+        // this.userSession = 0
         this.backgroundColor = backgroundColor; //默认背景颜色
         this.width = width;
         this.height = height;
@@ -824,20 +849,38 @@ class LocalStorage {//本地存储类
 
     }
 
-    read() {//读取函数
-        let json = wx.getStorageSync("drawBoard")
-        var result = JSON.stringify(json);
-        send(result);
-        let page = getCurrentPages()[0]
-        drawBoard = null;
-        drawBoard = new DrawBoard();
-        drawBoard.initByJson(json)
-        page.reloadDrawBoard()
-        console.log("已完成画布重载：", drawBoard)
+    readLocalStorage() {//读取函数进行读取完整的drawboardAll，不进行重绘
+        let json = wx.getStorageSync("Room")
+        
+
+        // var result = JSON.stringify(json);
+        // send(result);
+        // let page = getCurrentPages()[0]
+        if (json != "") {
+            
+            console.log("开始初始化room")
+            thisRoom.initByJson(json)
+            console.log(thisRoom)
+            if (true) {//判断是否属于未登录的房间。
+                drawBoard =  thisRoom.drawBoardAll.temp
+            }
+        }else{
+            console.log("本地缓存为空")
+            //缓存为空，创建临时的画板数据。
+            thisRoom.drawBoardAll.temp = drawBoard //默认为本地我的数据。
+        }
+
+        //把读取到的缓存加载入drawboardALl
+    }
+    readDatabase(){//读取数据库内容、
 
     }
-    save() {
-        wx.setStorageSync("drawBoard", drawBoard)
+    uploadDate(){
+
+    }
+
+    saveLocalStorage() {
+        wx.setStorageSync("Room", thisRoom)
     }
 
 }
@@ -1403,16 +1446,23 @@ Page({
         // ctx.lineJoin = "round"
         // ctx.lineCap = "round"
 
-        let nowPageIndex = thisRoom.nowPageIndex
+        // let nowPageIndex = thisRoom.nowPageIndex
+        let mydrawBoard = drawBoard //保存原来的我的drawboard
         let myActions = drawBoard.actions //默认actions为当前用户的
-
-
-        let drawBoardArray = thisRoom.drawPageArray[nowPageIndex]//drawboard 数据源
-        console.log(drawBoardArray)
+        
         var isMyDrawboard = false
-        for (let q = 0; q < drawBoardArray.length; q++) {
-            const drawBoard = drawBoardArray[q];
-            var actions = drawBoard.actions
+   
+        console.log("所有人的drawboard",thisRoom.drawBoardAll)
+        for (const key in thisRoom.drawBoardAll) {
+            drawBoard = mydrawBoard
+            var actions = {}
+            if ( thisRoom.drawBoardAll.hasOwnProperty(key)) {
+                 drawBoard = thisRoom.drawBoardAll[key];
+                 
+                 actions = drawBoard.actions
+            }else{
+                continue
+            }
 
             if (drawBoard.session == app.globalData.session) {
                 //判断是我的画布
@@ -1595,6 +1645,7 @@ Page({
 
         }
 
+        drawBoard = mydrawBoard//还原数据。
         //正式的渲染到屏幕上。
         ctx.draw(false, () => {
 
@@ -1606,6 +1657,7 @@ Page({
         })
         ctx.restore()
         ctx.save()
+
         //避免错误，在后面再画选框
 
         // if (toolsStatus.select.selecting == true) {
@@ -1620,12 +1672,12 @@ Page({
 
         // console.log("reload结束",Date.now())
     },
-    initDrawBoard() {
+    initDrawBoard() { //进行最基础的变量初始化。
         (new Dom()).getElementByString(".drawCanvas", (res) => {
             drawBoard.width = res[0].width
             drawBoard.height = res[0].height
         })
-        drawBoard = null; //画布对象创建，不能直接在data创建。
+
         drawBoard = new DrawBoard();
         this.data.toolsStatus = new ToolsStatus();
         this.setData({
@@ -1635,21 +1687,24 @@ Page({
       
 
     },
-    prepareForInter() {
-     
-        thisRoom.drawPageArray[0] = []//创建第一页。
-
-        thisRoom.drawPageArray[0].push(drawBoard) //将初始化的数据加入到本地房间中。
+    prepareForInter() { 
+    
+        //进行本地缓存读取。初始化 drawboardAll
+        let storage = new LocalStorage()
+        storage.readLocalStorage() 
+   
+      
+       
         //读取网络数据并设置
         // thisRoom.roomID = 
         // thisRoom.onlineUsersSession = 
 
         thisRoom.name = "房间"
 
-        let storage = new LocalStorage()
-        storage.read()
+       
 
-        //网络数据加载完毕，执行一次重载渲染新数据。
+        console.log("初始化完成的：", thisRoom,drawBoard)
+        //drawboardAll数据加载完毕，执行一次重载渲染新数据。
         this.reloadDrawBoard()
 
     },
@@ -1849,7 +1904,8 @@ Page({
      * 生命周期函数--监听页面隐藏
      */
     onHide: function () {
-
+        let localStorage = new LocalStorage()
+        localStorage.saveLocalStorage()
     },
 
     /**
@@ -2000,10 +2056,10 @@ Page({
 
             case "tools_debug":
                 let storage = new LocalStorage()
-                storage.save()
-                storage.read()
-
-
+                storage.saveLocalStorage()
+                storage.readLocalStorage()
+                console.log("保存")
+                
 
                 break;
         }
@@ -2603,7 +2659,7 @@ Page({
             condition.deleteAll()
             toolsStatus.mouseActions = []
         }
-
+        send(drawBoard)
     },
 
     textFieldInput(e) {
