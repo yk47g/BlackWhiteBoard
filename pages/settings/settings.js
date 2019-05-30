@@ -79,6 +79,27 @@ Page({
     bind_GetUserInfo(e){
         this.applyPermission();       
     },
+    tap_more(e){
+        console.log("点击了更多用户省略号按钮");
+        let that = this
+        this.setData({
+            pageVisable:false
+        })
+        wx.navigateTo(
+            {
+                url: '/pages/roomAllUsers/roomAllUsers',
+                complete:function(){
+                    setTimeout(function(){
+                        that.setData({
+                            pageVisable:true
+                        })
+                    },1000)
+                    
+                }
+            }
+            
+        )
+    },
     
     applyPermission() {
         let that = this;

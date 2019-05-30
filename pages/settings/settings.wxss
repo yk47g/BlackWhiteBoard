@@ -188,7 +188,7 @@
 }
 
 .div-line{
-    background: #E0E3DA;
+    background: #DBDBDB;
     width: 80vw;
     height: 1rpx;
 }
