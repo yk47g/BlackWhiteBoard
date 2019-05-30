@@ -7,6 +7,7 @@
 //   }
 //   return index;
 // }
+
 let app = getApp()
 let canvas_ID = "CanvasDisplay"
 let ctx = wx.createCanvasContext(canvas_ID);
@@ -272,16 +273,16 @@ function estimateForMouse(points) { //用以判断按下角点拉伸时的类型
     return selectindex
 }
 class Room { //用作本地与数据库互联起来的类
-    constructor(){
+    constructor() {
         this.roomID = -1
         this.nowPageIndex = 0//当前用户所阅览的是第几页。
         this.onlineUsersSession = []
         this.name = ""
-        this.drawPagesData = [] //数组，里面的项保存的是下载下来的drawboardData
+        this.drawPageArray = [] //数组，某项为一个drawboard数组，包含不同人的drawboard数据
 
     }
 }
-var thisRoom =new Room()
+let thisRoom = new Room()
 
 class Dom { //模拟dom操作取元素属性类
     constructor() {
@@ -878,7 +879,7 @@ Page({
             background: {},
             opeanPane: {},
         },
-        drawBoardList:[]
+        drawBoardList: []
 
 
     },
@@ -1397,148 +1398,166 @@ Page({
 
     reloadDrawBoard() {
 
-       
+
         let toolsStatus = this.data.toolsStatus
         // ctx.lineJoin = "round"
         // ctx.lineCap = "round"
 
         let nowPageIndex = thisRoom.nowPageIndex
-        let actions = thisRoom.drawPagesData.actions
-         
-        for (let a = 0; a < actions.length; a++) {
-            const iAction = actions[a];
-            switch (iAction.type) {
-                case Action_type.line:
-
-                    ctx.beginPath()
-                    const cgline = iAction.mode
-                    ctx.lineWidth = cgline.lineWidth
-                    ctx.strokeStyle = cgline.color
+        let myActions = drawBoard.actions //默认actions为当前用户的
 
 
+        let drawBoardArray = thisRoom.drawPageArray[nowPageIndex]//drawboard 数据源
+        console.log(drawBoardArray)
+        var isMyDrawboard = false
+        for (let q = 0; q < drawBoardArray.length; q++) {
+            const drawBoard = drawBoardArray[q];
+            var actions = drawBoard.actions
 
-                    //进行临时的图层拉伸展示。
-                    if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
-                        for (let i = 2; i < cgline.points.length; i++) {
-                            if (toolsStatus.isSelect(a)) {
+            if (drawBoard.session == app.globalData.session) {
+                //判断是我的画布
+                actions = myActions
+                isMyDrawboard = true
+            } else {
+                isMyDrawboard = false
+            }
 
-                                let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
+            //绘制路径
+            for (let a = 0; a < actions.length; a++) {
+                const iAction = actions[a];
+                switch (iAction.type) {
+                    case Action_type.line:
 
-                                let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+                        ctx.beginPath()
+                        const cgline = iAction.mode
+                        ctx.lineWidth = cgline.lineWidth
+                        ctx.strokeStyle = cgline.color
 
-                                let lssPoint = cgline.points[i - 2].modelFlexInit(toolsStatus.modelFlexData)
-                                this.draw_line_curve(thisPoint, lsPoint, lssPoint)
-                            } else {
+
+
+                        //进行临时的图层拉伸展示。
+                        if (toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
+                            for (let i = 2; i < cgline.points.length; i++) {
+                                if (toolsStatus.isSelect(a)) {
+
+                                    let thisPoint = cgline.points[i].modelFlexInit(toolsStatus.modelFlexData)
+
+                                    let lsPoint = cgline.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+
+                                    let lssPoint = cgline.points[i - 2].modelFlexInit(toolsStatus.modelFlexData)
+                                    this.draw_line_curve(thisPoint, lsPoint, lssPoint)
+                                } else {
+                                    this.draw_line_curve(cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
+                                }
+                            }
+                        } else {
+                            for (let i = 2; i < cgline.points.length; i++) {
                                 this.draw_line_curve(cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
                             }
                         }
-                    } else {
-                        for (let i = 2; i < cgline.points.length; i++) {
-                            this.draw_line_curve(cgline.points[i], cgline.points[i - 1], cgline.points[i - 2])
-                        }
-                    }
 
-                    ctx.closePath()
-                    ctx.stroke()
+                        ctx.closePath()
+                        ctx.stroke()
 
-                    break
+                        break
+                }
             }
-        }
+
+            // 再绘制形状。
+            for (let a = 0; a < actions.length; a++) {
+                const iAction = actions[a];
+                switch (iAction.type) {
+                    case Action_type.shape:
+                        //进行临时的图层拉伸展示。
+                        ctx.beginPath()
+                        const cgshape = iAction.mode
+                        ctx.lineWidth = cgshape.lineWidth
+                        ctx.strokeStyle = cgshape.color
+                        var thisPoint, lsPoint
+
+                        for (let i = 1; i < cgshape.points.length; i++) {
+
+                            if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
+                                thisPoint = cgshape.points[i].modelFlexInit(toolsStatus.modelFlexData)
+                                lsPoint = cgshape.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+                            } else {
+                                thisPoint = cgshape.points[i]
+                                lsPoint = cgshape.points[i - 1]
+                                // this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
+                            }
+
+                            if (iAction.mode.type == CGShape_type.roundness) {//圆形特殊处理。这里的for只会进行一次。
+
+                                let r = Math.pow(Math.pow(lsPoint.x - thisPoint.x, 2) + Math.pow(lsPoint.y - thisPoint.y, 2), 0.5)
+                                ctx.arc(...lsPoint.getJsonArr(), r, 0, 2 * Math.PI, false)
+                            } else {
+                                this.draw_line_curve(thisPoint, lsPoint)
+                            }
+                        }
 
 
+                        // for (let i = 1; i < cgshape.points.length; i++) {
+                        //     if (iAction.mode.type = CGShape_type.roundness) {//圆形特殊处理。
+                        //         let r = Math.pow(Math.pow(cgshape.points[0].x - cgshape.points[1].x, 2) + Math.pow(cgshape.points[0].y - cgshape.points[1].y, 2), 0.5)
+                        //         ctx.arc(...cgshape.points[0].getJsonArr(), r, 0, 2 * Math.PI, false)
+                        //     } else {
+                        //         this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
+                        //     }
+                        // }
 
-        // 再绘制形状。
-        for (let a = 0; a < actions.length; a++) {
-            const iAction = actions[a];
-            switch (iAction.type) {
-                case Action_type.shape:
-                    //进行临时的图层拉伸展示。
-                    ctx.beginPath()
-                    const cgshape = iAction.mode
-                    ctx.lineWidth = cgshape.lineWidth
-                    ctx.strokeStyle = cgshape.color
-                    var thisPoint, lsPoint
+                        ctx.closePath()
+                        ctx.stroke()
+                        break
+                }
+            }
 
-                    for (let i = 1; i < cgshape.points.length; i++) {
-
-                        if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
-                            thisPoint = cgshape.points[i].modelFlexInit(toolsStatus.modelFlexData)
-                            lsPoint = cgshape.points[i - 1].modelFlexInit(toolsStatus.modelFlexData)
+            // 再绘制文字。
+            for (let a = 0; a < actions.length; a++) {
+                const iAction = actions[a];
+                switch (iAction.type) {
+                    case Action_type.text:
+                        const cgText = iAction.mode
+                        var tempflexData = {}
+                        if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
+                            tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
+                            tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
+                            console.log("临时拉伸数据", tempflexData)
+                            this.draw_text(cgText, tempflexData)
                         } else {
-                            thisPoint = cgshape.points[i]
-                            lsPoint = cgshape.points[i - 1]
-                            // this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
+                            console.log("完成", cgText)
+                            this.draw_text(cgText)
                         }
 
-                        if (iAction.mode.type == CGShape_type.roundness) {//圆形特殊处理。这里的for只会进行一次。
 
-                            let r = Math.pow(Math.pow(lsPoint.x - thisPoint.x, 2) + Math.pow(lsPoint.y - thisPoint.y, 2), 0.5)
-                            ctx.arc(...lsPoint.getJsonArr(), r, 0, 2 * Math.PI, false)
+                        break
+                }
+
+            }
+
+
+            // 再绘制图片。
+            for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
+                const iAction = actions[a];
+                switch (iAction.type) {
+                    case Action_type.image:
+                        const cgimg = iAction.mode
+
+                        if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
+                            let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
+                            let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
+                            let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
+                            ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
+
                         } else {
-                            this.draw_line_curve(thisPoint, lsPoint)
+                            ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+
                         }
-                    }
+                        break
 
-
-                    // for (let i = 1; i < cgshape.points.length; i++) {
-                    //     if (iAction.mode.type = CGShape_type.roundness) {//圆形特殊处理。
-                    //         let r = Math.pow(Math.pow(cgshape.points[0].x - cgshape.points[1].x, 2) + Math.pow(cgshape.points[0].y - cgshape.points[1].y, 2), 0.5)
-                    //         ctx.arc(...cgshape.points[0].getJsonArr(), r, 0, 2 * Math.PI, false)
-                    //     } else {
-                    //         this.draw_line_curve(cgshape.points[i], cgshape.points[i - 1])
-                    //     }
-                    // }
-
-                    ctx.closePath()
-                    ctx.stroke()
-                    break
-            }
-        }
-
-        // 再绘制文字。
-        for (let a = 0; a < actions.length; a++) {
-            const iAction = actions[a];
-            switch (iAction.type) {
-                case Action_type.text:
-                    const cgText = iAction.mode
-                    var tempflexData = {}
-                    if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
-                        tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
-                        tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
-                        console.log("临时拉伸数据", tempflexData)
-                        this.draw_text(cgText, tempflexData)
-                    } else {
-                        console.log("完成", cgText)
-                        this.draw_text(cgText)
-                    }
-
-
-                    break
-            }
-
-        }
-
-
-        // 再绘制图片。
-        for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
-            const iAction = actions[a];
-            switch (iAction.type) {
-                case Action_type.image:
-                    const cgimg = iAction.mode
-
-                    if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx) {
-                        let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
-                        let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
-                        let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
-                        ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
-
-                    } else {
-                        ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
-
-                    }
-                    break
+                }
 
             }
+
 
         }
 
@@ -1575,6 +1594,8 @@ Page({
 
 
         }
+
+        //正式的渲染到屏幕上。
         ctx.draw(false, () => {
 
             if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting || toolsStatus.runReload == true) {
@@ -1599,7 +1620,7 @@ Page({
 
         // console.log("reload结束",Date.now())
     },
-    loadDrawBoard() {
+    initDrawBoard() {
         (new Dom()).getElementByString(".drawCanvas", (res) => {
             drawBoard.width = res[0].width
             drawBoard.height = res[0].height
@@ -1607,24 +1628,26 @@ Page({
         drawBoard = null; //画布对象创建，不能直接在data创建。
         drawBoard = new DrawBoard();
         this.data.toolsStatus = new ToolsStatus();
-        // console.log(this.data.toolsStatus)
-        let storage = new LocalStorage()
-        storage.read()
-
         this.setData({
             'toolsStatus.keyBord.display': 0,
             'toolsStatus.toolType': ToolsStatus_type.pen
         })
+      
 
     },
-    prepareForInter(){//用户第一次使用，且未登录授权本地没有数据。
-        thisRoom.drawPagesData.push(drawBoard)
-        
+    prepareForInter() {
+     
+        thisRoom.drawPageArray[0] = []//创建第一页。
+
+        thisRoom.drawPageArray[0].push(drawBoard) //将初始化的数据加入到本地房间中。
         //读取网络数据并设置
         // thisRoom.roomID = 
         // thisRoom.onlineUsersSession = 
+
         thisRoom.name = "房间"
-        
+
+        let storage = new LocalStorage()
+        storage.read()
 
         //网络数据加载完毕，执行一次重载渲染新数据。
         this.reloadDrawBoard()
@@ -1719,9 +1742,10 @@ Page({
      */
     onLoad: function (options) {
 
-        // 无论什么情况，先创建一个本地使用的drawboard
-        this.loadDrawBoard();
-        this.prepareForInter();//执行一些为互联准备的数据。
+        // 无论什么情况，先初始化创建一个本地使用的drawboard
+        this.initDrawBoard();
+        //开始执行一些为互联准备的数据。
+        this.prepareForInter();
 
         let that = this;
 
@@ -1730,42 +1754,42 @@ Page({
         if (!(app.globalData.session === "")) {
             //根据已有的session从服务器获取所有个人信息存入全局变量
             wx.request({
-                url:url,
-                data:{
-                    "session" : app.globalData.session,
+                url: url,
+                data: {
+                    "session": app.globalData.session,
                 },
-                success: function(res){
+                success: function (res) {
                     if (res.statusCode == 200) {
-                        console.log("服务器request回来的data：",res.data);
-                        if (res.data.statusCode == 100) {
-                            app.globalData.userInfo.id=res.data.id;
-                            app.globalData.userInfo.name=res.data.name;
-                            app.globalData.userInfo.iconurl=res.data.iconurl;
-                            app.globalData.userInfo.groupName=res.data.groupName;
+                        console.log("服务器request回来的data：", res.data);
+                        if (res.data.statusCode == 0 || res.data.statusCode == 100) {
+                            app.globalData.userInfo.id = res.data.id;
+                            app.globalData.userInfo.name = res.data.name;
+                            app.globalData.userInfo.iconurl = res.data.iconurl;
+                            app.globalData.userInfo.groupName = res.data.groupName;
                             var currentRoomID = res.data.roomID;
                             //console.log(app.globalData.userInfo.roomID);
-                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID===0) {//用户还没加入队伍，访问数据库加入队伍
-                                
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID === 0) {//用户还没加入队伍，访问数据库加入队伍
+
                                 console.log("未加入队伍");
                                 //加入队伍
 
                             }
-                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID!=0) {//用户已加入某队伍，需要提示先退出队伍
-                                
-                                
-                                
-                                
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
+
+
+
+
                                 //提示先进入设置页面退出队伍
-                                console.log("已加入队伍"+currentRoomID+"需要先退出当前队伍。");
+                                console.log("已加入队伍" + currentRoomID + "需要先退出当前队伍。");
                                 wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
 
 
                             }
-                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID!=0) {//和数据库roomid一致，开始连接socket
-                                
+                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
+
                                 //下载数据库中roomid对应已有的整个画板数据
                                 that.data.drawBoardList.push(res.data.drawBoardData);
-                                console.log("从数据库下载的整个画板数据：",that.data.drawBoardList);
+                                console.log("从数据库下载的整个画板数据：", that.data.drawBoardList);
 
                                 //连接socket
                                 websocket.connect(app.globalData.userInfo, function (sockres) {
@@ -1779,25 +1803,25 @@ Page({
                                     that.setData({
                                         drawBoardList: list
                                     });
-                                    console.log("收到实时数据，当前画布数组：",that.data.drawBoardList);
+                                    console.log("收到实时数据，当前画布数组：", that.data.drawBoardList);
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
 
                                 });
 
 
                             }
-                            
+
                         }
-                        else{
+                        else {
                             console.log(res.data.errMsg);
                         }
                     }
-                    else{
+                    else {
                         console.log(res.errMsg);
                     }
                 },//request.success
-                
-                fail: function(e){
+
+                fail: function (e) {
                     console.log(e);
                 }//request.fail
 
@@ -1978,7 +2002,7 @@ Page({
                 let storage = new LocalStorage()
                 storage.save()
                 storage.read()
-                
+
 
 
                 break;
@@ -2598,7 +2622,7 @@ Page({
 
         console.log("正在关闭动画", this.data.runAM)
         setTimeout(function () {
-         
+
             let animation_back = wx.createAnimation({
                 duration: 400,
                 timingFunction: "ease-in-out"
@@ -2630,8 +2654,8 @@ Page({
                     "toolsStatus.toolType": this.data.toolsStatus.toolType
                 })
             }
-        }.bind(this),500);
-        
+        }.bind(this), 500);
+
 
     },
     inviteUser(e) {//点击右下角的邀请用户。
