@@ -271,15 +271,18 @@ function estimateForMouse(points) { //用以判断按下角点拉伸时的类型
 
     return selectindex
 }
-class Room {
+class Room { //用作本地与数据库互联起来的类
     constructor(){
-        this.roomID = 0
+        this.roomID = 0 
+        this.page = 0//当前用户所阅览的是第几页。
         this.onlineUsersSession = []
         this.name = ""
-        this.drawData = [] //数组，里面的项为drawboardData
+        this.drawPagesData = [] //数组，里面的项保存的是下载下来的drawboardData
 
     }
 }
+var thisRoom =new Room()
+
 class Dom { //模拟dom操作取元素属性类
     constructor() {
 
@@ -1394,35 +1397,12 @@ Page({
 
     reloadDrawBoard() {
 
-        // var time = Date.now()
         let actions = drawBoard.actions
         let toolsStatus = this.data.toolsStatus
         ctx.lineJoin = "round"
         ctx.lineCap = "round"
-        // var ctx, ctxb
-        // if (canvas_ID != "CanvasMemory") {
-        //     // canvas_ID = "CanvasDisplay"
-        //     // ctxb = wx.createCanvasContext("CanvasMemory");
-        // ctx = wx.createCanvasContext(canvas_ID); //即将要显示的canvas
-        // } else {
-        //     //   canvas_ID = "CanvasMemory"
-        //     //   ctxb = wx.createCanvasContext("CanvasDisplay");
-        //     //  ctx = wx.createCanvasContext(canvas_ID);
-        // }
-
-
-        // ctx.draw()//清空画布内容。
-        // time = Date.now()
-
-
-        // 先绘制全部曲线。
-
-        // ctx.save()
-        // ctx.save()
-        // ctx.save()//保存最开始的样式
-        // ctx.setLineDash([0, 0]);
-
-        // ctx.setLineDash([0]);
+   
+         
         for (let a = 0; a < actions.length; a++) {
             const iAction = actions[a];
             switch (iAction.type) {
@@ -1634,6 +1614,9 @@ Page({
             'toolsStatus.toolType': ToolsStatus_type.pen
         })
 
+    },
+    firstInitRomm(){//用户第一次使用，且未登录授权本地没有数据。
+        thisRoom.drawPagesData.push(drawBoard)
     },
     compute_scrollGesture(toolsStatus) {
         let mouseActions = toolsStatus.mouseActions
