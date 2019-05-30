@@ -27,7 +27,7 @@ Page({
             ShowgetUserInfoView: true;
             this.applyPermission();
         }else{
-            if (app.globalData.userInfo.roomID === "未加入协作") {
+            if (app.globalData.userInfo.groupName === "未加入协作") {
                 that.setData({
                     usericonUrl: app.globalData.userInfo.iconurl,
                     userName: app.globalData.userInfo.name,
@@ -100,6 +100,21 @@ Page({
             
         )
     },
+    tap_CreateGroup(e){
+        console.log("点击了退出协作按钮");
+        wx.showModal({
+            title: '提示',
+            content: '退出将清空您的笔画数据，确定要退出当前协作？',
+            success (res) {
+              if (res.confirm) {
+                console.log('用户点击确定')
+              } else if (res.cancel) {
+                console.log('用户点击取消')
+              }
+            }
+          })
+          
+    },
     
     applyPermission() {
         let that = this;
@@ -153,7 +168,7 @@ Page({
                                                     app.globalData.userInfo.iconurl=res.data.iconurl;
                                                     app.globalData.userInfo.groupName=res.data.groupName;
                                                     app.globalData.userInfo.roomID=res.data.roomID;
-                                                    if (app.globalData.userInfo.roomID === "未加入协作") {
+                                                    if (app.globalData.userInfo.groupName === "未加入协作") {
                                                         that.setData({
                                                             usericonUrl: app.globalData.userInfo.iconurl,
                                                             userName: app.globalData.userInfo.name,
