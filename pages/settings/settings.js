@@ -266,6 +266,12 @@ Page({
             }//getSetting.success
         });//getSetting
             
+    },
+    exportPage_onClick(e){
+      let oPage = getCurrentPages()[0]
+      console.log(oPage)
+      oPage.compute_exportImage();
+     
     }
     //-------响应事件写上面------
 

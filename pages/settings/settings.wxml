@@ -46,10 +46,10 @@
                     <view class="div-line"></view>
                 </view>
             </navigator>
-            <navigator url="/page/navigate/navigate" class="list-item" hover-class="none">
+            <navigator bindtap='exportPage_onClick' class="list-item" hover-class="none">
                 <view class='item'>
                     <image class="item-image" src='/icons/drawSettings.png'></image>
-                    <text class="item-text">画板设置</text>
+                    <text class="item-text">导出画板</text>
                     <view class="div-line"></view>
                 </view>
             </navigator>

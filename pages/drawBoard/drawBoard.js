@@ -1053,9 +1053,10 @@ Page({
     },
     //draw 方法不会调用draw 显示，需要在外部调用。
     compute_exportImage() {
-
+      
         let systeminfo = app.globalData.systemInfo
-        ctx.draw(true, function () {
+        let datas = this.data
+        // ctx.draw(true, function () {
             wx.canvasToTempFilePath({
                 canvasId: canvas_ID,
                 quality: 1,
@@ -1090,7 +1091,7 @@ Page({
                     })
                 }
             })
-        })
+        // })
     },
     compute_textInput(thisPoint, disFocus = false) { //切换到文字工具-处理函数
         let datas = this.data
@@ -1886,7 +1887,7 @@ Page({
      */
 
     onLoad: function (options) {
-
+        console.log("页面启动参数：",options)
         // 无论什么情况，先初始化创建一个本地使用的drawboard
         this.initDrawBoard();
         //开始执行一些为互联准备的数据。
