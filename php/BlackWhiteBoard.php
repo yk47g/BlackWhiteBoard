@@ -48,7 +48,7 @@ if(!empty($session)){
                 exit;
             }
         }
-        echo json_encode(array("statusCode"=>0 ,"id"=>$id , "name"=>$name , "iconurl"=>$iconurl , "roomID"=>$roomID , "groupName"=>$groupName, "drawBoardData"=>$drawBoardData));
+        echo json_encode(array("statusCode"=>100 ,"id"=>$id , "name"=>$name , "iconurl"=>$iconurl , "roomID"=>$roomID , "groupName"=>$groupName, "drawBoardData"=>$drawBoardData));
         
     }else{
         echo json_encode(array("statusCode"=>99 , "data"=>null , "errMsg"=>"error:传入session在数据库中不存在"));
@@ -94,10 +94,10 @@ else{
         $realData = json_decode($realData,true);//对解密数据进行解码
 
         //处理同一个微信号不同设备的情况
-        $unionid = $realData['unionId'];
-        $sql = "SELECT * FROM `bwb_users` WHERE `unionid` = '$unionid'";
+        $openid = $realData['openId'];
+        $sql = "SELECT * FROM `bwb_users` WHERE `openid` = '$openid'";//改为openid验证
         $res = mysqli_query($conn,$sql);
-        if($res){
+        if($res && mysqli_num_rows($res)){
             $row = mysqli_fetch_array($res);
             $id = $row['id'];
             $name = $row['name'];
