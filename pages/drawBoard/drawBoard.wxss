@@ -1,4 +1,4 @@
-/* pages/drawBoard/drawBoard.wxss */
+  /* pages/drawBoard/drawBoard.wxss */
 
 page {
   height: 100%;
