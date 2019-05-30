@@ -271,6 +271,15 @@ function estimateForMouse(points) { //用以判断按下角点拉伸时的类型
 
     return selectindex
 }
+class Room {
+    constructor(){
+        this.roomID = 0
+        this.onlineUsersSession = []
+        this.name = ""
+        this.drawData = [] //数组，里面的项为drawboardData
+
+    }
+}
 class Dom { //模拟dom操作取元素属性类
     constructor() {
 
@@ -299,6 +308,7 @@ class Dom { //模拟dom操作取元素属性类
 class DrawBoard {
     constructor(backgroundColor = "", width = 0, height = 0) {
         this.actions = []; //画布的所有绘制路径事件  
+        this.userSession = 0
         this.backgroundColor = backgroundColor; //默认背景颜色
         this.width = width;
         this.height = height;
@@ -1743,12 +1753,8 @@ Page({
                             //console.log(app.globalData.userInfo.roomID);
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID===0) {//用户还没加入队伍，访问数据库加入队伍
                                 
-                                
-                                
                                 console.log("未加入队伍");
                                 //加入队伍
-
-
 
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID!=0) {//用户已加入某队伍，需要提示先退出队伍
