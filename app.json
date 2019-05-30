@@ -3,7 +3,8 @@
 
     "pages/drawBoard/drawBoard",
     "pages/index/index",
-    "pages/settings/settings"
+    "pages/settings/settings",
+    "pages/roomAllUsers/roomAllUsers"
     
 
   ],

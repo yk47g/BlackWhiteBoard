@@ -27,7 +27,7 @@
             <view class="myGroupUser3">
                 <image src="{{groupUser3iconUrl}}" ></image>
             </view>
-            <view class="ADDmyGroupUser">
+            <view class="ADDmyGroupUser" bindtap="tap_more">
                 <image src="/icons/more.png" ></image>
             </view>
         </view>
