@@ -1968,6 +1968,9 @@ Page({
      * 生命周期函数--监听页面显示
      */
     onShow: function (options) {
+        if(this.data.toolsStatus.toolType == ToolsStatus_type.image){
+            return
+        }
         let that = this;
         console.log("页面启动参数：", options)
         // 无论什么情况，先初始化创建一个本地使用的drawboard
@@ -2148,6 +2151,9 @@ Page({
      * 生命周期函数--监听页面隐藏
      */
     onHide: function () {
+        if(this.data.toolsStatus.toolType == ToolsStatus_type.image){
+            return
+        }
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
         wx.closeSocket();
