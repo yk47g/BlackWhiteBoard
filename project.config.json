@@ -41,7 +41,7 @@
 			"list": []
 		},
 		"miniprogram": {
-			"current": 1,
+			"current": 2,
 			"list": [
 				{
 					"id": -1,
@@ -54,6 +54,14 @@
 					"id": -1,
 					"name": "首页",
 					"pathName": "pages/index/index",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "aaa",
+					"pathName": "pages/drawBoard/drawBoard",
+					"query": "a=10",
 					"scene": null
 				}
 			]
