@@ -265,8 +265,12 @@ Page({
     },
     exportPage_onClick(e){
       let oPage = getCurrentPages()[0]
-      console.log(oPage)
-      oPage.compute_exportImage();
+      oPage._exportImage = true
+        console.log(oPage)
+        wx.navigateBack({
+            delta:1
+        })
+    //  
      
     }
     //-------响应事件写上面------

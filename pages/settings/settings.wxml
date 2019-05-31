@@ -46,7 +46,7 @@
                     <view class="div-line"></view>
                 </view>
             </navigator>
-            <navigator url="/pages/drawBoard/drawBoard?id=11" class="list-item" hover-class="none">
+            <navigator  class="list-item" hover-class="none" bindtap='exportPage_onClick'>
                 <view class='item'>
                     <image class="item-image" src='/icons/drawSettings.png'></image>
                     <text class="item-text">导出画板</text>

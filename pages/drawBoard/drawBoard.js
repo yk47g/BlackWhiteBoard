@@ -40,13 +40,20 @@ function send(data) {
     websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
+function getTimestamp(){
+    //获取时间戳作为数据的唯一标识
+ 
+    return  (new Date()).valueOf();
+}
 
 //上传文件函数 传入本地文件路径参数即可，成功回调返回网络地址
-function saveToFIle(Path) {
+function saveToFIle(path) {
+    var imageUrl = ""
     wx.compressImage({
         src:path,
         quality:80,
         success:function(res){
+            console.log("压缩后的地址", res.tempFilePath)
             wx.uploadFile({
                 url: url,
                 filePath: res.tempFilePath,
@@ -56,17 +63,25 @@ function saveToFIle(Path) {
                 },
                 success: function (res) {
                     if (res.statusCode === 200) {//上传成功
-                        var address = res.data;//拿到的地址
-                        console.log(address)
+                        // that._tempImgPath = res.data;//拿到的地址
+                        imageUrl=  res.data
+                        console.log(imageUrl)
                     } else {
                         console.log('上传失败');
                     }
                 }
             });
+        },
+        fail:function(e){
+            console.log(e)
         }
     })
-   
+    while(imageUrl != ""){
+        setTimeout(function(){},100)
+    }
+   return imageUrl
 }
+
 
 function rpx(number) {//传入rpx值，转化为px
     // 规定任意屏幕的大小均为750rpx
@@ -883,6 +898,7 @@ class CGImage {
         this.oheight = 0;
         this.path = "";
         this.position = null;
+        this.url = ""
     }
     initByJson(json) {
         for (const key in this) {
@@ -902,6 +918,9 @@ class CGImage {
             }
         }
         return this
+    }
+    getlocalStoragePath(){//获取图片当前的本地缓存。
+
     }
 }
 class CGText {
@@ -950,8 +969,8 @@ class LocalStorage {//本地存储类
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
-
-            if (app.globalData.userInfo.id == null) {//判断是否属于未登录的房间。
+            
+            if (app.globalData.session =="") {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
 
             } else {
@@ -1069,7 +1088,7 @@ Page({
             ctx.setFontSize(tempflexData.size);
             position = tempflexData.position
         }
-        console.log("字体大小", cgText.size)
+        
         position.x -= 3
         position.y += cgText.size * 0.34
 
@@ -1100,7 +1119,8 @@ Page({
                         filePath: res.tempFilePath,
                         success: function () {
                             wx.showToast({
-                                title: "保存成功"
+                                title: "已成功导出到相册！"
+
                             })
 
                         },
@@ -1258,17 +1278,23 @@ Page({
         wx.chooseImage({
             success(res) {
                 const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
-
+                wx.showLoading({
+                    title:"正在添加图片",
+                    mask:true
+                })
+                console.log(imgPath)
+                // let imgUrl = saveToFIle(imgPath)
                 wx.getImageInfo({
                     src: imgPath,
                     success: function (res) {
                         let systeminfo = app.globalData.systemInfo
-
+                        
                         drawBoard.addAction(Action_type.image)
                         let cgimg = drawBoard.getLastAction().mode
                         cgimg.owidth = res.width//保存原始大小
                         cgimg.oheight = res.height
-
+                        cgimg.width = res.width//保存原始大小
+                        cgimg.height = res.height
                         console.log(res)
                         //开始计算居中后的图片大小。
                         let beyondWidth = cgimg.owidth - systeminfo.windowWidth
@@ -1283,10 +1309,11 @@ Page({
                                 cgimg.width *= (cgimg.height / cgimg.oheight)
                             }
                         }
-
-                        cgimg.path = res.path   
-
-
+                        
+                     
+                        cgimg.path = imgUrl
+                        wx.hideLoading({})
+                        console.log( imgUrl)
                         cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
                         datas.toolsStatus.toolType = ToolsStatus_type.mouse;
                         that.setData({
@@ -1703,14 +1730,26 @@ Page({
                 switch (iAction.type) {
                     case Action_type.image:
                         const cgimg = iAction.mode
-
+                       
                         if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
                             let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
                             let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
                             let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
+                            wx.getImageInfo({
+                                src:cgimg.path,
+                                fail:function(e){
+                                    console.log("图片有问题",e)
+                                }
+                            })
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
 
                         } else {
+                            wx.getImageInfo({
+                                src:cgimg.path,
+                                fail:function(e){
+                                    console.log("图片有问题",e)
+                                }
+                            })
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
 
                         }
@@ -1805,7 +1844,7 @@ Page({
         //进行本地缓存读取。初始化 drawboardAll
         let storage = new LocalStorage()
         storage.readLocalStorage()
-
+        
 
 
         //读取网络数据并设置
@@ -1935,9 +1974,9 @@ Page({
     /**
      * 生命周期函数--监听页面显示
      */
-    onShow: function () {
+    onShow: function (options) {
         let that = this;
-
+  
         //登陆
         //检测缓存中是否有session和roomid并存入全局变量中
         if (!(app.globalData.session === "")) {
@@ -2088,7 +2127,15 @@ Page({
                 //
 
             }
-        }//if&else
+        }
+
+
+
+        if (typeof(this._exportImage)!= "undefined" && this._exportImage == true) {
+            console.log("开始导出画布")
+            this.compute_exportImage();
+            this._exportImage = false
+        }
     },
 
     /**
