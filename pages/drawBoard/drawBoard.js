@@ -42,22 +42,30 @@ function send(data) {
 }
 
 //上传文件函数 传入本地文件路径参数即可，成功回调返回网络地址
-function saveToFIle(Path){
-    wx.uploadFile({
-        url: url,
-        filePath: Path,
-        name: 'image',
-        formData:{
-            'session': app.globalData.session
-        },
-        success:function (res) {
-            if (res.data.statusCode === 0) {//上传成功
-                var address = res.data.data;//拿到的地址
-            }else{
-                console.log("上传失败：",res.data.errMsg);
-            }
+function saveToFIle(Path) {
+    wx.compressImage({
+        src:path,
+        quality:80,
+        success:function(res){
+            wx.uploadFile({
+                url: url,
+                filePath: res.tempFilePath,
+                name: 'image',
+                formData: {
+                    'session': app.globalData.session
+                },
+                success: function (res) {
+                    if (res.statusCode === 200) {//上传成功
+                        var address = res.data;//拿到的地址
+                        console.log(address)
+                    } else {
+                        console.log('上传失败');
+                    }
+                }
+            });
         }
-    });
+    })
+   
 }
 
 function rpx(number) {//传入rpx值，转化为px
@@ -945,7 +953,7 @@ class LocalStorage {//本地存储类
 
             if (app.globalData.userInfo.id == null) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
-                
+
             } else {
                 delete thisRoom.drawBoardAll.temp
                 console.log("账号已登录，删除原有temp画板数据")
@@ -1073,10 +1081,10 @@ Page({
     },
     //draw 方法不会调用draw 显示，需要在外部调用。
     compute_exportImage() {
-      
+
         let systeminfo = app.globalData.systemInfo
         let datas = this.data
-        // ctx.draw(true, function () {
+        ctx.draw(true, function () {
             wx.canvasToTempFilePath({
                 canvasId: canvas_ID,
                 quality: 1,
@@ -1086,6 +1094,7 @@ Page({
                 width: systeminfo.windowWidth,//设置导出画布的内容区域。
                 height: systeminfo.windowHeight,
                 success: function (res) {
+              
 
                     wx.saveImageToPhotosAlbum({
                         filePath: res.tempFilePath,
@@ -1111,7 +1120,7 @@ Page({
                     })
                 }
             })
-        // })
+        })
     },
     compute_textInput(thisPoint, disFocus = false) { //切换到文字工具-处理函数
         let datas = this.data
@@ -1249,7 +1258,7 @@ Page({
         wx.chooseImage({
             success(res) {
                 const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
-                console.log(imgPath)
+
                 wx.getImageInfo({
                     src: imgPath,
                     success: function (res) {
@@ -1259,9 +1268,8 @@ Page({
                         let cgimg = drawBoard.getLastAction().mode
                         cgimg.owidth = res.width//保存原始大小
                         cgimg.oheight = res.height
-                        cgimg.width = res.width//用以拉伸后的大小。
-                        cgimg.height = res.height
 
+                        console.log(res)
                         //开始计算居中后的图片大小。
                         let beyondWidth = cgimg.owidth - systeminfo.windowWidth
                         let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
@@ -1276,7 +1284,7 @@ Page({
                             }
                         }
 
-                        cgimg.path = res.path
+                        cgimg.path = res.path   
 
 
                         cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
@@ -1907,7 +1915,7 @@ Page({
      */
 
     onLoad: function (options) {
-        console.log("页面启动参数：",options)
+        console.log("页面启动参数：", options)
         // 无论什么情况，先初始化创建一个本地使用的drawboard
         this.initDrawBoard();
         //开始执行一些为互联准备的数据。
@@ -2090,7 +2098,7 @@ Page({
         let localStorage = new LocalStorage()
         localStorage.saveLocalStorage()
         wx.closeSocket();
-        console.log("页面隐藏，断开连接并保存。",thisRoom);
+        console.log("页面隐藏，断开连接并保存。", thisRoom);
         // if (app.globalData.userInfo.id == null) {
         //     let storage = new LocalStorage()
         //     storage.saveLocalStorage()
@@ -2253,10 +2261,10 @@ Page({
                 break;
 
             case "tools_debug":
-                let storage = new LocalStorage()
-                storage.saveLocalStorage()
-                storage.readLocalStorage()
-                console.log("保存")
+                // let storage = new LocalStorage()
+                // storage.saveLocalStorage()
+                // storage.readLocalStorage()
+                this.compute_exportImage()
 
 
                 break;
