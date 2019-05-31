@@ -33,7 +33,7 @@
         </view>
         <view class="myGroupButtons">
             <button type="primary" bindtap="tap_CreateGroup" wx:if="{{noGroup}}">创建/加入协作</button>
-            <button type="warn" bindtap="tap_CreateGroup" wx:else>退出协作</button>
+            <button type="warn" bindtap="tap_DeleteGroup" wx:else>退出协作</button>
         </view>
     </view>
     
