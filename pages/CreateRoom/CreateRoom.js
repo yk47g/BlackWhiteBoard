@@ -7,25 +7,52 @@ Page({
      * 页面的初始数据
      */
     data: {
-        list: []
+        //inputValue: null
     },
 
     onLoad: function (options) {
-        let that = this ;
-        var  arr=[];
-        for(var i in app.globalData.roomAllUserInfo){
-            arr.push(app.globalData.roomAllUserInfo[i]);
-        }//对象转化为数组
-       //console.log(arr);
-        that.setData({
-            list:arr
-        });
-        console.log("当前页面list数据:",that.data.list);
+        
     },
 
         //----------------
-    tap_oneUserView(e){
-        console.log("点击了某个用户id:",e.target.id);
+    /* bindKeyInput: function(e) {
+        this.setData({
+          inputValue: e.detail.value
+        })
+    }, */
+    formSubmit:function (e) {
+        console.log("提交了:",e.detail.value.input);
+        let subName = e.detail.value.input;
+        wx.request({
+            url: url,
+            data: {
+                "id": app.globalData.userInfo.id,
+                'createRoomName': subName
+            },
+            success: function (res) {
+                if (res.statusCode == 200) {
+                    console.log(res);
+                    if (res.data.statusCode == 0) {
+                        app.globalData.userInfo.roomID = res.data.data;
+                        app.globalData.userInfo.groupName = subName;
+                        wx.setStorageSync('roomID', res.data.data);
+                        wx.navigateTo(
+                            {
+                                url: '/pages/CreateRoomSuccess/CreateRoomSuccess'
+                            }
+                        );
+                    } else {
+                        console.log(res.data.errMsg);
+                    }
+                }
+                else {
+                    console.log(res.errMsg);
+                }
+            },//request.success
+            fail: function (e) {
+                console.log("request.fail:", e);
+            }//request.fail
+        });//request
     }
     //-------响应事件写上面------
 

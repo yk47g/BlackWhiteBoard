@@ -2048,9 +2048,10 @@ Page({
 
                             }
                             if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
-
+                                
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
+                                //console.log(jsDownLoadDrawBoardData);
                                 for (var i = 0; i < jsDownLoadDrawBoardData.length; i++) {
                                     thisRoom.drawBoardAll[String(jsDownLoadDrawBoardData[i].id)] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
 

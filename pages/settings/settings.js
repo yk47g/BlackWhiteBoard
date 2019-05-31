@@ -54,6 +54,9 @@ Page({
                     }
                     $j = $j+1;
                 }
+                if (new2iconUrl === "") {//没有第二个人
+                    new2iconUrl = "/icons/user.png";
+                }
                 if (new3iconUrl === "") {//没有第三个人
                     new3iconUrl = "/icons/user.png";
                 }
@@ -288,6 +291,9 @@ Page({
 
                                                                             }
                                                                             $j = $j+1;
+                                                                        }
+                                                                        if (new2iconUrl === "") {//没有第二个人
+                                                                            new2iconUrl = "/icons/user.png";
                                                                         }
                                                                         if (new3iconUrl === "") {//没有第三个人
                                                                             new3iconUrl = "/icons/user.png";

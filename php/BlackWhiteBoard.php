@@ -49,6 +49,53 @@ function wget($url){
 
 $id = $_GET["id"];
 
+//创建队伍
+$createRoomName = $_GET["createRoomName"];
+if ((!empty($id)) && (!empty($createRoomName))){
+    //检查是否已存在这个队伍名字
+    $sql = "SELECT *  FROM `bwb_room` WHERE `roomName` = '$createRoomName'";
+    $res = mysqli_query($conn,$sql);
+    if($res && mysqli_num_rows($res)){
+        echo json_encode(array("statusCode"=>9 , "data"=>null , "errMsg"=>"error:已存在此队伍名字"));
+        mysqli_close($conn);
+        exit;
+    }
+    //开始插入
+    $sql = "INSERT INTO `bwb_room` (`roomID`, `roomName`, `roomAdminID`, `time`, `drawBoardData`) VALUES (NULL, '$createRoomName', '$id', CURRENT_TIMESTAMP, NULL)";
+    $res = mysqli_query($conn,$sql);
+    if($res){
+        //重新查询这个名字获取对应roomID
+        $sql = "SELECT *  FROM `bwb_room` WHERE `roomName` = '$createRoomName'";
+        $res = mysqli_query($conn,$sql);
+        if($res && mysqli_num_rows($res)){
+            $row = mysqli_fetch_array($res,MYSQLI_ASSOC);
+            $roomID = $row['roomID'];
+            //把这个人的roomID改成新的
+            $sql = "UPDATE `bwb_users` SET `roomID` = '$roomID' WHERE `bwb_users`.`id` = $id";
+            $res = mysqli_query($conn,$sql);
+            //$newDrawData = '[{'.'"'.'data'.'"'.':[],'.'"'.'date'.'"'.':'.'"'.'2019/05/30 00:00:00'.'"'.','.'"'.'id'.'"'.':'.'"'.$id.'"'.','.'"'.'roomID'.'"'.':'.'"'.$roomID.'"'.'}]';
+            $newDrawData = '[{"data":[{"actions":[{"mode":{"points":[{"x":225,"y":289},{"x":224,"y":298},{"x":222,"y":304},{"x":215,"y":315},{"x":204,"y":335},{"x":195,"y":356},{"x":190,"y":369},{"x":184,"y":388},{"x":178,"y":408},{"x":173,"y":421},{"x":171,"y":433},{"x":169,"y":438},{"x":168,"y":444}],"lineWidth":3,"color":"rgb(255,99,105)","lineDash":false},"type":0,"user":"unknow","time":"u4e0bu53487:38:02"}],"backgroundColor":"","width":2000,"height":2000}],"date":"2019/05/30 11:15:33","id":"1","roomID":"10"}]';
+            //插入一个空的drawboardData
+            $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$newDrawData' WHERE `bwb_room`.`roomID` = $roomID";
+            $res2 = mysqli_query($conn,$sql);
+            if($res && $res2){
+                echo json_encode(array("statusCode"=>0 ,"data"=>$roomID));
+                mysqli_close($conn);
+                exit;
+            }else{
+                echo json_encode(array("statusCode"=>11 , "data"=>null , "errMsg"=>"error:更改此人的roomid失败或插入空白drawboardData失败"));
+            }
+        }
+        else{
+            echo json_encode(array("statusCode"=>10 , "data"=>null , "errMsg"=>"error:插入数据库失败"));
+        }
+    }else{
+        echo json_encode(array("statusCode"=>8 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
 //加入队伍
 $joinRoomID = $_GET["joinRoomID"];
 if ((!empty($id)) && (!empty($joinRoomID))){

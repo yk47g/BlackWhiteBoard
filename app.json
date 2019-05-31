@@ -6,7 +6,8 @@
     "pages/settings/settings",
     "pages/roomAllUsers/roomAllUsers",
     "pages/CreateRoom/CreateRoom",
-    "pages/JoinRoom/JoinRoom"
+    "pages/JoinRoom/JoinRoom",
+    "pages/CreateRoomSuccess/CreateRoomSuccess"
     
 
   ],
