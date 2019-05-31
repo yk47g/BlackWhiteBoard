@@ -40,19 +40,19 @@ function send(data) {
     websocket.send('{ "data": [' + data + '], "date": "' + utils.formatTime(new Date()) + '", "id": "' + app.globalData.userInfo.id + '", "roomID": "' + app.globalData.userInfo.roomID + '" }');
 
 }
-function getTimestamp(){
+function getTimestamp() {
     //获取时间戳作为数据的唯一标识
- 
-    return  (new Date()).valueOf();
+
+    return (new Date()).valueOf();
 }
 
 //上传文件函数 传入本地文件路径参数即可，成功回调返回网络地址
 function saveToFIle(path) {
     var imageUrl = ""
     wx.compressImage({
-        src:path,
-        quality:80,
-        success:function(res){
+        src: path,
+        quality: 80,
+        success: function (res) {
             console.log("压缩后的地址", res.tempFilePath)
             wx.uploadFile({
                 url: url,
@@ -64,7 +64,7 @@ function saveToFIle(path) {
                 success: function (res) {
                     if (res.statusCode === 200) {//上传成功
                         // that._tempImgPath = res.data;//拿到的地址
-                        imageUrl=  res.data
+                        imageUrl = res.data
                         console.log(imageUrl)
                     } else {
                         console.log('上传失败');
@@ -72,14 +72,14 @@ function saveToFIle(path) {
                 }
             });
         },
-        fail:function(e){
+        fail: function (e) {
             console.log(e)
         }
     })
-    while(imageUrl != ""){
-        setTimeout(function(){},100)
+    while (imageUrl != "") {
+        setTimeout(function () { }, 100)
     }
-   return imageUrl
+    return imageUrl
 }
 
 
@@ -919,7 +919,7 @@ class CGImage {
         }
         return this
     }
-    getlocalStoragePath(){//获取图片当前的本地缓存。
+    getlocalStoragePath() {//获取图片当前的本地缓存。
 
     }
 }
@@ -969,8 +969,8 @@ class LocalStorage {//本地存储类
             console.log("开始初始化room")
             thisRoom.initByJson(json)
             console.log(thisRoom)
-            
-            if (app.globalData.session =="") {//判断是否属于未登录的房间。
+
+            if (app.globalData.session == "") {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
 
             } else {
@@ -1088,7 +1088,7 @@ Page({
             ctx.setFontSize(tempflexData.size);
             position = tempflexData.position
         }
-        
+
         position.x -= 3
         position.y += cgText.size * 0.34
 
@@ -1113,7 +1113,7 @@ Page({
                 width: systeminfo.windowWidth,//设置导出画布的内容区域。
                 height: systeminfo.windowHeight,
                 success: function (res) {
-              
+
 
                     wx.saveImageToPhotosAlbum({
                         filePath: res.tempFilePath,
@@ -1279,8 +1279,8 @@ Page({
             success(res) {
                 const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
                 wx.showLoading({
-                    title:"正在添加图片",
-                    mask:true
+                    title: "正在添加图片",
+                    mask: true
                 })
                 console.log(imgPath)
                 // let imgUrl = saveToFIle(imgPath)
@@ -1288,7 +1288,7 @@ Page({
                     src: imgPath,
                     success: function (res) {
                         let systeminfo = app.globalData.systemInfo
-                        
+
                         drawBoard.addAction(Action_type.image)
                         let cgimg = drawBoard.getLastAction().mode
                         cgimg.owidth = res.width//保存原始大小
@@ -1309,11 +1309,11 @@ Page({
                                 cgimg.width *= (cgimg.height / cgimg.oheight)
                             }
                         }
-                        
-                     
+
+
                         cgimg.path = imgUrl
                         wx.hideLoading({})
-                        console.log( imgUrl)
+                        console.log(imgUrl)
                         cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
                         datas.toolsStatus.toolType = ToolsStatus_type.mouse;
                         that.setData({
@@ -1593,7 +1593,7 @@ Page({
                 continue
             }
 
-            if (key == app.globalData.userInfo.id) {
+            if (key == app.globalData.userInfo.id || key == "temp") {
                 //判断是我的画布
                 actions = myActions
                 isMyDrawboard = true
@@ -1730,24 +1730,24 @@ Page({
                 switch (iAction.type) {
                     case Action_type.image:
                         const cgimg = iAction.mode
-                       
+
                         if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
                             let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
                             let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
                             let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
                             wx.getImageInfo({
-                                src:cgimg.path,
-                                fail:function(e){
-                                    console.log("图片有问题",e)
+                                src: cgimg.path,
+                                fail: function (e) {
+                                    console.log("图片有问题", e)
                                 }
                             })
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
 
                         } else {
                             wx.getImageInfo({
-                                src:cgimg.path,
-                                fail:function(e){
-                                    console.log("图片有问题",e)
+                                src: cgimg.path,
+                                fail: function (e) {
+                                    console.log("图片有问题", e)
                                 }
                             })
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
@@ -1844,7 +1844,7 @@ Page({
         //进行本地缓存读取。初始化 drawboardAll
         let storage = new LocalStorage()
         storage.readLocalStorage()
-        
+
 
 
         //读取网络数据并设置
@@ -1954,14 +1954,7 @@ Page({
      */
 
     onLoad: function (options) {
-        console.log("页面启动参数：", options)
-        // 无论什么情况，先初始化创建一个本地使用的drawboard
-        this.initDrawBoard();
-        //开始执行一些为互联准备的数据。
-        this.prepareForInter();
-
-
-
+    
 
     },
     /**
@@ -1976,7 +1969,11 @@ Page({
      */
     onShow: function (options) {
         let that = this;
-  
+        console.log("页面启动参数：", options)
+        // 无论什么情况，先初始化创建一个本地使用的drawboard
+        this.initDrawBoard();
+        //开始执行一些为互联准备的数据。
+        this.prepareForInter();
         //登陆
         //检测缓存中是否有session和roomid并存入全局变量中
         if (!(app.globalData.session === "")) {
@@ -2017,8 +2014,8 @@ Page({
                                                 wx.showModal({
                                                     title: '提示',
                                                     content: '已成功加入队伍',
-                                                    showCancel:false
-                                                  });
+                                                    showCancel: false
+                                                });
                                             } else {
                                                 console.log(res.data.errMsg);
                                             }
@@ -2036,13 +2033,13 @@ Page({
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
 
                                 var str = '您已加入队伍';
-                                str+=app.globalData.userInfo.groupName;
-                                str+='，需要先退出当前队伍。';
+                                str += app.globalData.userInfo.groupName;
+                                str += '，需要先退出当前队伍。';
                                 wx.showModal({
                                     title: '提示',
                                     content: str,
-                                    showCancel:false
-                                  });
+                                    showCancel: false
+                                });
                                 wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
 
 
@@ -2140,7 +2137,7 @@ Page({
 
 
 
-        if (typeof(this._exportImage)!= "undefined" && this._exportImage == true) {
+        if (typeof (this._exportImage) != "undefined" && this._exportImage == true) {
             console.log("开始导出画布")
             this.compute_exportImage();
             this._exportImage = false
@@ -2588,7 +2585,7 @@ Page({
 
                                 let action = drawBoard.getActionByindex(actionsIndex[a]);
                                 action.oRect = action.getSelectRectObject()
-                                console.log(action)
+                            
                             }
 
                             return;
@@ -2897,6 +2894,7 @@ Page({
 
         let condition = toolsStatus.condition
         let touches = e.touches
+        let lsAction = drawBoard.getLastAction()
         if (condition.meet(Condition_Type.twoFinger_gesture) != true) {
             switch (toolsStatus.toolType) {
                 case ToolsStatus_type.mouse:
@@ -2943,11 +2941,19 @@ Page({
                     break
 
                 case ToolsStatus_type.pen:
-                    let lsAction = drawBoard.getLastAction()
+                   
                     if (lsAction.type == Action_type.line) {
                         if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
                             console.log("路径过短，删除。")
 
+                            drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
+                        }
+                    }
+                    break
+                case ToolsStatus_type.shape:
+                    
+                    if (this.data.penConfiguration.shape == CGShape_type.roundness) {
+                        if (lsAction.mode.getRinRoundness() <= 1) { //小于两个点时，删除路径。
                             drawBoard.actions.splice(drawBoard.actions.length - 1, 1)
                         }
                     }
