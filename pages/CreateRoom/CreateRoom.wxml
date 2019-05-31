@@ -1,7 +1,7 @@
 <view class="main">
     <text class="joinText" >创建</text>
     <form bindsubmit="formSubmit" class="formClass">
-        <input type="text" value="" name="input" placeholder="输入协作名字" /> <!--bindinput="bindKeyInput" -->
+        <input class="inputClass" type="text" value="" name="input" placeholder="输入协作名字" /> <!--bindinput="bindKeyInput" -->
         <button class="btn" type="primary" form-type="submit" >
             提交
         </button>

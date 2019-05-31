@@ -1,6 +1,5 @@
 <view class="main">
     <text class="Title" >创建成功</text>
-    <text class="content">协作ID：{{roomID}}</text>
-    <text class="tip" >快把协作ID告诉你的朋友吧～</text>
+    <text class="content">协作ID：{{roomID}}\n快把协作ID告诉你的朋友吧～</text>
     <button class="btn" type="primary" bindtap="tapBtn">返回</button>
 </view>

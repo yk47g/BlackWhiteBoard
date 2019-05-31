@@ -1,53 +1,23 @@
-.scrollView {
+.Title{
     position: absolute;
-    height: 100vh;
-    width: 100vw;
-}
-.oneUserView {
-    position: relative;
-    height: 8vh;
-    left: 50vw;
-    margin-left: -45vw;
-    width: 90vw;
-    border-bottom: 1px solid #DBDBDB;
+    width: 100%;
+    top: 10vh;
+    text-align: center;
+    font-size: 100rpx;
 }
 
-.userIconimageView {
+.content{
     position: absolute;
-    left: 3vw;
-    height: 100rpx;
-    width: 100rpx;
-    top: 50%;
-    margin-top: -50rpx;
-    background-color: black;
-    border-radius: 100rpx;
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-    border:none;
+    width: 100%;
+    top: 30vh;
+    text-align: center;
+    font-size: 50rpx;
 }
 
-.userIconimage {
-    position: static;
-    height: 100rpx;
-    width: 100rpx;
-    border-radius: 100rpx;
-}
-
-.userNameView {
+.btn{
     position: absolute;
-    left: 22vw;
-    height: 100%;
-    width: 100rpx;
-    
-}
-
-.userNametext {
-    position: absolute;
-    height: 100%;
-    width: 100rpx;
-    top: 50%;
-    margin-top: -25rpx;
-}
-
-.hover-class{
-    background-color: #DBDBDB;
+    width: 80vw;
+    top: 50vh;
+    left: 50%;
+    margin-left: -40vw;
 }
