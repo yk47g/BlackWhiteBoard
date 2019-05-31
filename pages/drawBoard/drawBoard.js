@@ -51,10 +51,10 @@ function saveToFIle(Path){
             'session': app.globalData.session
         },
         success:function (res) {
-            if (res.data.statusCode === 0) {//上传成功
-                var address = res.data.data;//拿到的地址
+            if (res.statusCode === 200) {//上传成功
+                var address = res.data;//拿到的地址
             }else{
-                console.log("上传失败：",res.data.errMsg);
+                console.log("上传失败：");
             }
         }
     });
@@ -1967,7 +1967,11 @@ Page({
                                     success: function (res) {
                                         if (res.statusCode == 200) {
                                             if (res.data.statusCode == 0) {
-                                                console.log("成功加入队伍");
+                                                wx.showModal({
+                                                    title: '提示',
+                                                    content: '已成功加入队伍',
+                                                    showCancel:false
+                                                  });
                                             } else {
                                                 console.log(res.data.errMsg);
                                             }
@@ -1984,9 +1988,14 @@ Page({
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
 
-                                //提示先进入设置页面退出队伍
-                                //
-                                console.log("已加入队伍" + currentRoomID + "需要先退出当前队伍。");
+                                var str = '您已加入队伍';
+                                str+=app.globalData.userInfo.groupName;
+                                str+='，需要先退出当前队伍。';
+                                wx.showModal({
+                                    title: '提示',
+                                    content: str,
+                                    showCancel:false
+                                  });
                                 wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
 
 

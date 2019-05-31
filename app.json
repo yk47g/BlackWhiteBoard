@@ -4,7 +4,9 @@
     "pages/drawBoard/drawBoard",
     "pages/index/index",
     "pages/settings/settings",
-    "pages/roomAllUsers/roomAllUsers"
+    "pages/roomAllUsers/roomAllUsers",
+    "pages/CreateRoom/CreateRoom",
+    "pages/JoinRoom/JoinRoom"
     
 
   ],

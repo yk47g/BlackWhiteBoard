@@ -79,7 +79,7 @@ Page({
     },
     tap_more(e){
         console.log("点击了更多用户省略号按钮");
-        let that = this
+        let that = this;
         this.setData({
             pageVisable:false
         })
@@ -98,20 +98,101 @@ Page({
             
         )
     },
-    tap_CreateGroup(e){
+    tap_DeleteGroup(e){
+        let that = this;
         console.log("点击了退出协作按钮");
         wx.showModal({
             title: '提示',
             content: '退出将清空您的笔画数据，确定要退出当前协作？',
             success (res) {
               if (res.confirm) {
-                console.log('用户点击确定')
+                console.log('用户点击确定');
+                wx.request({
+                    url: url,
+                    data: {
+                        "id": app.globalData.userInfo.id,
+                        'exit': 1
+                    },
+                    success: function (res) {
+                        if (res.statusCode == 200) {
+                            if (res.data.statusCode == 0) {
+                                wx.showModal({
+                                    title: '提示',
+                                    content: '已成功退出队伍',
+                                    showCancel:false
+                                  });
+                                that.setData({
+                                    noGroup:true,
+                                    groupUser1iconUrl: "/icons/user.png",
+                                    groupUser2iconUrl: "/icons/user.png",
+                                    groupUser3iconUrl: "/icons/user.png",
+                                    groupName: "未加入协作",
+                                    status:"已登陆"
+                                })
+                            } else {
+                                console.log(res.data.errMsg);
+                            }
+                        }
+                        else {
+                            console.log(res.errMsg);
+                        }
+                    },//request.success
+                    fail: function (e) {
+                        console.log("request.fail:", e);
+                    }//request.fail
+                });//request
               } else if (res.cancel) {
-                console.log('用户点击取消')
+                console.log('用户点击取消');
               }
             }
           })
           
+    },
+
+    tap_CreateGroup(e){
+        let that = this;
+        console.log("点击了加入或创建协作按钮");
+        wx.showActionSheet({
+            itemList: ['加入协作', '创建协作'],
+            success (res) {
+              console.log(res.tapIndex)
+              if (res.tapIndex === 0) {//加入
+                wx.navigateTo(
+                    {
+                        url: '/pages/JoinRoom/JoinRoom',
+                        complete:function(){
+                            setTimeout(function(){
+                                that.setData({
+                                    pageVisable:true
+                                })
+                            },1000)
+                            
+                        }
+                    }
+                    
+                )
+              }
+              if (res.tapIndex === 1) {//创建
+                wx.navigateTo(
+                    {
+                        url: '/pages/CreateRoom/CreateRoom',
+                        complete:function(){
+                            setTimeout(function(){
+                                that.setData({
+                                    pageVisable:true
+                                })
+                            },1000)
+                            
+                        }
+                    }
+                    
+                )
+              }
+            },
+            fail (res) {
+              console.log(res.errMsg)
+            }
+          })          
     },
     
     applyPermission() {
