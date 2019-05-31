@@ -20,7 +20,7 @@ page {
 .settings {
   position: absolute;
   left: 2vw;
-  top: 5vh;
+  top: 4vh;
   height: 80rpx;
   width: 80rpx;
   background-color: white;

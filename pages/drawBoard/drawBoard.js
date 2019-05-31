@@ -1710,7 +1710,7 @@ Page({
                         if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
                             tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
                             tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
-                            console.log("临时拉伸数据", tempflexData)
+                      
                             this.draw_text(cgText, tempflexData)
                         } else {
 

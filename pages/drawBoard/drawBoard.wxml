@@ -10,7 +10,7 @@
     <!-- 设置按钮 -->
     <cover-view class='settings' animation="{{animation.dodgeTools}}">
       <button plain bindtap='button_settings'>
-        <cover-image src='/icons/settings.png'></cover-image>
+        <cover-image src='/icons/team.png'></cover-image>
       </button>
     </cover-view>
 
@@ -34,7 +34,7 @@
         <cover-image src="/icons/tools_image{{toolsStatus.toolType == 3?'_on':''}}.png" mode='widthFix'></cover-image>
       </button>
 
-      <button plain catchtap='changeStatus' id='tools_debug' >测试</button>
+      <!-- <button plain catchtap='changeStatus' id='tools_debug' >测试</button> -->
       <!-- open-type="share" -->
     </cover-view>
 
