@@ -1278,10 +1278,10 @@ Page({
         wx.chooseImage({
             success(res) {
                 const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
-                wx.showLoading({
-                    title: "正在添加图片",
-                    mask: true
-                })
+                // wx.showLoading({
+                //     title: "正在添加图片",
+                //     mask: true
+                // })
                 console.log(imgPath)
                 // let imgUrl = saveToFIle(imgPath)
                 wx.getImageInfo({
@@ -1311,9 +1311,9 @@ Page({
                         }
 
 
-                        cgimg.path = imgUrl
-                        wx.hideLoading({})
-                        console.log(imgUrl)
+                        cgimg.path = imgPath
+                        // wx.hideLoading({})
+                        console.log(imgPath)
                         cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
                         datas.toolsStatus.toolType = ToolsStatus_type.mouse;
                         that.setData({
