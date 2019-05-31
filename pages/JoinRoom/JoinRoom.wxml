@@ -1,8 +1,8 @@
 <view class="main">
     <text class="joinText" >加入</text>
-    <form bindsubmit="" class="formClass">
-        <input type="text" value="" placeholder="输入房间ID" />
-        <button class="btn" type="primary" loading="{{loading}}" disabled="{{disabled}}" bindtap="onTap">
+    <form bindsubmit="formSubmit" class="formClass">
+        <input type="text" value="" name="input" type="number"  placeholder="输入房间ID" /> <!--bindinput="bindKeyInput" -->
+        <button class="btn" type="primary" form-type="submit" >
             提交
         </button>
     </form>

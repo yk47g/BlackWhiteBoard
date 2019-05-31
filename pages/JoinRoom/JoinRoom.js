@@ -7,25 +7,63 @@ Page({
      * 页面的初始数据
      */
     data: {
-        list: []
+        //inputValue: null
     },
 
     onLoad: function (options) {
-        let that = this ;
-        var  arr=[];
-        for(var i in app.globalData.roomAllUserInfo){
-            arr.push(app.globalData.roomAllUserInfo[i]);
-        }//对象转化为数组
-       //console.log(arr);
-        that.setData({
-            list:arr
-        });
-        console.log("当前页面list数据:",that.data.list);
+        
     },
 
         //----------------
-    tap_oneUserView(e){
-        console.log("点击了某个用户id:",e.target.id);
+    /* bindKeyInput: function(e) {
+        this.setData({
+          inputValue: e.detail.value
+        })
+    }, */
+    formSubmit:function (e) {
+        console.log("提交了:",e.detail.value.input);
+        let subID = e.detail.value.input;
+        var re = /^\d+$/; //正则表达式判断字符串是否为数字
+        if (!re.test(subID)) {　
+           console.log("不是数字");
+           wx.showModal({
+            title: '错误',
+            content: '输入的房间ID必须为数字',
+            showCancel:false
+          });
+        }else{
+            wx.request({
+                url: url,
+                data: {
+                    "id": app.globalData.userInfo.id,
+                    'joinRoomID': subID
+                },
+                success: function (res) {
+                    if (res.statusCode == 200) {
+                        if (res.data.statusCode == 0) {
+                            wx.showToast({
+                                title: '已成功加入协作',
+                                icon: "success",
+                                duration: 2000
+                            })
+                            setTimeout(function () {
+                                wx.navigateBack({
+                                    delta:1
+                                });
+                            },500);
+                        } else {
+                            console.log(res.data.errMsg);
+                        }
+                    }
+                    else {
+                        console.log(res.errMsg);
+                    }
+                },//request.success
+                fail: function (e) {
+                    console.log("request.fail:", e);
+                }//request.fail
+            });//request
+        }
     }
     //-------响应事件写上面------
 

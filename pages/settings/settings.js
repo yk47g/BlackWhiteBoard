@@ -18,7 +18,7 @@ Page({
         noGroup: true
     },
 
-    onLoad: function (options) {
+    onShow: function (options) {
         
         let that = this ;
 

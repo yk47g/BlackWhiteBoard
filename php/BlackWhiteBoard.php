@@ -48,8 +48,25 @@ function wget($url){
 }
 
 $id = $_GET["id"];
-$exit = $_GET["exit"];
 
+//加入队伍
+$joinRoomID = $_GET["joinRoomID"];
+if ((!empty($id)) && (!empty($joinRoomID))){
+    $sql = "UPDATE `bwb_users` SET `roomID` = '$joinRoomID' WHERE `bwb_users`.`id` = $id";
+    $res = mysqli_query($conn,$sql);
+    if($res){
+        echo json_encode(array("statusCode"=>0));
+        mysqli_close($conn);
+        exit;
+    }else{
+        echo json_encode(array("statusCode"=>8 , "data"=>null , "errMsg"=>"error:传入用户id在数据库中不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
+//退出队伍
+$exit = $_GET["exit"];
 if ((!empty($id)) && (!empty($exit))){
     $sql = "UPDATE `bwb_users` SET `roomID` = '0' WHERE `bwb_users`.`id` = $id";
     $res = mysqli_query($conn,$sql);
