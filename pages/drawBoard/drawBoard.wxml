@@ -42,7 +42,7 @@
     <!-- 实时显示在线用户 -->
     <cover-view class='userOnlineBar'>
       <cover-image wx:for="{{userOnlineIdArray}}" src="{{userOnlineIcon[index]}}" mode='aspectFit' wx:key="item"> </cover-image>
-      <cover-image src="/icons/tools_addUser.png" mode='aspectFit' style='border:0;0' catchtap="inviteUser">
+      <cover-image src="/icons/tools_addUser.png" mode='aspectFit' style='border:solid rgb(131,131, 131) 1px;background-color:white!important;' catchtap="inviteUser">
       </cover-image>
     </cover-view>
 

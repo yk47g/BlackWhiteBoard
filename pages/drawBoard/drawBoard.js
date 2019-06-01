@@ -723,7 +723,14 @@ class CGPoint { //坐标点类
         return false
     }
 
-
+    setPoint(x=null,y=null){//通过函数修改点数据
+        if (x!= null) {
+            this.x = parseInt(x)
+        }
+        if (y!= null) {
+            this.y = parseInt(y)
+        }
+    }
 
 }
 
@@ -1119,7 +1126,7 @@ Page({
                         filePath: res.tempFilePath,
                         success: function () {
                             wx.showToast({
-                                title: "已成功导出到相册！"
+                                title: "已导出到相册"
 
                             })
 
@@ -1584,6 +1591,9 @@ Page({
 
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
+            if (typeof(drawBoard) == "undefined") {
+                console.log("reload错误：drawboard undefined")
+            }
             var actions = {}
             if (thisRoom.drawBoardAll.hasOwnProperty(key)) {
                 drawBoard = thisRoom.drawBoardAll[key];
@@ -1710,7 +1720,7 @@ Page({
                         if (toolsStatus.isSelect(a) && toolsStatus.mouseMoveType == Mouse_MoveType.model_felx && isMyDrawboard) {
                             tempflexData.size = cgText.size * (toolsStatus.modelFlexData.width + toolsStatus.modelFlexData.height) / 2
                             tempflexData.position = cgText.position.modelFlexInit(toolsStatus.modelFlexData)
-                      
+
                             this.draw_text(cgText, tempflexData)
                         } else {
 
@@ -1862,18 +1872,23 @@ Page({
     },
     compute_scrollGesture(toolsStatus) {
         let mouseActions = toolsStatus.mouseActions
-
+        if (mouseActions.length != 2) {
+            console.log("mouseAction长度错误！")
+        }
         //移动画布处理-----
+
         let finger1_Offest = { x: mouseActions[0].endPoint.x - mouseActions[0].lastPoint.x, y: mouseActions[0].endPoint.y - mouseActions[0].lastPoint.y }
         let finger2_Offest = { x: mouseActions[1].endPoint.x - mouseActions[1].lastPoint.x, y: mouseActions[1].endPoint.y - mouseActions[1].lastPoint.y }
         let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
         let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
+        // console.log(finger1_Offest.x+","+finger1_Offest.y,finger2_Offest.x+","+finger2_Offest.y)
+        console.log(finger1_Offest,finger2_Offest,nX,nY,"---", this.data.scrollView.nleft, this.data.scrollView.ntop,"<====",mouseActions[0])
 
 
-        nX = parseInt(nX > 0 ? nX : 0)
-        nY = parseInt(nY > 0 ? nY : 0)
-        this.data.scrollView.ntop = nY
-        this.data.scrollView.nleft = nX
+        nX = nX > 0 ? nX : 0
+        nY = nY > 0 ? nY : 0
+        // this.data.scrollView.ntop = nY
+        // this.data.scrollView.nleft = nX
 
         // console.log("X= ", parseInt(-(finger1_Offest.x + finger2_Offest.x) / 2), "y=", parseInt(-(finger1_Offest.y + finger2_Offest.y) / 2))
 
@@ -1881,14 +1896,17 @@ Page({
         //缩放画布处理-----
 
         let distance = Math.pow(Math.pow(mouseActions[0].endPoint.x - mouseActions[1].endPoint.x, 2) + Math.pow(mouseActions[0].endPoint.y - mouseActions[1].endPoint.y, 2), 0.5)
-        console.log("手指距离：", distance)
+        // console.log("手指距离：", distance)
 
         //应用到画布上
         //以下处理非常重要，移动后画布位置改变，此时按下的点的坐标已经！=原来的点。
-        toolsStatus.mouseActions[0].endPoint.x += -finger1_Offest.x
-        toolsStatus.mouseActions[0].endPoint.y += -finger1_Offest.y
-        toolsStatus.mouseActions[1].endPoint.x += -finger2_Offest.x
-        toolsStatus.mouseActions[1].endPoint.y += -finger2_Offest.y
+      
+        mouseActions[0].endPoint.x -= finger1_Offest.x
+        mouseActions[0].endPoint.y -= finger1_Offest.y
+        mouseActions[1].endPoint.x -= finger2_Offest.x
+        mouseActions[1].endPoint.y -= finger2_Offest.y
+        // console.log(mouseActions[0].endPoint.x+","+mouseActions[0].endPoint.y,mouseActions[1].endPoint.x+","+mouseActions[1].endPoint.y)
+
         this.setData({
             "scrollView.ntop": nY,
             "scrollView.nleft": nX
@@ -1940,6 +1958,41 @@ Page({
         this.reloadDrawBoard()
     },
 
+    RunAnimation(type) {
+        //处理按下后的靠边动画，
+        let animation = wx.createAnimation({
+            duration: 300,
+            timingFunction: "ease-out"
+        })
+        switch (type) {
+            case "closeTools":
+              
+                // animation.left(100)
+                animation.opacity(0)
+                // animation.translate(-100);
+                animation.step()
+                this.setData({
+                    "animation.dodgeTools": animation.export()
+                })
+                break;
+
+            case "opeanTools":
+              
+                // animation.left(100)
+                animation.opacity(1)
+                // animation.translate(0);
+                animation.step()
+                this.setData({
+                    "animation.dodgeTools": animation.export()
+                })
+                break;
+            default:
+                break;
+        }
+
+
+    },
+
     //-------以上为画布动作的处理事件-----
     status_userJoinOnline(userId) {//有用户加入上线状态。
         joinUserIconByID(userId)
@@ -1954,7 +2007,7 @@ Page({
      */
 
     onLoad: function (options) {
-    
+
 
     },
     /**
@@ -1968,7 +2021,7 @@ Page({
      * 生命周期函数--监听页面显示
      */
     onShow: function (options) {
-        if(this.data.toolsStatus.toolType == ToolsStatus_type.image){
+        if (this.data.toolsStatus.toolType == ToolsStatus_type.image) {
             return
         }
         let that = this;
@@ -2037,7 +2090,7 @@ Page({
 
                                 var str = '您已加入队伍';
                                 str += app.globalData.userInfo.groupName;
-                                str += '，需要先退出当前队伍。';
+                                str += '，是否切换到'+res.data.groupName;
                                 wx.showModal({
                                     title: '提示',
                                     content: str,
@@ -2048,7 +2101,7 @@ Page({
 
                             }
                             if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
-                                
+
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
                                 //console.log(jsDownLoadDrawBoardData);
@@ -2152,7 +2205,7 @@ Page({
      * 生命周期函数--监听页面隐藏
      */
     onHide: function () {
-        if(this.data.toolsStatus.toolType == ToolsStatus_type.image){
+        if (this.data.toolsStatus.toolType == ToolsStatus_type.image) {
             return
         }
         let localStorage = new LocalStorage()
@@ -2444,18 +2497,7 @@ Page({
 
     },
     canvas_touchstart(e) {
-        //处理按下后的靠边动画，
-        let animation = wx.createAnimation({
-            duration: 400,
-            timingFunction: "ease"
-        })
-        // animation.left(100)
-        animation.translate(-100);
-        animation.step()
-        this.setData({
-            "animation.dodgeTools": animation.export()
-        })
-
+        this.RunAnimation("closeTools")
 
         let datas = this.data
         let toolsStatus = datas.toolsStatus
@@ -2592,7 +2634,7 @@ Page({
 
                                 let action = drawBoard.getActionByindex(actionsIndex[a]);
                                 action.oRect = action.getSelectRectObject()
-                            
+
                             }
 
                             return;
@@ -2674,18 +2716,22 @@ Page({
 
         let mouseActions = toolsStatus.mouseActions
         let condition = toolsStatus.condition
-
+       
         for (let i = 0; i < touches.length; i++) {
             const touch = touches[i];
+            if (touch.identifier!=mouseActions[i].identifier) {
+                console.log("错误：移动事件错乱。")
+            }
             mouseActions[i].lastPoint = mouseActions[i].endPoint
             mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
 
         }
-
+    
         //先进行全局的两指操作判断。
-        if (touches.length == 2) {
+        if (touches.length == 2 ) {
             //计算两个手指xy偏差，是否趋近于一样
             condition.addValue(Condition_Type.twoFinger_gesture)
+            console.log(mouseActions[0],touches[0])
             this.compute_scrollGesture(toolsStatus)
             return
 
@@ -2882,19 +2928,8 @@ Page({
 
     canvas_touchend(e) {//手指离开后，如果还存在手指的话，e里面则仍然存在touches数据。
 
+        this.RunAnimation("opeanTools")
 
-        let animation = wx.createAnimation({
-            duration: 400,
-            timingFunction: "ease"
-        })
-        // animation.left(100)
-        animation.translate(0);
-        animation.step()
-
-
-        this.setData({
-            "animation.dodgeTools": animation.export()
-        })
 
 
         let toolsStatus = this.data.toolsStatus
@@ -2948,7 +2983,7 @@ Page({
                     break
 
                 case ToolsStatus_type.pen:
-                   
+
                     if (lsAction.type == Action_type.line) {
                         if (lsAction.mode.points.length <= 2) { //小于两个点时，删除路径。
                             console.log("路径过短，删除。")
@@ -2958,7 +2993,7 @@ Page({
                     }
                     break
                 case ToolsStatus_type.shape:
-                    
+
                     if (this.data.penConfiguration.shape == CGShape_type.roundness) {
                         if (lsAction.mode.getRinRoundness() <= 1) { //小于两个点时，删除路径。
                             drawBoard.actions.splice(drawBoard.actions.length - 1, 1)

@@ -53,6 +53,11 @@ Page({
                             },500);
                         } else {
                             console.log(res.data.errMsg);
+                            wx.showToast({
+                                title: '协作加入失败',
+                                icon: "none",
+                                duration: 2000
+                            })
                         }
                     }
                     else {
