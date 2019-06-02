@@ -21,6 +21,7 @@ Page({
     let that = this ;
   
     this.applyPermission()
+  
   },
 
   /**
@@ -73,46 +74,56 @@ Page({
   },
   //单击事件----------------
   onGetUserInfo(e){
-    this.applyPermission()
-
+    this.applyPermission().then(res=>{
+      console.log("拿到数据了：",res)
+      return res
+    }).then(res=>{
+      console.log("继续下一件事。",res)
+    })
+    console.log("继续了。")
   },
   //----------------
   applyPermission() {
     let that = this;
-    wx.getSetting({
-      success(res) {
-        if (res.authSetting['scope.userInfo']) {
-          console.log("用户已授权基本信息。")
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-          wx.getUserInfo({
-            success(res) {
-              console.log(res.userInfo)
-              app.globalData.userInfo = res.userInfo;
-              console.log(app.globalData.userInfo.avatarUrl)
-              that.setData({
-                usericonUrl: app.globalData.userInfo.avatarUrl
-              })
-            }
-          })
-        } else {
-          console.log("用户未授权user信息")
-
+    var p = new Promise(function (resolve, reject) {
+      wx.getSetting({
+        success(res) {
+          if (res.authSetting['scope.userInfo']) {
+            console.log("用户已授权基本信息。")
+            // 已经授权，可以直接调用 getUserInfo 获取头像昵称
+            wx.getUserInfo({
+              success(res) {
+                console.log(res.userInfo)
+                app.globalData.userInfo = res.userInfo;
+                console.log(app.globalData.userInfo.avatarUrl)
+                resolve(res);
+                that.setData({
+                  usericonUrl: app.globalData.userInfo.avatarUrl
+                })
+              }
+            })
+          } else {
+            console.log("用户未授权user信息")
+  
+          }
+  
+          if (res.authSetting['scope.writePhotosAlbum'] != true) {
+            console.log("用户未授权相册功能。")
+            wx.authorize({
+              scope: 'scope.writePhotosAlbum',
+              success() {
+                console.log("用户点击同意授权。")
+              }
+            })
+          } else {
+            console.log("用户已授权相册功能。")
+          }
+  
         }
-
-        if (res.authSetting['scope.writePhotosAlbum'] != true) {
-          console.log("用户未授权相册功能。")
-          wx.authorize({
-            scope: 'scope.writePhotosAlbum',
-            success() {
-              console.log("用户点击同意授权。")
-            }
-          })
-        } else {
-          console.log("用户已授权相册功能。")
-        }
-
-      }
+      })
     })
+    return p 
+   
   }
 
   

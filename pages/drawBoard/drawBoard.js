@@ -27,7 +27,9 @@ let DevelopConfiguration = {
     },
     lineDashData: [3, 5],
     sameTimeTouchInterval: 40
+
 }
+console.log(typeof({}))
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 var websocket = require('../..//utils/websocket.js');//加载通信库
 var utils = require('../..//utils/util.js');//加载插件库
@@ -42,46 +44,66 @@ function send(data) {
 }
 function getTimestamp() {
     //获取时间戳作为数据的唯一标识
-
-    return (new Date()).valueOf();
+    // return "/aa1"
+    return String((new Date()).valueOf());
 }
 
 //上传文件函数 传入本地文件路径参数即可，成功回调返回网络地址
 function saveToFIle(path) {
-    var imageUrl = ""
-    wx.compressImage({
-        src: path,
-        quality: 80,
-        success: function (res) {
-            console.log("压缩后的地址", res.tempFilePath)
-            wx.uploadFile({
-                url: url,
-                filePath: res.tempFilePath,
-                name: 'image',
-                formData: {
-                    'session': app.globalData.session
-                },
-                success: function (res) {
-                    if (res.statusCode === 200) {//上传成功
-                        // that._tempImgPath = res.data;//拿到的地址
-                        imageUrl = res.data
-                        console.log(imageUrl)
-                    } else {
-                        console.log('上传失败');
-                    }
-                }
-            });
-        },
-        fail: function (e) {
-            console.log(e)
-        }
-    })
-    while (imageUrl != "") {
-        setTimeout(function () { }, 100)
-    }
-    return imageUrl
-}
+    var p = new Promise(function (resolve, reject) {
 
+        // wx.compressImage({
+        //     src: path,
+        //     quality: 80,
+        //     success: function (res) {
+        //         let imgPath = res.tempFilePath
+
+                let imgPath = path
+                wx.uploadFile({
+                    url: url,
+                    filePath: imgPath,
+                    name: 'image',
+                    formData: {
+                        'session': app.globalData.session
+                    },
+                    success: function (res) {
+                        if (res.statusCode === 200) {//上传成功
+                            // that._tempImgPath = res.data;//拿到的地址
+                            imageUrl = res.data
+
+
+                            resolve(imageUrl)//执行成功回传
+
+                        } else {
+                            reject(e)
+                        }
+                    }
+                });
+        //     },
+        //     fail: function (e) {
+        //         console.log(e)
+        //         reject(e)
+        //     }
+        // })
+    })
+    return p
+}
+function downloadFile(path) {
+    var p = new Promise(function (resolve, reject) {
+        wx.downloadFile({
+            url: path,
+            success: function (res) {
+                console.log("下载文件状态：" + res.statusCode)
+                resolve(res)
+            },
+            fail: function (res) {
+                reject(res)
+            }
+        })
+
+    })
+    return p
+}
 
 function rpx(number) {//传入rpx值，转化为px
     // 规定任意屏幕的大小均为750rpx
@@ -723,11 +745,11 @@ class CGPoint { //坐标点类
         return false
     }
 
-    setPoint(x=null,y=null){//通过函数修改点数据
-        if (x!= null) {
+    setPoint(x = null, y = null) {//通过函数修改点数据
+        if (x != null) {
             this.x = parseInt(x)
         }
-        if (y!= null) {
+        if (y != null) {
             this.y = parseInt(y)
         }
     }
@@ -903,9 +925,11 @@ class CGImage {
         this.height = 0;
         this.owidth = 0;
         this.oheight = 0;
-        this.path = "";
         this.position = null;
-        this.url = ""
+        this.path = "";//当前用户的本地路径。
+        this.url = ""//网络http
+        this.tag = -1;//图片在服务器及本地的唯一标识=时间戳
+
     }
     initByJson(json) {
         for (const key in this) {
@@ -927,6 +951,71 @@ class CGImage {
         return this
     }
     getlocalStoragePath() {//获取图片当前的本地缓存。
+        let that = this
+        var p = new Promise(function (resolve, reject) {
+            let locoalImgObj = wx.getStorageSync("ImgStorage")
+            if (typeof (locoalImgObj) != "object" ) {
+                locoalImgObj = {}
+            }
+            if (that.tag != -1) {
+                //图片已存在服务器中，有标识符。
+              
+                if (typeof (locoalImgObj[that.tag]) == "undefined") {
+                    //图片在本地没有缓存
+                    downloadFile(that.url).then(res => {
+                        console.log("缓存到本地的临时文件", res.tempFilePath)
+                        locoalImgObj[that.tag] = res.tempFilePath
+                        wx.setStorageSync("ImgStorage", locoalImgObj)
+                        that.path = res.tempFilePath
+                        resolve(res.tempFilePath)
+                     
+
+                    })
+
+                } else {
+                    //图片在本地中有缓存，判断是否可用。
+                    
+                    wx.getFileSystemManager().access({
+                        path:locoalImgObj[that.tag],
+                        success:function(){
+                            resolve(locoalImgObj[that.tag])
+                        },
+                        fail:function(){
+                            console.log("本地缓存无效，需要重新缓存图片")
+                            downloadFile(that.url).then(res => {
+                                console.log("缓存到本地的临时文件", res.tempFilePath)
+                                locoalImgObj[that.tag] = res.tempFilePath
+                                wx.setStorageSync("ImgStorage", locoalImgObj)
+                                that.path = res.tempFilePath
+                                resolve(res.tempFilePath)
+                            })
+                        }
+                    })
+                   
+                 
+                }
+
+
+            } else {
+                //首次创建图片
+                that.tag = getTimestamp()
+
+                downloadFile(that.url).then(res => {
+                    console.log("首次创建到本地的临时文件", res.tempFilePath)
+                    //将本地路径缓存到本地图片数据中。
+                
+                    locoalImgObj[that.tag] = res.tempFilePath
+                    wx.setStorageSync("ImgStorage", locoalImgObj)
+                    that.path = res.tempFilePath
+                    resolve(res.tempFilePath)
+              
+                })
+            }
+
+        })
+        return p
+
+
 
     }
 }
@@ -1284,59 +1373,67 @@ Page({
         datas.toolsStatus.toolType = ToolsStatus_type.image;
         wx.chooseImage({
             success(res) {
-                const imgPath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
-                // wx.showLoading({
-                //     title: "正在添加图片",
-                //     mask: true
-                // })
-                console.log(imgPath)
-                // let imgUrl = saveToFIle(imgPath)
-                wx.getImageInfo({
-                    src: imgPath,
-                    success: function (res) {
-                        let systeminfo = app.globalData.systemInfo
-
-                        drawBoard.addAction(Action_type.image)
-                        let cgimg = drawBoard.getLastAction().mode
-                        cgimg.owidth = res.width//保存原始大小
-                        cgimg.oheight = res.height
-                        cgimg.width = res.width//保存原始大小
-                        cgimg.height = res.height
-                        console.log(res)
-                        //开始计算居中后的图片大小。
-                        let beyondWidth = cgimg.owidth - systeminfo.windowWidth
-                        let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
-                        if (beyondWidth > 0 || beyondHeigth > 0) {
-                            if (beyondWidth > beyondHeigth) {
-                                cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
-                                cgimg.height *= (cgimg.width / cgimg.owidth)
-
-                            } else {
-                                cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
-                                cgimg.width *= (cgimg.height / cgimg.oheight)
-                            }
-                        }
-
-
-                        cgimg.path = imgPath
-                        // wx.hideLoading({})
-                        console.log(imgPath)
-                        cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
-                        datas.toolsStatus.toolType = ToolsStatus_type.mouse;
-                        that.setData({
-                            "toolsStatus.toolType": datas.toolsStatus.toolType
-                        })
-                        //以上只添加图片进入数据库，不进行渲染。
-                        that.reloadDrawBoard()
-
-                    },
-                    fail: function () {
-                        that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
-                        that.setData({
-                            "toolsStatus.toolType": that.data.toolsStatus.toolType
-                        })
-                    }
+                const orignFilePath = res.tempFilePaths[0] // tempFilePaths 的每一项是一个本地临时文件路径
+                wx.showLoading({
+                    title: "正在添加图片",
+                    mask: true
                 })
+
+
+                saveToFIle(orignFilePath).then(imageUrl => {
+                    console.log("回传的网络图片地址", imageUrl)
+                    drawBoard.addAction(Action_type.image)
+                    let cgimg = drawBoard.getLastAction().mode
+                    cgimg.url = imageUrl
+                    cgimg.getlocalStoragePath().then(localPath => {
+                        console.log("回传回来的本地路径", localPath)
+
+                        wx.getImageInfo({
+                            src: localPath,
+                            success: function (res) {
+                                let systeminfo = app.globalData.systemInfo
+                                cgimg.owidth = res.width//保存原始大小
+                                cgimg.oheight = res.height
+                                cgimg.width = res.width//保存原始大小
+                                cgimg.height = res.height
+                                console.log(res)
+                                //开始计算居中后的图片大小。
+                                let beyondWidth = cgimg.owidth - systeminfo.windowWidth
+                                let beyondHeigth = cgimg.oheight - systeminfo.windowHeight
+                                if (beyondWidth > 0 || beyondHeigth > 0) {
+                                    if (beyondWidth > beyondHeigth) {
+                                        cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
+                                        cgimg.height *= (cgimg.width / cgimg.owidth)
+    
+                                    } else {
+                                        cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
+                                        cgimg.width *= (cgimg.height / cgimg.oheight)
+                                    }
+                                }
+                                cgimg.position = new CGPoint((systeminfo.windowWidth - cgimg.width) / 2 + that.data.scrollView.nleft, (systeminfo.windowHeight - cgimg.height) / 2 + that.data.scrollView.ntop)
+                                datas.toolsStatus.toolType = ToolsStatus_type.mouse;
+                                console.log(cgimg)
+                                wx.hideLoading()
+                                that.setData({
+                                    "toolsStatus.toolType": datas.toolsStatus.toolType
+                                })
+                                //以上只添加图片进入数据库，不进行渲染。
+                               
+                                that.reloadDrawBoard()
+    
+                            },
+                            fail: function () {
+                                that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
+                                that.setData({
+                                    "toolsStatus.toolType": that.data.toolsStatus.toolType
+                                })
+                            }
+                        })
+                    })
+
+                    
+                })
+
             },
             fail: function () {
                 that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
@@ -1575,7 +1672,7 @@ Page({
 
     },
 
-    reloadDrawBoard() {
+    reloadDrawBoard(reloadImg = false) {
 
 
         let toolsStatus = this.data.toolsStatus
@@ -1591,7 +1688,7 @@ Page({
 
         for (const key in thisRoom.drawBoardAll) {
             drawBoard = mydrawBoard
-            if (typeof(drawBoard) == "undefined") {
+            if (typeof (drawBoard) == "undefined") {
                 console.log("reload错误：drawboard undefined")
             }
             var actions = {}
@@ -1745,22 +1842,21 @@ Page({
                             let tempPosition = cgimg.position.modelFlexInit(toolsStatus.modelFlexData)
                             let tempWidth = cgimg.width * toolsStatus.modelFlexData.width
                             let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
-                            wx.getImageInfo({
-                                src: cgimg.path,
-                                fail: function (e) {
-                                    console.log("图片有问题", e)
-                                }
-                            })
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
-
                         } else {
-                            wx.getImageInfo({
-                                src: cgimg.path,
-                                fail: function (e) {
-                                    console.log("图片有问题", e)
-                                }
+                        if (reloadImg == true) {
+                            let that = this
+                            cgimg.getlocalStoragePath().then(localpath =>{
+                                console.log("重载路径",localpath)
+                                ctx.drawImage(localpath, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+                                that.reloadDrawBoard()
                             })
+                        }else{
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+
+                        }
+                           
+
 
                         }
                         break
@@ -1882,7 +1978,7 @@ Page({
         let nX = -(finger1_Offest.x + finger2_Offest.x) / 2 + this.data.scrollView.nleft
         let nY = -(finger1_Offest.y + finger2_Offest.y) / 2 + this.data.scrollView.ntop
         // console.log(finger1_Offest.x+","+finger1_Offest.y,finger2_Offest.x+","+finger2_Offest.y)
-        console.log(finger1_Offest,finger2_Offest,nX,nY,"---", this.data.scrollView.nleft, this.data.scrollView.ntop,"<====",mouseActions[0])
+        console.log(finger1_Offest, finger2_Offest, nX, nY, "---", this.data.scrollView.nleft, this.data.scrollView.ntop, "<====", mouseActions[0])
 
 
         nX = nX > 0 ? nX : 0
@@ -1900,7 +1996,7 @@ Page({
 
         //应用到画布上
         //以下处理非常重要，移动后画布位置改变，此时按下的点的坐标已经！=原来的点。
-      
+
         mouseActions[0].endPoint.x -= finger1_Offest.x
         mouseActions[0].endPoint.y -= finger1_Offest.y
         mouseActions[1].endPoint.x -= finger2_Offest.x
@@ -1966,7 +2062,7 @@ Page({
         })
         switch (type) {
             case "closeTools":
-              
+
                 // animation.left(100)
                 animation.opacity(0)
                 // animation.translate(-100);
@@ -1977,7 +2073,7 @@ Page({
                 break;
 
             case "opeanTools":
-              
+
                 // animation.left(100)
                 animation.opacity(1)
                 // animation.translate(0);
@@ -2090,7 +2186,7 @@ Page({
 
                                 var str = '您已加入队伍';
                                 str += app.globalData.userInfo.groupName;
-                                str += '，是否切换到'+res.data.groupName;
+                                str += '，是否切换到' + res.data.groupName;
                                 wx.showModal({
                                     title: '提示',
                                     content: str,
@@ -2111,7 +2207,7 @@ Page({
                                     // that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
                                 }
                                 console.log("从数据库下载的整个画板数据：", thisRoom.drawBoardAll);
-                                that.reloadDrawBoard()
+                                that.reloadDrawBoard(true)
 
                                 //连接socket
                                 websocket.connect(app.globalData.userInfo, function (sockres) {
@@ -2135,7 +2231,7 @@ Page({
 
                                     console.log("收到实时数据，当前画布所有：", thisRoom.drawBoardAll);
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
-                                    that.reloadDrawBoard()
+                                    that.reloadDrawBoard(true)
                                 });
 
                                 //获取当前队伍里所有人的信息
@@ -2716,22 +2812,22 @@ Page({
 
         let mouseActions = toolsStatus.mouseActions
         let condition = toolsStatus.condition
-       
+
         for (let i = 0; i < touches.length; i++) {
             const touch = touches[i];
-            if (touch.identifier!=mouseActions[i].identifier) {
+            if (touch.identifier != mouseActions[i].identifier) {
                 console.log("错误：移动事件错乱。")
             }
             mouseActions[i].lastPoint = mouseActions[i].endPoint
             mouseActions[i].endPoint = new CGPoint(touch.x, touch.y)
 
         }
-    
+
         //先进行全局的两指操作判断。
-        if (touches.length == 2 ) {
+        if (touches.length == 2) {
             //计算两个手指xy偏差，是否趋近于一样
             condition.addValue(Condition_Type.twoFinger_gesture)
-            console.log(mouseActions[0],touches[0])
+            console.log(mouseActions[0], touches[0])
             this.compute_scrollGesture(toolsStatus)
             return
 
