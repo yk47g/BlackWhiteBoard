@@ -19,6 +19,7 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
         $jsData = json_decode($user_message,true);
         $roomID = $jsData['roomID'];
         $id = $jsData['id'];
+        $date = $jsData['date'];
         $newDrawBoardData = $jsData['data'];
         $conn=mysqli_connect('localhost','root','e973538be47c38d8','bwb');//三个参数分别对应服务器名，账号，密码，数据库名
         if (mysqli_connect_errno($conn)) {  
@@ -31,11 +32,14 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
             $oldDrawBoardData = $row['drawBoardData'];
             $oldDrawBoardData = json_decode($oldDrawBoardData,true);
             $have = 0;
-            for($i=0;$i<=count($oldDrawBoardData);$i++){
+            $i=0;
+            for($i=0;$i<count($oldDrawBoardData);$i++){
                 if($oldDrawBoardData[$i]['id'] == $id){//存在这个id，更新这个id的数据
                     $have = 1;
                     $oldDrawBoardData[$i]['data'] = $newDrawBoardData;
+                    $oldDrawBoardData[$i]['date'] = $date;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
+                    var_dump($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
                     $res = mysqli_query($conn,$sql);
                     if($res){
@@ -46,9 +50,11 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
                         break;
                     }
                 }
-                if($have = 0)
+            }
+            if($have == 0)
                 {//数据库里没有这个id的数据，直接插入一个
-                    $oldDrawBoardData[$i+1] = $jsData;
+                    array_push($oldDrawBoardData,$jsData);
+                    //$oldDrawBoardData[$i+1]['data'] = $newDrawBoardData;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
                     $res = mysqli_query($conn,$sql);
@@ -60,7 +66,6 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
                         break;
                     }
                 }
-            }
         }else{
             echo "error:账户绑定的房间不存在\n";
         }

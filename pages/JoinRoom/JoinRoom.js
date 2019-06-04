@@ -45,7 +45,9 @@ Page({
                                 title: '已成功加入协作',
                                 icon: "success",
                                 duration: 2000
-                            })
+                            });
+                            app.globalData.userInfo.roomID = subID;
+                            wx.setStorageSync('roomID', subID);
                             setTimeout(function () {
                                 wx.navigateBack({
                                     delta:1

@@ -74,7 +74,7 @@ if ((!empty($id)) && (!empty($createRoomName))){
             $sql = "UPDATE `bwb_users` SET `roomID` = '$roomID' WHERE `bwb_users`.`id` = $id";
             $res = mysqli_query($conn,$sql);
             //$newDrawData = '[{'.'"'.'data'.'"'.':[],'.'"'.'date'.'"'.':'.'"'.'2019/05/30 00:00:00'.'"'.','.'"'.'id'.'"'.':'.'"'.$id.'"'.','.'"'.'roomID'.'"'.':'.'"'.$roomID.'"'.'}]';
-            $newDrawData = '[{"data":[{"actions":[{"mode":{"points":[{"x":225,"y":289},{"x":224,"y":298},{"x":222,"y":304},{"x":215,"y":315},{"x":204,"y":335},{"x":195,"y":356},{"x":190,"y":369},{"x":184,"y":388},{"x":178,"y":408},{"x":173,"y":421},{"x":171,"y":433},{"x":169,"y":438},{"x":168,"y":444}],"lineWidth":3,"color":"rgb(255,99,105)","lineDash":false},"type":0,"user":"unknow","time":"u4e0bu53487:38:02"}],"backgroundColor":"","width":2000,"height":2000}],"date":"2019/05/30 11:15:33","id":"1","roomID":"10"}]';
+            $newDrawData = '[{"data":[{"actions":[],"backgroundColor":"","width":2000,"height":2000}],"date":"2019/05/31 21:00:00","id":"'.$id.'","roomID":"'.$roomID.'"}]';
             //插入一个空的drawboardData
             $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$newDrawData' WHERE `bwb_room`.`roomID` = $roomID";
             $res2 = mysqli_query($conn,$sql);

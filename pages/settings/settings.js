@@ -158,7 +158,6 @@ Page({
         wx.showActionSheet({
             itemList: ['加入协作', '创建协作'],
             success (res) {
-              console.log(res.tapIndex)
               if (res.tapIndex === 0) {//加入
                 wx.navigateTo(
                     {
