@@ -70,8 +70,8 @@ page {
   padding: 0;
   /* margin-bottom: 15rpx; */
   border-style: none;
-  width: 35px;
-  height: 35px;
+  width: 68rpx;
+  height: 68rpx;
   align-items: center;
   display: flex;
   box-sizing: border-box;
@@ -79,8 +79,8 @@ page {
 
 .toolsBar button cover-image {
   /* background-color: black; */
-  width: 35px;
-  height: 35px;
+  width: 68rpx;
+  height:68rpx;
 }
 
 /* 实时用户数据 */
