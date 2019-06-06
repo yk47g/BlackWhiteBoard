@@ -43,6 +43,7 @@ Page({
                             app.globalData.userInfo.roomID = res.data.data;
                             app.globalData.userInfo.groupName = subName;
                             wx.setStorageSync('roomID', res.data.data);
+                            //在这里干点什么。。。清空一下Room数据。。你在这里补一下逻辑
                             wx.navigateTo(
                                 {
                                     url: '/pages/CreateRoomSuccess/CreateRoomSuccess'

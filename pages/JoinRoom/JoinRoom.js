@@ -48,9 +48,10 @@ Page({
                             });
                             app.globalData.userInfo.roomID = subID;
                             wx.setStorageSync('roomID', subID);
+                            //在这里干点什么。。。清空一下Room数据。。你在这里补一下逻辑
                             setTimeout(function () {
-                                wx.navigateBack({
-                                    delta:1
+                                wx.reLaunch({
+                                    url: '/pages/drawBoard/drawBoard'
                                 });
                             },500);
                         } else {
