@@ -107,8 +107,8 @@ Page({
         wx.showModal({
             title: '提示',
             content: '退出将清空您的笔画数据，确定要退出当前协作？',
-            success (res) {
-              if (res.confirm) {
+            success (res11) {
+              if (res11.confirm) {
                 console.log('用户点击确定');
                 wx.request({
                     url: url,
@@ -119,6 +119,8 @@ Page({
                     success: function (res) {
                         if (res.statusCode == 200) {
                             if (res.data.statusCode == 0) {
+                                getCurrentPages()[0].response_Reset()
+                                
                                 wx.showModal({
                                     title: '提示',
                                     content: '已成功退出队伍',
@@ -144,7 +146,7 @@ Page({
                         console.log("request.fail:", e);
                     }//request.fail
                 });//request
-              } else if (res.cancel) {
+              } else if (res11.cancel) {
                 console.log('用户点击取消');
               }
             }

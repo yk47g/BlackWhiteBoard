@@ -50,7 +50,12 @@ Page({
                                 }
                             );
                         } else {
-                            console.log(res.data.errMsg);
+                            wx.showModal({
+                                title: '错误',
+                                content:res.data.errMsg,
+                                showCancel:false
+                              });
+                            
                         }
                     }
                     else {

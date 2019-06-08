@@ -29,7 +29,7 @@ let DevelopConfiguration = {
     sameTimeTouchInterval: 40
 
 }
-console.log(typeof({}))
+console.log(typeof ({}))
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 var websocket = require('../..//utils/websocket.js');//加载通信库
 var utils = require('../..//utils/util.js');//加载插件库
@@ -58,27 +58,27 @@ function saveToFIle(path) {
         //     success: function (res) {
         //         let imgPath = res.tempFilePath
 
-                let imgPath = path
-                wx.uploadFile({
-                    url: url,
-                    filePath: imgPath,
-                    name: 'image',
-                    formData: {
-                        'session': app.globalData.session
-                    },
-                    success: function (res) {
-                        if (res.statusCode === 200) {//上传成功
-                            // that._tempImgPath = res.data;//拿到的地址
-                            imageUrl = res.data
+        let imgPath = path
+        wx.uploadFile({
+            url: url,
+            filePath: imgPath,
+            name: 'image',
+            formData: {
+                'session': app.globalData.session
+            },
+            success: function (res) {
+                if (res.statusCode === 200) {//上传成功
+                    // that._tempImgPath = res.data;//拿到的地址
+                    imageUrl = res.data
 
 
-                            resolve(imageUrl)//执行成功回传
+                    resolve(imageUrl)//执行成功回传
 
-                        } else {
-                            reject(e)
-                        }
-                    }
-                });
+                } else {
+                    reject(e)
+                }
+            }
+        });
         //     },
         //     fail: function (e) {
         //         console.log(e)
@@ -954,12 +954,12 @@ class CGImage {
         let that = this
         var p = new Promise(function (resolve, reject) {
             let locoalImgObj = wx.getStorageSync("ImgStorage")
-            if (typeof (locoalImgObj) != "object" ) {
+            if (typeof (locoalImgObj) != "object") {
                 locoalImgObj = {}
             }
             if (that.tag != -1) {
                 //图片已存在服务器中，有标识符。
-              
+
                 if (typeof (locoalImgObj[that.tag]) == "undefined") {
                     //图片在本地没有缓存
                     downloadFile(that.url).then(res => {
@@ -968,19 +968,19 @@ class CGImage {
                         wx.setStorageSync("ImgStorage", locoalImgObj)
                         that.path = res.tempFilePath
                         resolve(res.tempFilePath)
-                     
+
 
                     })
 
                 } else {
                     //图片在本地中有缓存，判断是否可用。
-                    
+
                     wx.getFileSystemManager().access({
-                        path:locoalImgObj[that.tag],
-                        success:function(){
+                        path: locoalImgObj[that.tag],
+                        success: function () {
                             resolve(locoalImgObj[that.tag])
                         },
-                        fail:function(){
+                        fail: function () {
                             console.log("本地缓存无效，需要重新缓存图片")
                             downloadFile(that.url).then(res => {
                                 console.log("缓存到本地的临时文件", res.tempFilePath)
@@ -991,8 +991,8 @@ class CGImage {
                             })
                         }
                     })
-                   
-                 
+
+
                 }
 
 
@@ -1003,12 +1003,12 @@ class CGImage {
                 downloadFile(that.url).then(res => {
                     console.log("首次创建到本地的临时文件", res.tempFilePath)
                     //将本地路径缓存到本地图片数据中。
-                
+
                     locoalImgObj[that.tag] = res.tempFilePath
                     wx.setStorageSync("ImgStorage", locoalImgObj)
                     that.path = res.tempFilePath
                     resolve(res.tempFilePath)
-              
+
                 })
             }
 
@@ -1066,16 +1066,16 @@ class LocalStorage {//本地存储类
             thisRoom.initByJson(json)
             console.log(thisRoom)
 
-            if (app.globalData.session == "" ||  app.globalData.userInfo.roomID == 0) {//判断是否属于未登录的房间。
+            if (app.globalData.session == "" || app.globalData.userInfo.roomID == 0) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
 
             } else {
-                if (typeof(thisRoom.drawBoardAll.temp) != "undefined") {
+                if (typeof (thisRoom.drawBoardAll.temp) != "undefined") {
                     delete thisRoom.drawBoardAll.temp
                     console.log("账号已登录，删除原有temp画板数据")
                     this.saveLocalStorage()
                 }
-                thisRoom.roomID =  app.globalData.userInfo.roomID
+                thisRoom.roomID = app.globalData.userInfo.roomID
             }
         } else {
             console.log("本地缓存为空")
@@ -1407,7 +1407,7 @@ Page({
                                     if (beyondWidth > beyondHeigth) {
                                         cgimg.width = systeminfo.windowWidth * DevelopConfiguration.imgDefaultShrinkProportion
                                         cgimg.height *= (cgimg.width / cgimg.owidth)
-    
+
                                     } else {
                                         cgimg.height = systeminfo.windowHeight * DevelopConfiguration.imgDefaultShrinkProportion
                                         cgimg.width *= (cgimg.height / cgimg.oheight)
@@ -1421,9 +1421,9 @@ Page({
                                     "toolsStatus.toolType": datas.toolsStatus.toolType
                                 })
                                 //以上只添加图片进入数据库，不进行渲染。
-                               
+
                                 that.reloadDrawBoard()
-    
+
                             },
                             fail: function () {
                                 that.data.toolsStatus.toolType = that.data.toolsStatus.lastTooType;
@@ -1434,7 +1434,7 @@ Page({
                         })
                     })
 
-                    
+
                 })
 
             },
@@ -1446,7 +1446,23 @@ Page({
             }
         })
     },
+    response_Reset() {//响应设置页面的清空数据缓存。
+        let data = this.data
+        thisRoom.drawBoardAll = {}
+        thisRoom.roomID = 0
+        app.globalData.userInfo.groupName = 0;
+        app.globalData.userInfo.roomID = "";
+        data.userOnlineInfo = {};
+        data.userOnlineIdArray = []
+        userOnlineIcon = []
+        wx.setStorageSync("Room")
+        wx.setStorageSync('roomID', 0);
+        this.setData({
+            userOnlineIdArray: data.userOnlineIdArray,
+            userOnlineIcon: data.userOnlineIcon
+        })
 
+    },
     mouse_selectAction(action, selecting = false) { //处理选区 按下事件时显示的选框
         //当selecting时，为多选。传入action为两个point，手指的起点和终点。
 
@@ -1847,18 +1863,18 @@ Page({
                             let tempHeight = cgimg.height * toolsStatus.modelFlexData.height
                             ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...tempPosition.getJsonArr(), tempWidth, tempHeight)
                         } else {
-                        if (reloadImg == true) {
-                            let that = this
-                            cgimg.getlocalStoragePath().then(localpath =>{
-                                console.log("重载路径",localpath)
-                                ctx.drawImage(localpath, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
-                                that.reloadDrawBoard()
-                            })
-                        }else{
-                            ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+                            if (reloadImg == true) {
+                                let that = this
+                                cgimg.getlocalStoragePath().then(localpath => {
+                                    console.log("重载路径", localpath)
+                                    ctx.drawImage(localpath, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
+                                    that.reloadDrawBoard()
+                                })
+                            } else {
+                                ctx.drawImage(cgimg.path, 0, 0, cgimg.owidth, cgimg.oheight, ...cgimg.position.getJsonArr(), cgimg.width, cgimg.height)
 
-                        }
-                           
+                            }
+
 
 
                         }
@@ -1967,7 +1983,7 @@ Page({
         console.log("初始化完成的：", thisRoom, drawBoard)
         //drawboardAll数据加载完毕，执行一次重载渲染新数据。
         this.reloadDrawBoard()
-        
+
 
     },
     compute_scrollGesture(toolsStatus) {
@@ -2203,7 +2219,8 @@ Page({
 
 
                             }
-                            if ((currentRoomID === app.globalData.userInfo.roomID) && currentRoomID != 0) {//和数据库roomid一致，开始连接socket
+                            if (currentRoomID != 0) {//和数据库roomid一致，开始连接socket
+                                app.globalData.userInfo.roomID = currentRoomID;
 
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
@@ -2216,7 +2233,7 @@ Page({
                                     }
                                     // that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
                                 }
-                                console.log("从数据库下载后的内存画板数据：", thisRoom.drawBoardAll,drawBoard);
+                                console.log("从数据库下载后的内存画板数据：", thisRoom.drawBoardAll, drawBoard);
                                 that.reloadDrawBoard(true)
 
                                 //连接socket
@@ -3191,7 +3208,7 @@ Page({
         wx.navigateTo(
             {
                 url: '/pages/settings/settings',
-               
+
             }
 
         )
