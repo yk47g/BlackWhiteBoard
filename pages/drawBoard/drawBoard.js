@@ -1699,29 +1699,21 @@ Page({
         ctx.lineCap = "round"
 
         // let nowPageIndex = thisRoom.nowPageIndex
-        let mydrawBoard = drawBoard //保存原来的我的drawboard
-        let myActions = drawBoard.actions //默认actions为当前用户的
-
         var isMyDrawboard = false
-
+        var idrawBoard = {}
 
         for (const key in thisRoom.drawBoardAll) {
-            drawBoard = mydrawBoard
-            if (typeof (drawBoard) == "undefined") {
+
+            idrawBoard = thisRoom.drawBoardAll[key];
+            if (typeof (idrawBoard) == "undefined") {
                 console.log("reload错误：drawboard undefined")
+                continue;
             }
-            var actions = {}
-            if (thisRoom.drawBoardAll.hasOwnProperty(key)) {
-                drawBoard = thisRoom.drawBoardAll[key];
-
-                actions = drawBoard.actions
-            } else {
-                continue
-            }
-
+            var actions = idrawBoard.actions
+            
             if (key == app.globalData.userInfo.id || key == "temp") {
                 //判断是我的画布
-                actions = myActions
+                drawBoard = idrawBoard  //还原数据。
                 isMyDrawboard = true
             } else {
                 isMyDrawboard = false
@@ -1886,7 +1878,7 @@ Page({
 
 
         }
-
+        
         //为选中的图层添加选中框（多,单选时。）
         if (toolsStatus.select.selecting == true && toolsStatus.mouseMoveType != Mouse_MoveType.model_felx && toolsStatus.mouseMoveType != Mouse_MoveType.model_move) {
             ctx.beginPath()
@@ -1894,6 +1886,7 @@ Page({
             ctx.lineWidth = DevelopConfiguration.SelectRectStyle.lineWidth
             ctx.fillStyle = DevelopConfiguration.SelectRectStyle.cornerPointColor//"rgb(32,222,147)"
             ctx.setLineDash([3, 6]);
+            actions = drawBoard.actions
             for (let a = 0; a < actions.length; a++) { //遍历每一个绘制事件
                 const iAction = actions[a];
 
@@ -1921,14 +1914,12 @@ Page({
 
         }
 
-        drawBoard = mydrawBoard//还原数据。
+
         //正式的渲染到屏幕上。
         ctx.draw(false, () => {
 
             if (toolsStatus.mouseMoveType == Mouse_MoveType.model_move || toolsStatus.mouseMoveType == Mouse_MoveType.multipleSelecting || toolsStatus.runReload == true) {
-
                 this.reloadDrawBoard()
-
             }
         })
         ctx.restore()
