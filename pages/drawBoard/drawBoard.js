@@ -1066,7 +1066,7 @@ class LocalStorage {//本地存储类
             thisRoom.initByJson(json)
             console.log(thisRoom)
 
-            if (app.globalData.session == "") {//判断是否属于未登录的房间。
+            if (app.globalData.session == "" ||  app.globalData.userInfo.roomID == 0) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
 
             } else {
