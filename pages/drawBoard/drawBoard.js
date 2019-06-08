@@ -1070,9 +1070,12 @@ class LocalStorage {//本地存储类
                 drawBoard = thisRoom.drawBoardAll.temp
 
             } else {
-                delete thisRoom.drawBoardAll.temp
-                console.log("账号已登录，删除原有temp画板数据")
-                this.saveLocalStorage()
+                if (typeof(thisRoom.drawBoardAll.temp) != "undefined") {
+                    delete thisRoom.drawBoardAll.temp
+                    console.log("账号已登录，删除原有temp画板数据")
+                    this.saveLocalStorage()
+                }
+                thisRoom.roomID =  app.globalData.userInfo.roomID
             }
         } else {
             console.log("本地缓存为空")
@@ -2206,11 +2209,14 @@ Page({
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
                                 //console.log(jsDownLoadDrawBoardData);
                                 for (var i = 0; i < jsDownLoadDrawBoardData.length; i++) {
-                                    thisRoom.drawBoardAll[String(jsDownLoadDrawBoardData[i].id)] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
-
+                                    let userDrawId = String(jsDownLoadDrawBoardData[i].id)
+                                    thisRoom.drawBoardAll[userDrawId] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
+                                    if (userDrawId == app.globalData.userInfo.id) {
+                                        drawBoard = thisRoom.drawBoardAll[userDrawId]
+                                    }
                                     // that.data.drawBoardList[String(jsDownLoadDrawBoardData[i].id)] = jsDownLoadDrawBoardData[i].data[0];
                                 }
-                                console.log("从数据库下载的整个画板数据：", thisRoom.drawBoardAll);
+                                console.log("从数据库下载后的内存画板数据：", thisRoom.drawBoardAll,drawBoard);
                                 that.reloadDrawBoard(true)
 
                                 //连接socket
@@ -2293,7 +2299,7 @@ Page({
         }
 
 
-
+        console.log("完成的：", thisRoom, drawBoard)
         if (typeof (this._exportImage) != "undefined" && this._exportImage == true) {
             console.log("开始导出画布")
             this.compute_exportImage();
