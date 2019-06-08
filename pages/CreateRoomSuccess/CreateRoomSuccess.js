@@ -18,8 +18,8 @@ Page({
         //----------------
     tapBtn:function (e) {
         console.log("点击了返回按钮");
-        wx.navigateBack({
-            delta:2
+        wx.reLaunch({
+            url: '/pages/drawBoard/drawBoard'
         });
     }
     //-------响应事件写上面------

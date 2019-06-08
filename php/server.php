@@ -39,7 +39,6 @@ $server->on('message', function (swoole_websocket_server $server, $frame) {//fra
                     $oldDrawBoardData[$i]['data'] = $newDrawBoardData;
                     $oldDrawBoardData[$i]['date'] = $date;
                     $oldDrawBoardData = json_encode($oldDrawBoardData);
-                    var_dump($oldDrawBoardData);
                     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$oldDrawBoardData' WHERE `bwb_room`.`roomID` = $roomID";
                     $res = mysqli_query($conn,$sql);
                     if($res){

@@ -10,7 +10,12 @@ function connect(user,func) {
         },
 
         fail: function () {
-            console.log('wesocket信道开始连接失败')
+            console.log('websocket信道连接失败，请检查！');
+            wx.showToast({
+                title: '连接失败,请重试！',
+                icon: "none",
+                duration: 2000
+            })
         }
     })
  
