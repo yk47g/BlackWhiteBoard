@@ -460,7 +460,7 @@ class Dom { //模拟dom操作取元素属性类
 }
 
 class DrawBoard {
-    constructor(backgroundColor = "", width = 0, height = 0) {
+    constructor(backgroundColor = "", width = 2000, height = 2000) {
         this.actions = []; //画布的所有绘制路径事件  
         // this.userSession = 0
         this.backgroundColor = backgroundColor; //默认背景颜色
@@ -1930,11 +1930,11 @@ Page({
         // console.log("reload结束",Date.now())
     },
     initDrawBoard() { //进行最基础的变量初始化。
-        new Dom().getElementByString(".drawCanvas", (res) => {
+        // new Dom().getElementByString(".drawCanvas", (res) => {
 
-            drawBoard.width = res[0].width
-            drawBoard.height = res[0].height
-        })
+        //     drawBoard.width = res[0].width
+        //     drawBoard.height = res[0].height
+        // })
 
         drawBoard = new DrawBoard();
         this.data.toolsStatus = new ToolsStatus();
@@ -1964,6 +1964,7 @@ Page({
         console.log("初始化完成的：", thisRoom, drawBoard)
         //drawboardAll数据加载完毕，执行一次重载渲染新数据。
         this.reloadDrawBoard()
+        
 
     },
     compute_scrollGesture(toolsStatus) {
@@ -2117,6 +2118,9 @@ Page({
      * 生命周期函数--监听页面显示
      */
     onShow: function (options) {
+        this.setData({
+            pageVisable: true
+        })
         if (this.data.toolsStatus.toolType == ToolsStatus_type.image) {
             return
         }
@@ -3175,21 +3179,13 @@ Page({
     },
     button_settings() {
         console.log("点击了设置按钮");
-        let that = this
         this.setData({
             pageVisable: false
         })
         wx.navigateTo(
             {
                 url: '/pages/settings/settings',
-                complete: function () {
-                    setTimeout(function () {
-                        that.setData({
-                            pageVisable: true
-                        })
-                    }, 1000)
-
-                }
+               
             }
 
         )
