@@ -358,8 +358,14 @@ Page({
         wx.navigateBack({
             delta:1
         })
-    //  
-     
+    
+    },
+    introduce_onClick(e){
+        wx.setStorageSync("AlreadyIntroduce")//清空已读记录。
+        wx.navigateBack({
+            delta:1
+        })
+        
     }
     //-------响应事件写上面------
 

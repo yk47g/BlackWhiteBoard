@@ -1,0 +1,21 @@
+/* components/introducePage/introducePage.wxss */
+.window{
+  position:relative;
+  width: 560rpx;
+  height: 400rpx;
+  background-color: rgb(240, 240, 240);
+  border-radius: 30rpx;
+
+}
+.introduction{
+  width: 560rpx;
+  height: 325rpx;
+ 
+}
+.switchButton{
+  position: absolute;
+  width: 50rpx;
+  height: 50rpx;
+  bottom: 15rpx;
+
+}

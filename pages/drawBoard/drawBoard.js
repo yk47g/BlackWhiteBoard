@@ -1140,8 +1140,7 @@ Page({
             opeanPane: {},
             dodgeTools: {}
         },
-        drawBoardList: {}
-
+        introduce:false //当前是否在展示说明
 
     },
     draw_line_curve(thisPoint, lsPoint, lssPoint) {
@@ -2100,6 +2099,19 @@ Page({
 
     },
 
+    opean_introduction(){
+        if (this.data.introduce ==false) {
+            this.setData({
+                introduce:true
+            }) 
+        }else{
+            this.setData({
+                introduce:false
+            })
+        }
+        
+
+    },
     //-------以上为画布动作的处理事件-----
     status_userJoinOnline(userId) {//有用户加入上线状态。
         joinUserIconByID(userId)
@@ -2114,8 +2126,7 @@ Page({
      */
 
     onLoad: function (options) {
-
-
+       
     },
     /**
      * 生命周期函数--监听页面初次渲染完成
@@ -2131,9 +2142,18 @@ Page({
         this.setData({
             pageVisable: true
         })
+        if (wx.getStorageSync("AlreadyIntroduce") == "" ) {
+            //开始首次使用说明
+            this.opean_introduction();
+            wx.setStorageSync("AlreadyIntroduce",true)
+        }
+        //基础展示。
+
         if (this.data.toolsStatus.toolType == ToolsStatus_type.image) {
+            //避免bug
             return
         }
+
         let that = this;
         console.log("页面启动参数：", options)
         // 无论什么情况，先初始化创建一个本地使用的drawboard
@@ -2251,7 +2271,7 @@ Page({
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
                                     that.reloadDrawBoard(true)
                                 });
-
+                                
                                 //获取当前队伍里所有人的信息
                                 wx.request({
                                     url: url,
@@ -2390,7 +2410,7 @@ Page({
                     timingFunction: "ease"
                 })
                 // animation.left(100)
-                animation_back.opacity(0.3)
+                animation_back.opacity(0.4)
                 animation_back.step()
 
                 let animation_opean = wx.createAnimation({

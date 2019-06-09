@@ -1,4 +1,4 @@
-<view>
+
   <view class='main' wx:if="{{pageVisable}}">
     <scroll-view scroll-x="{{true}}" scroll-y="{{true}}" scroll-left="{{scrollView.nleft}}" scroll-top="{{scrollView.ntop}}">
       <canvas class="drawCanvas" canvas-id="CanvasDisplay" bindtouchstart="canvas_touchstart" bindtouchmove='canvas_touchmove' bindtouchend='canvas_touchend' style="{{exchange  ? 'display:none;':''}}" binderror="canvas_errOutput" disable-scroll="true"></canvas>
@@ -105,5 +105,9 @@
 
       </cover-view>
     </block>
+    <!-- 初次使用时的介绍窗口 -->
+    <block wx:if="{{introduce}}">
+    <cover-view class="shadeBackground"  bindtap="opean_introduction" style='opacity:0.5'></cover-view>
+    <introducePage></introducePage>
+    </block>
   </view>
-</view>

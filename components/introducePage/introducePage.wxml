@@ -1,0 +1,8 @@
+<!--components/introducePage/introducePage.wxml-->
+<cover-view class='window'>
+<!-- 展示内容 -->
+<cover-image class='introduction' src="{{nowPageUrl}}">></cover-image>
+<!-- 切换按钮 -->
+<cover-image class="switchButton" id='last' catchtap='changePage_click' style='left:30rpx;'src="/icons/page_last.png">左</cover-image>
+<cover-image class='switchButton' id='next' catchtap='changePage_click' style='right:30rpx;'src="/icons/page_next.png">右</cover-image>
+</cover-view>

@@ -80,7 +80,7 @@ page {
 .toolsBar button cover-image {
   /* background-color: black; */
   width: 68rpx;
-  height:68rpx;
+  height: 68rpx;
 }
 
 /* 实时用户数据 */
@@ -120,7 +120,6 @@ page {
 
 .toolsBarDeatilPane {
   box-sizing: border-box;
-  
   position: absolute;
   bottom: -500rpx;
   width: 100vw;
@@ -179,4 +178,14 @@ page {
   padding: 20rpx;
   width: 60rpx;
   margin: auto;
+}
+
+/* 介绍窗口 */
+
+introducePage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -280rpx;
+  margin-top: -200rpx;
 }

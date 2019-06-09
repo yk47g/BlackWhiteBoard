@@ -1,7 +1,7 @@
 {
   "navigationStyle": "custom",
   "usingComponents": {
-   
+    "introducePage": "../../components/introducePage/introducePage"
   },
   "pageOrientation": "auto",
   "navigationBarTitleText": "黑白板",
