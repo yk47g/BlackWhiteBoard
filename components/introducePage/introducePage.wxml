@@ -1,8 +1,10 @@
 <!--components/introducePage/introducePage.wxml-->
 <cover-view class='window'>
-<!-- 展示内容 -->
-<cover-image class='introduction' src="{{nowPageUrl}}">></cover-image>
-<!-- 切换按钮 -->
-<cover-image class="switchButton" id='last' catchtap='changePage_click' style='left:30rpx;'src="/icons/page_last.png">左</cover-image>
-<cover-image class='switchButton' id='next' catchtap='changePage_click' style='right:30rpx;'src="/icons/page_next.png">右</cover-image>
+  <!-- 展示内容 -->
+  <cover-image class='introduction' id='next' src="{{nowPageUrl}}" catchtap='changePage_click'> </cover-image>
+  <!-- 分割线 -->
+  <cover-image class='introduction' style='height:3rpx; background-color:  rgb(197, 197, 197);'></cover-image>
+  <!-- 切换按钮 -->
+  <cover-image class="switchButton" wx:if="{{canLast}}" id='last' catchtap='changePage_click' style='left:30rpx;' src="/icons/page_last.png"></cover-image>
+  <cover-image class='switchButton' wx:if="{{canNext}}"  id='next' catchtap='changePage_click' style='right:30rpx;' src="/icons/page_next.png"></cover-image>
 </cover-view>

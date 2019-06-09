@@ -4,13 +4,13 @@
   width: 560rpx;
   height: 400rpx;
   background-color: rgb(240, 240, 240);
-  border-radius: 30rpx;
-
+  border-radius: 30rpx; 
+  
 }
 .introduction{
   width: 560rpx;
   height: 325rpx;
- 
+
 }
 .switchButton{
   position: absolute;

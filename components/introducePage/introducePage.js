@@ -13,7 +13,9 @@ Component({
   data: {
     pageUrlArray: [],
     pageIndex: 0,
-    nowPageUrl: "/icons/page_1.png"
+    nowPageUrl: "/icons/page_load.png",
+    canNext:true,
+    canLast:false
   },
 
   /**
@@ -40,6 +42,13 @@ Component({
        
       }
      
+
+      this.setData({
+        nowPageUrl: this.data.pageUrlArray[data.pageIndex],
+        
+        canNext: data.pageIndex+1 < data.pageUrlArray.length,
+        canLast: data.pageIndex>0
+      })
     }
   },
 
@@ -49,11 +58,15 @@ Component({
   },
   attached: function () {
     // 在组件实例进入页面节点树时执行
-    data.pageUrlArray.push("/icons/page_1.png")//默认的的加载中显示。加载完时需要删掉。
-    
-    //尝试在这里加载url列表即可--------。
-    let data = this.data;
+    let data = this.data
+    data.pageUrlArray = [] //默认的的加载中显示。加载完时需要删掉。
 
+    data.pageUrlArray.push("/icons/page_0.png")
+    data.pageUrlArray.push("/icons/page_1.png")
+    data.pageUrlArray.push("/icons/page_2.png")
+    data.pageUrlArray.push("/icons/page_3.png")
+    //尝试在这里加载url列表即可--------。
+  
     
     
 

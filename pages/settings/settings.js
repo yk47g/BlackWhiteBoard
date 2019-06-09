@@ -366,7 +366,13 @@ Page({
             delta:1
         })
         
-    }
+    },
+  drawSet_onClick(){
+    wx.showToast({
+        title: "等待体验...",
+        icon: "none"
+    })
+  }
     //-------响应事件写上面------
 
 })

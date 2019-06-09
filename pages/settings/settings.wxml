@@ -39,7 +39,7 @@
     
     <view class="settingsButtonsView">
         <view class="settingsButtons">
-            <navigator url="/page/navigate/navigate" class="list-item" hover-class="none">
+            <navigator class="list-item" hover-class="none" bindtap='drawSet_onClick'>
                 <view class='item'>
                     <image class="item-image" src='/icons/groupSettings.png'></image>
                     <text class="item-text">协作设置</text>
