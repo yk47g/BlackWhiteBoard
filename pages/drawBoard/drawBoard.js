@@ -2377,21 +2377,25 @@ Page({
      * 用户点击右上角分享
      */
     onShareAppMessage: function (res) {
-        console.log(res)
-
-        if (res.from == "button") {
-            //邀请用户
+        console.log('用户点击了分享',res)
+        let romid = wx.getStorageSync('roomID');
+        console.log(romid);
+        if (romid === "0" || romid === "") {
+            //还没加入房间，分享小程序本身
+            return {
+                title: '叮咚协作白板',
+                path: '/pages/drawBoard/drawBoard',
+                imageUrl: 'https://pykky.com/wechatbwb/bwbCode2.jpg'
+            }       
         } else {
-            //分享小程序
+            //已加入小程序，分享房间邀请信息
+            return {
+                title: '点击加入协作',
+                path: '/pages/drawBoard/drawBoard?romid=' + romid
+            }
         }
-
-        // let shareData={
-        //     title:"",
-        // path:"",
-        // imageUrlL:"",
-        // }
-        return {} //必须返回一个objec 以定义转发的内容
     },
+    
     onResize(res) {
         console.log("设备旋转", res)
     },

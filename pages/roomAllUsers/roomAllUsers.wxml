@@ -1,7 +1,7 @@
 <view class="main">
     <scroll-view class="scrollView"  scroll-y enable-back-to-top>
         <block wx:for='{{list}}'>
-            <view class="oneUserView" hover-class='hover-class' id="{{item.id}}" bindtap="tap_oneUserView">
+            <view class="oneUserView" hover-class='none' id="{{item.id}}" bindtap="tap_oneUserView">
                 <!--左边图片-->
                 <view class="userIconimageView">
                     <image class='userIconimage' src="{{item.avatarUrl}}"></image>
