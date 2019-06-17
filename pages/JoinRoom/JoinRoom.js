@@ -48,7 +48,7 @@ Page({
                             });
                             app.globalData.userInfo.roomID = subID;
                             wx.setStorageSync('roomID', subID);
-                            //在这里干点什么。。。清空一下Room数据。。你在这里补一下逻辑
+                            //在这里干点什么。。。清空一下Room数据。。你在这里补一下逻辑 ----已补充在画板页面
                             setTimeout(function () {
                                 wx.reLaunch({
                                     url: '/pages/drawBoard/drawBoard'

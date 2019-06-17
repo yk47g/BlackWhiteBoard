@@ -17,6 +17,14 @@
 .btn{
     position: absolute;
     width: 80vw;
+    top: 60vh;
+    left: 50%;
+    margin-left: -40vw;
+}
+
+.btnSend{
+    position: absolute;
+    width: 80vw;
     top: 50vh;
     left: 50%;
     margin-left: -40vw;

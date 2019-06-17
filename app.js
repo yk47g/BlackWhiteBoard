@@ -30,7 +30,7 @@ App({
     
     //读取二维码进来后保存roomid到缓存中
         //。。。
-        //
+        //已写到画板的onLoad中
 
     //console.log(this.globalData.session);
     if (this.globalData.session === "") {

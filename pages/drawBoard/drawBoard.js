@@ -2209,6 +2209,7 @@ Page({
                                                             content: '已成功加入队伍',
                                                             showCancel: false
                                                         });
+                                                        that.onShow();
                                                     } else {
                                                         console.log(res.data.errMsg);
                                                     }
@@ -2240,6 +2241,7 @@ Page({
                                     showCancel: false
                                 });
                                 wx.setStorageSync('roomID', currentRoomID);//还原被二维码更改的roomID缓存
+                                that.onShow();
 
 
                             }
