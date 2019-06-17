@@ -2126,7 +2126,12 @@ Page({
      */
 
     onLoad: function (options) {
-       
+        //读取分享进来的房间id数据
+        if(typeof(options.romid) != "undefined"){
+            console.log('读取到分享进来的房间id',options.romid);
+            wx.setStorageSync('roomID', options.romid);
+            app.globalData.userInfo.roomID = options.romid;
+        }
     },
     /**
      * 生命周期函数--监听页面初次渲染完成
@@ -2178,49 +2183,57 @@ Page({
                             app.globalData.userInfo.iconurl = res.data.iconurl;
                             app.globalData.userInfo.groupName = res.data.groupName;
                             var currentRoomID = res.data.roomID;
-                            //console.log(app.globalData.userInfo.roomID);
-                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID === 0) {//用户还没加入队伍，访问数据库加入队伍
+                            //console.log(app.globalData.userInfo.roomID,currentRoomID);
+                            if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID == 0 ) {//用户还没加入队伍，访问数据库加入队伍
 
                                 console.log("用户当前未加入队伍,开始加入缓存里的队伍:", app.globalData.userInfo.roomID);
 
-                                //
-                                //弹框询问是否确认加入房间：，当前画板内容会被清空
-                                //
+                                wx.showModal({
+                                    title: '提示',
+                                    content: '您确定要加入此协作吗？',
+                                    success (res) {
+                                      if (res.confirm) {
+                                        console.log('用户点击确定')
+                                        //加入队伍
+                                        wx.request({
+                                            url: url,
+                                            data: {
+                                                "id": app.globalData.userInfo.id,
+                                                "joinRoomID": app.globalData.userInfo.roomID
+                                            },
+                                            success: function (res) {
+                                                if (res.statusCode == 200) {
+                                                    if (res.data.statusCode == 0) {
+                                                        wx.showModal({
+                                                            title: '提示',
+                                                            content: '已成功加入队伍',
+                                                            showCancel: false
+                                                        });
+                                                    } else {
+                                                        console.log(res.data.errMsg);
+                                                    }
+                                                }
+                                                else {
+                                                    console.log(res.errMsg);
+                                                }
+                                            },//request.success
+                                            fail: function (e) {
+                                                console.log("request.fail:", e);
+                                            }//request.fail
+                                        });//request
+                                      } else if (res.cancel) {
+                                        console.log('用户点击取消')
+                                      }
+                                    }
+                                  })                                  
 
-                                //加入队伍
-                                wx.request({
-                                    url: url,
-                                    data: {
-                                        "session": app.globalData.id,
-                                        "newRoomID": app.globalData.userInfo.roomID
-                                    },
-                                    success: function (res) {
-                                        if (res.statusCode == 200) {
-                                            if (res.data.statusCode == 0) {
-                                                wx.showModal({
-                                                    title: '提示',
-                                                    content: '已成功加入队伍',
-                                                    showCancel: false
-                                                });
-                                            } else {
-                                                console.log(res.data.errMsg);
-                                            }
-                                        }
-                                        else {
-                                            console.log(res.errMsg);
-                                        }
-                                    },//request.success
-                                    fail: function (e) {
-                                        console.log("request.fail:", e);
-                                    }//request.fail
-                                });//request
 
                             }
                             if ((currentRoomID != app.globalData.userInfo.roomID) && currentRoomID != 0) {//用户已加入某队伍，需要提示先退出队伍
 
-                                var str = '您已加入队伍';
+                                var str = '您已加入协作';
                                 str += app.globalData.userInfo.groupName;
-                                str += '，是否切换到' + res.data.groupName;
+                                str += '，在加入新协作前请先退出旧协作！';
                                 wx.showModal({
                                     title: '提示',
                                     content: str,
@@ -2395,7 +2408,7 @@ Page({
             }
         }
     },
-    
+
     onResize(res) {
         console.log("设备旋转", res)
     },

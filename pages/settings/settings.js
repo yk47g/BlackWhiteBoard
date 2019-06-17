@@ -126,6 +126,8 @@ Page({
                                     content: '已成功退出队伍',
                                     showCancel:false
                                   });
+                                  app.globalData.userInfo.roomID = 0;
+                                  wx.setStorageSync('roomID', '0');
                                 that.setData({
                                     noGroup:true,
                                     groupUser1iconUrl: "/icons/user.png",
@@ -369,7 +371,7 @@ Page({
     },
   drawSet_onClick(){
     wx.showToast({
-        title: "等待体验...",
+        title: "功能开发中...",
         icon: "none"
     })
   },
