@@ -1,0 +1,22 @@
+.joinText {
+    position: absolute;
+    width: 100%;
+    top: 10vh;
+    text-align: center;
+    font-size: 100rpx;
+}
+
+.inputClass{
+    position: absolute;
+    width: 100%;
+    top: 30vh;
+    text-align: center;
+}
+
+.btn{
+    position: absolute;
+    width: 80vw;
+    top: 40vh;
+    left: 50%;
+    margin-left: -40vw;
+}

@@ -1,5 +1,4 @@
 let  app = getApp();
-var url = "https://pykky.com/wechatbwb/BlackWhiteBoard.php";
 
 Page({
 
@@ -7,25 +6,21 @@ Page({
      * 页面的初始数据
      */
     data: {
-        list: []
+        roomName: null
     },
 
-    onLoad: function (options) {
-        let that = this ;
-        var  arr=[];
-        for(var i in app.globalData.roomAllUserInfo){
-            arr.push(app.globalData.roomAllUserInfo[i]);
-        }//对象转化为数组
-       //console.log(arr);
-        that.setData({
-            list:arr
-        });
-        console.log("当前页面list数据:",that.data.list);
+    onLoad: function () {
+        this.setData({
+            roomName: app.globalData.userInfo.groupName
+        })
     },
 
         //----------------
-    tap_oneUserView(e){
-        console.log("点击了用户id:",e.target.id);
+    tapBtn:function (e) {
+        console.log("点击了返回按钮");
+        wx.reLaunch({
+            url: '/pages/drawBoard/drawBoard'
+        });
     },
     //-------响应事件写上面------
     onShareAppMessage: function (res) {

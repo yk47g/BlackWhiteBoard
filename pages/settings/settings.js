@@ -127,6 +127,7 @@ Page({
                                     showCancel:false
                                   });
                                   app.globalData.userInfo.roomID = 0;
+                                  app.globalData.userInfo.groupName = "未加入协作";
                                   wx.setStorageSync('roomID', '0');
                                 that.setData({
                                     noGroup:true,
@@ -176,7 +177,7 @@ Page({
                         }
                     }
                     
-                )
+                );
               }
               if (res.tapIndex === 1) {//创建
                 wx.navigateTo(
@@ -190,9 +191,8 @@ Page({
                             },1000)
                             
                         }
-                    }
-                    
-                )
+                    } 
+                );
               }
             },
             fail (res) {
@@ -370,10 +370,81 @@ Page({
         
     },
   drawSet_onClick(){
-    wx.showToast({
-        title: "功能开发中...",
-        icon: "none"
-    })
+    let that = this;
+        console.log("点击了协作设置");
+        if (app.globalData.userInfo.groupName === "未加入协作") {
+            wx.showModal({
+                title: '提示',
+                content: '您还未加入任何协作，请先加入后再操作',
+                showCancel: false
+            });
+        }else{
+            wx.showActionSheet({
+                itemList: ['修改协作名称', '清空所有笔画数据'],
+                success (res) {
+                  if (res.tapIndex === 0) {//修改协作名称
+                    wx.navigateTo(
+                        {
+                            url: '/pages/ChangeRoomName/ChangeRoomName',
+                            complete:function(){
+                                setTimeout(function(){
+                                    that.setData({
+                                        pageVisable:true
+                                    })
+                                },1000)
+                                
+                            }
+                        }
+                        
+                    );
+                  }
+                  if (res.tapIndex === 1) {//清空当前协作所有笔画数据
+                    wx.showModal({
+                        title: '提示',
+                        content: '您确定要清空所有人的笔画数据吗？',
+                        success (res) {
+                          if (res.confirm) {
+                            console.log('用户点击确定')
+                            wx.request({
+                                url: url,
+                                data: {
+                                    "id": app.globalData.userInfo.id,
+                                    "DcurrentRoomid": app.globalData.userInfo.roomID
+                                },
+                                success: function (res) {
+                                    if (res.statusCode == 200) {
+                                        if (res.data.statusCode == 0) {
+                                            wx.showModal({
+                                                title: '提示',
+                                                content: '已成功清空所有数据',
+                                                showCancel: false
+                                            });
+                                            that.onShow();
+                                        } else {
+                                            console.log(res.data.errMsg);
+                                        }
+                                    }
+                                    else {
+                                        console.log(res.errMsg);
+                                    }
+                                },//request.success
+                                fail: function (e) {
+                                    console.log("request.fail:", e);
+                                }//request.fail
+                            });//request
+                          } else if (res.cancel) {
+                            console.log('用户点击取消')
+                          }
+                        }
+                      });
+                  }
+                },
+                fail (res) {
+                  console.log(res.errMsg)
+                }
+              });
+        }
+              
   },
     //-------响应事件写上面------
 

@@ -39,27 +39,27 @@
     
     <view class="settingsButtonsView">
         <view class="settingsButtons">
-            <navigator class="list-item" hover-class="none" bindtap='drawSet_onClick'>
+            <view class="list-item" hover-class="none" bindtap='drawSet_onClick'>
                 <view class='item'>
                     <image class="item-image" src='/icons/groupSettings.png'></image>
                     <text class="item-text">协作设置</text>
                     <view class="div-line"></view>
                 </view>
-            </navigator>
-            <navigator  class="list-item" hover-class="none" bindtap='exportPage_onClick'>
+            </view>
+            <view  class="list-item" hover-class="none" bindtap='exportPage_onClick'>
                 <view class='item'>
                     <image class="item-image" src='/icons/drawSettings.png'></image>
                     <text class="item-text">导出画板</text>
                     <view class="div-line"></view>
                 </view>
-            </navigator>
-            <navigator class="list-item" hover-class="none"  bindtap='introduce_onClick'>
+            </view>
+            <view class="list-item" hover-class="none"  bindtap='introduce_onClick'>
                 <view class='item'>
                     <image class="item-image" src='/icons/help.png'></image>
                     <text class="item-text">使用手册</text>
                 </view>
                 <view class="div-line"></view>
-            </navigator>
+            </view>
         </view>
     </view>
 </view>

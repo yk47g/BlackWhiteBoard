@@ -1,0 +1,9 @@
+<view class="main">
+    <text class="joinText" >修改</text>
+    <form bindsubmit="formSubmit" class="formClass">
+        <input class="inputClass" type="text" value="" name="input" placeholder="输入新协作名称" /> <!--bindinput="bindKeyInput" -->
+        <button class="btn" type="primary" form-type="submit" >
+            提交
+        </button>
+    </form>
+</view>

@@ -26,27 +26,24 @@ Page({
         if (subName === "") {//输入为空的清空
             wx.showModal({
                 title: '错误',
-                content: '协作名不能为空！',
+                content: '协作名称不能为空！',
                 showCancel:false
               });
         }else{
             wx.request({
                 url: url,
                 data: {
-                    "id": app.globalData.userInfo.id,
-                    'createRoomName': subName
+                    "currentRoomid": app.globalData.userInfo.roomID,
+                    'newRoomName': subName
                 },
                 success: function (res) {
                     if (res.statusCode == 200) {
                         console.log(res);
                         if (res.data.statusCode == 0) {
-                            app.globalData.userInfo.roomID = res.data.data;
                             app.globalData.userInfo.groupName = subName;
-                            wx.setStorageSync('roomID', res.data.data);
-                            //在这里干点什么。。。清空一下Room数据。。你在这里补一下逻辑
                             wx.navigateTo(
                                 {
-                                    url: '/pages/CreateRoomSuccess/CreateRoomSuccess'
+                                    url: '/pages/ChangeRoomNameSuccess/ChangeRoomNameSuccess'
                                 }
                             );
                         } else {

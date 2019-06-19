@@ -49,6 +49,40 @@ function wget($url){
 
 $id = $_GET["id"];
 
+//清空画布数据
+$DcurrentRoomid = $_GET["DcurrentRoomid"];
+if ((!empty($id)) && (!empty($DcurrentRoomid))){
+    $newDrawData = '[{"data":[{"actions":[],"backgroundColor":"","width":2000,"height":2000}],"date":"2019/05/31 21:00:00","id":"'.$id.'","roomID":"'.$DcurrentRoomid.'"}]';
+    $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$newDrawData' WHERE `bwb_room`.`roomID` = $DcurrentRoomid";
+    $res = mysqli_query($conn,$sql);
+    if($res){
+        echo json_encode(array("statusCode"=>0));
+        mysqli_close($conn);
+        exit;
+    }else{
+        echo json_encode(array("statusCode"=>11 , "data"=>null , "errMsg"=>"error:房间id或用户id不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
+//修改队伍名称
+$newRoomName = $_GET["newRoomName"];
+$currentRoomid = $_GET["currentRoomid"];
+if ((!empty($currentRoomid)) && (!empty($newRoomName))){
+    $sql = "UPDATE `bwb_room` SET `roomName` = '$newRoomName' WHERE `bwb_room`.`roomID` = $currentRoomid";
+    $res = mysqli_query($conn,$sql);
+    if($res){
+        echo json_encode(array("statusCode"=>0));
+        mysqli_close($conn);
+        exit;
+    }else{
+        echo json_encode(array("statusCode"=>10 , "data"=>null , "errMsg"=>"error:房间不存在"));
+        mysqli_close($conn);
+        exit;
+    }
+}
+
 //创建队伍
 $createRoomName = $_GET["createRoomName"];
 if ((!empty($id)) && (!empty($createRoomName))){

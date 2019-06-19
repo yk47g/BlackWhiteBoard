@@ -29,7 +29,6 @@ let DevelopConfiguration = {
     sameTimeTouchInterval: 40
 
 }
-console.log(typeof ({}))
 var drawBoard = {} //全局画布对象。绘制数据存放的地方。。
 var websocket = require('../..//utils/websocket.js');//加载通信库
 var utils = require('../..//utils/util.js');//加载插件库
@@ -1064,7 +1063,7 @@ class LocalStorage {//本地存储类
 
             console.log("开始初始化room")
             thisRoom.initByJson(json)
-            console.log(thisRoom)
+            console.log('thisRoom：',thisRoom)
 
             if (app.globalData.session == "" || app.globalData.userInfo.roomID == 0) {//判断是否属于未登录的房间。
                 drawBoard = thisRoom.drawBoardAll.temp
@@ -2143,7 +2142,7 @@ Page({
     /**
      * 生命周期函数--监听页面显示
      */
-    onShow: function (options) {
+    onShow: function () {
         this.setData({
             pageVisable: true
         })
@@ -2160,7 +2159,7 @@ Page({
         }
 
         let that = this;
-        console.log("页面启动参数：", options)
+        //console.log("页面启动参数：", options) ！！！onshow是没有options的！！！这句话我注释掉了
         // 无论什么情况，先初始化创建一个本地使用的drawboard
         this.initDrawBoard();
         //开始执行一些为互联准备的数据。
@@ -2226,7 +2225,7 @@ Page({
                                         console.log('用户点击取消')
                                       }
                                     }
-                                  })                                  
+                                  });                                  
 
 
                             }

@@ -1,0 +1,31 @@
+.Title{
+    position: absolute;
+    width: 100%;
+    top: 10vh;
+    text-align: center;
+    font-size: 100rpx;
+}
+
+.content{
+    position: absolute;
+    width: 100%;
+    top: 30vh;
+    text-align: center;
+    font-size: 50rpx;
+}
+
+.btn{
+    position: absolute;
+    width: 80vw;
+    top: 60vh;
+    left: 50%;
+    margin-left: -40vw;
+}
+
+.btnSend{
+    position: absolute;
+    width: 80vw;
+    top: 50vh;
+    left: 50%;
+    margin-left: -40vw;
+}

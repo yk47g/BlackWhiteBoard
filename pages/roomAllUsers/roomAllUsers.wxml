@@ -1,14 +1,14 @@
 <view class="main">
     <scroll-view class="scrollView"  scroll-y enable-back-to-top>
-        <block wx:for='{{list}}'>
+        <block wx:for='{{list}}' wx:key='key'>
             <view class="oneUserView" hover-class='none' id="{{item.id}}" bindtap="tap_oneUserView">
                 <!--左边图片-->
-                <view class="userIconimageView">
-                    <image class='userIconimage' src="{{item.avatarUrl}}"></image>
+                <view class="userIconimageView" id="{{item.id}}">
+                    <image class='userIconimage' id="{{item.id}}" src="{{item.avatarUrl}}"></image>
                 </view>
                 <!-- 内容 -->
-                <view class="userNameView">
-                    <text class='userNametext'>{{item.name}}</text>
+                <view class="userNameView" id="{{item.id}}">
+                    <text class='userNametext' id="{{item.id}}">{{item.name}}</text>
                 </view>
             </view>
         </block>

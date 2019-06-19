@@ -1,0 +1,6 @@
+<view class="main">
+    <text class="Title" >修改成功</text>
+    <text class="content">新协作名称：{{roomName}}</text>
+    <button class="btnSend" type="primary" open-type="share">发送邀请</button>
+    <button class="btn" type="default" bindtap="tapBtn">返回</button>
+</view>

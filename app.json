@@ -7,8 +7,9 @@
     "pages/roomAllUsers/roomAllUsers",
     "pages/CreateRoom/CreateRoom",
     "pages/JoinRoom/JoinRoom",
-    "pages/CreateRoomSuccess/CreateRoomSuccess"
-    
+    "pages/CreateRoomSuccess/CreateRoomSuccess",
+    "pages/ChangeRoomName/ChangeRoomName",
+    "pages/ChangeRoomNameSuccess/ChangeRoomNameSuccess"
 
   ],
   "window": {
