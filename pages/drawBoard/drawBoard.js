@@ -2250,6 +2250,7 @@ Page({
                                 //下载数据库中roomid对应已有的整个画板数据,存入对象，key为用户id对应value值是该用户的画板数据
                                 var jsDownLoadDrawBoardData = JSON.parse(res.data.drawBoardData);
                                 //console.log(jsDownLoadDrawBoardData);
+                                thisRoom.drawBoardAll = {};//先清空所有数据，再一个一个从数据库下载，解决清空问题
                                 for (var i = 0; i < jsDownLoadDrawBoardData.length; i++) {
                                     let userDrawId = String(jsDownLoadDrawBoardData[i].id)
                                     thisRoom.drawBoardAll[userDrawId] = new DrawBoard().initByJson(jsDownLoadDrawBoardData[i].data[0]);
@@ -2271,8 +2272,8 @@ Page({
 
                                     var jsListData = JSON.parse(sockres.data);
                                     // that.data.drawBoardList[jsListData.id] = ;
-
-                                    thisRoom.drawBoardAll[jsListData.id] = new DrawBoard().initByJson(jsListData.data[0])
+                                    if(jsListData.roomID == app.globalData.userInfo.roomID){//加个判断，解决房间串数据的问题
+                                        thisRoom.drawBoardAll[jsListData.id] = new DrawBoard().initByJson(jsListData.data[0])
 
                                     //list.push(JSON.parse(sockres.data));
                                     //that.setData({
@@ -2283,6 +2284,8 @@ Page({
 
                                     console.log("收到实时数据，当前画布所有：", thisRoom.drawBoardAll);
                                     //console.log("第一个画布数据：",that.data.drawBoardList[1].data);
+                                    }
+                                    
                                     that.reloadDrawBoard(true)
                                 });
                                 

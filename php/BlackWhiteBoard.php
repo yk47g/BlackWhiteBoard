@@ -53,6 +53,7 @@ $id = $_GET["id"];
 $DcurrentRoomid = $_GET["DcurrentRoomid"];
 if ((!empty($id)) && (!empty($DcurrentRoomid))){
     $newDrawData = '[{"data":[{"actions":[],"backgroundColor":"","width":2000,"height":2000}],"date":"2019/05/31 21:00:00","id":"'.$id.'","roomID":"'.$DcurrentRoomid.'"}]';
+    $sql = "UPDATE `bwb_room` SET `drawBoardData` = '' WHERE `bwb_room`.`roomID` = $DcurrentRoomid";
     $sql = "UPDATE `bwb_room` SET `drawBoardData` = '$newDrawData' WHERE `bwb_room`.`roomID` = $DcurrentRoomid";
     $res = mysqli_query($conn,$sql);
     if($res){
