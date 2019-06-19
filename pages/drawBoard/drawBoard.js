@@ -3228,10 +3228,7 @@ Page({
 
 
     },
-    inviteUser(e) {//点击右下角的邀请用户。
 
-
-    },
     button_settings() {
         console.log("点击了设置按钮");
         this.setData({
