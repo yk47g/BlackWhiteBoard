@@ -99,7 +99,18 @@ page {
   border: solid rgb(93, 153, 183) 1px;
   border-radius: 50%;
   box-sizing: border-box;
+ 
 }
+/* .userOnlineBar button {
+  width: 50rpx;
+  height: 50rpx;
+  float: right;
+  margin: 10rpx;
+  border: solid rgb(93, 153, 183) 1px;
+  border-radius: 50%;
+  box-sizing: border-box;
+
+} */
 
 /* 画笔调节窗口---- */
 
